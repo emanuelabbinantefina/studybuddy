@@ -1,0 +1,48 @@
+<ion-content [fullscreen]="true">
+  <div class="background-container">
+    <div class="card fade-in">
+      <h1 class="title">Crea Account</h1>
+      <form (ngSubmit)="handleRegister()">
+        <div class="input-container">
+          <ion-icon name="person-outline" class="input-icon"></ion-icon>
+          <ion-input type="text" placeholder="Nome" [(ngModel)]="name" name="name" required></ion-input>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+          <ion-input type="email" placeholder="Email" [(ngModel)]="email" name="email" required></ion-input>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="school-outline" class="input-icon"></ion-icon>
+          <ion-select placeholder="Facoltà" (ionChange)="onFacoltaChange($event)" interface="action-sheet">
+            <ion-select-option *ngFor="let f of faculties" [value]="f.id">{{ f.name }}</ion-select-option>
+          </ion-select>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="book-outline" class="input-icon"></ion-icon>
+          <ion-select placeholder="Corso" [(ngModel)]="corso" name="corso" [disabled]="availableCourses.length === 0" interface="action-sheet">
+            <ion-select-option *ngFor="let c of availableCourses" [value]="c.name">{{ c.name }}</ion-select-option>
+          </ion-select>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+          <ion-input type="password" placeholder="Password" [(ngModel)]="password" name="password" required></ion-input>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+          <ion-input type="password" placeholder="Conferma" [(ngModel)]="confirmPassword" name="confirmPassword" required></ion-input>
+        </div>
+
+        <p *ngIf="error" class="error-text">{{ error }}</p>
+        <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+          <span *ngIf="!loading">Registrati</span>
+        </ion-button>
+      </form>
+    </div>
+  </div>
+</ion-content>

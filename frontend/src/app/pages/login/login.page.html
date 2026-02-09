@@ -1,0 +1,55 @@
+<ion-content [fullscreen]="true">
+  <div class="background-container">
+    <div class="card fade-in">
+      <h1 class="title">Bentornato</h1>
+      <p class="subtitle">Pronto a studiare?</p>
+
+      <div class="social-container">
+        <div class="social-btn google" (click)="handleSocialLogin('Google')">
+          <ion-icon name="logo-google"></ion-icon>
+          <span>Google</span>
+        </div>
+        <div class="social-btn facebook" (click)="handleSocialLogin('Facebook')">
+          <ion-icon name="logo-facebook"></ion-icon>
+          <span>Facebook</span>
+        </div>
+      </div>
+
+      <form (ngSubmit)="handleLogin()">
+        <div class="input-container">
+          <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+          <ion-input type="email" inputmode="email" name="email" placeholder="Email"
+            [(ngModel)]="email" autocorrect="off" autocapitalize="off" required>
+          </ion-input>
+        </div>
+
+        <div class="input-container">
+          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+          <ion-input [type]="passwordType" name="password" placeholder="Password"
+            [(ngModel)]="password" required>
+          </ion-input>
+          <ion-icon [name]="passwordIcon" class="password-toggle" (click)="togglePasswordMode()"></ion-icon>
+        </div>
+
+        <div class="remember-wrapper" (click)="toggleRemember()">
+          <div class="custom-checkbox" [class.checked]="rememberMe">
+            <ion-icon name="checkmark"></ion-icon>
+          </div>
+          <span class="remember-text">Ricordati di me</span>
+        </div>
+
+        <p *ngIf="error" class="error-text">{{ error }}</p>
+
+        <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading">
+          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+          <span *ngIf="!loading">Accedi</span>
+        </ion-button>
+      </form>
+
+      <div class="footer-links">
+        <p>Non hai un account? <span class="link-red" (click)="goToRegister()">Registrati</span></p>
+        <p class="link-gray" (click)="goToForgot()">Password dimenticata?</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

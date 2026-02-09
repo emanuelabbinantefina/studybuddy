@@ -1,0 +1,74 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="white">
+    <ion-title>
+      <span class="brand">StudyBuddy</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="welcome-section">
+    <h1>Ciao, {{ userName }}! 👋</h1>
+    <p>Ecco i tuoi aggiornamenti per <b>{{ userCourse }}</b></p>
+  </div>
+
+  <div class="section-title">
+    <h2>Prossimo impegno</h2>
+  </div>
+  <ion-card class="main-card">
+    <ion-item lines="none">
+      <div class="icon-box" slot="start">
+        <ion-icon name="calendar-outline"></ion-icon>
+      </div>
+      <ion-label>
+        <h3>Lezione di {{ materie[0] }}</h3>
+        <p>Oggi • 14:30 - Aula T2</p>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+
+  <div class="section-title">
+    <h2>I tuoi corsi</h2>
+    <ion-note>Vedi tutti</ion-note>
+  </div>
+
+  <div class="subjects-grid">
+    <div class="subject-card" *ngFor="let materia of materie">
+      <div class="subject-icon">
+        <ion-icon name="book-outline"></ion-icon>
+      </div>
+      <span class="subject-name">{{ materia }}</span>
+      <span class="subject-count">12 file condivisi</span>
+    </div>
+
+    <div class="subject-card add-btn">
+      <ion-icon name="add-outline"></ion-icon>
+      <span>Aggiungi</span>
+    </div>
+  </div>
+
+  <div class="section-title ion-margin-top">
+    <h2>Gruppi di studio attivi</h2>
+  </div>
+  <ion-list lines="none">
+    <ion-item class="group-item">
+      <ion-avatar slot="start">
+        <img src="https://i.pravatar.cc/100?u=tech" />
+      </ion-avatar>
+      <ion-label>
+        <h3>Team Progetto {{ userCourse }}</h3>
+        <p>3 colleghi online ora</p>
+      </ion-label>
+      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+    </ion-item>
+  </ion-list>
+</ion-content>

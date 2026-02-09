@@ -1,0 +1,84 @@
+.brand {
+  font-weight: 800;
+  color: #ff3b30; // Riprendendo il rosso che avevi nel login
+  letter-spacing: -0.5px;
+}
+
+.welcome-section {
+  margin: 10px 0 25px 5px;
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 5px; }
+  p { color: #8e8e93; margin: 0; }
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 5px;
+  h2 { font-size: 18px; font-weight: 600; margin: 0; }
+  ion-note { color: #ff3b30; font-weight: 500; }
+}
+
+.main-card {
+  margin: 0;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  background: white;
+  
+  .icon-box {
+    background: #fff1f0;
+    padding: 10px;
+    border-radius: 12px;
+    color: #ff3b30;
+    font-size: 20px;
+  }
+}
+
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.subject-card {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #f0f0f0;
+
+  .subject-icon {
+    font-size: 24px;
+    color: #5856d6;
+    margin-bottom: 15px;
+  }
+
+  .subject-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #1c1c1e;
+  }
+
+  .subject-count {
+    font-size: 11px;
+    color: #8e8e93;
+  }
+
+  &.add-btn {
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #d1d1d6;
+    background: transparent;
+    color: #8e8e93;
+    ion-icon { font-size: 30px; margin-bottom: 5px; }
+  }
+}
+
+.group-item {
+  --background: #f9f9f9;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  padding: 5px;
+}
