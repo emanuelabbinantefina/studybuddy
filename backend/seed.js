@@ -85,19 +85,16 @@ const coursesData = {
 
 async function seed() {
   try {
-    // Sincronizza e pulisce il DB
     await sequelize.sync({ force: true });
     console.log('--- Database pulito e pronto per il popolamento ---');
 
     for (const facultyName in coursesData) {
-      // 1. Crea la Facoltà
       const faculty = await Faculty.create({ name: facultyName });
       console.log(`Creata facoltà: ${faculty.name}`);
 
-      // 2. Crea tutti i corsi associati a questa facoltà
       const coursesToCreate = coursesData[facultyName].map(courseName => ({
         name: courseName,
-        facultyId: faculty.id // Associa l'ID appena generato
+        facultyId: faculty.id 
       }));
 
       await Course.bulkCreate(coursesToCreate);

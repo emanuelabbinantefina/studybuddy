@@ -5,11 +5,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const sequelize = require('./src/config/db'); // Percorso corretto
-const User = require('./src/models/User');     // Crea questo file o usa la definizione sotto
+const sequelize = require('./src/config/db'); 
+const User = require('./src/models/User');     
 const Faculty = require('./src/models/Faculty');
 const Course = require('./src/models/Course');
 
+// Associazioni
 Faculty.associate({ Course });
 Course.associate({ Faculty });
 
@@ -18,30 +19,46 @@ const PORT = process.env.PORT || 3000;
 const SECRET_KEY = process.env.JWT_SECRET || "la_tua_chiave_super_segreta";
 
 // Middleware
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors()); // Abilita CORS per Ionic (localhost:8100)
+app.use(express.json()); // Più moderno di bodyParser.json()
 
-// --- SINCRONIZZAZIONE DB ---
-sequelize.sync()
-  .then(() => {
-    console.log('Database ricostruito con successo!');
+// --- SINCRONIZZAZIONE DB E POPOLAMENTO DATI ---
+sequelize.sync({ force: false }) // Cambia in 'true' solo se vuoi resettare il DB ogni volta
+  .then(async () => {
+    console.log('Database sincronizzato con successo!');
+    
+    // Controllo se il DB è vuoto per inserire dati di test
+    const count = await Faculty.count();
+    if (count === 0) {
+      console.log('Database vuoto. Inserimento dati di test...');
+      const f1 = await Faculty.create({ name: 'Ingegneria' });
+      const f2 = await Faculty.create({ name: 'Economia' });
+      
+      await Course.create({ name: 'Informatica', facultyId: f1.id });
+      await Course.create({ name: 'Gestionale', facultyId: f1.id });
+      await Course.create({ name: 'Marketing', facultyId: f2.id });
+      console.log('Dati di test inseriti correttamente.');
+    }
   })
-  .catch(err => console.error('Errore:', err));
-  
+  .catch(err => console.error('Errore durante la sincronizzazione del DB:', err));
 
 // --- API ROUTES ---
 
-// 1. OTTENERE FACOLTÀ E CORSI (Per il tuo frontend)
+// 1. OTTENERE FACOLTÀ E CORSI
 app.get('/api/auth/faculties', async (req, res) => {
     try {
-        const faculties = await Faculty.findAll({ include: [Course] });
+        console.log("Richiesta ricevuta per /api/auth/faculties");
+        const faculties = await Faculty.findAll({ 
+          include: [{ model: Course }] 
+        });
         res.json(faculties);
     } catch (error) {
+        console.error("Errore recupero facoltà:", error);
         res.status(500).json({ message: error.message });
     }
 });
 
-// 2. REGISTRAZIONE (Usando Sequelize invece di db.run)
+// 2. REGISTRAZIONE
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { name, email, password, facolta, corso } = req.body;
@@ -81,6 +98,13 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server attivo su http://localhost:${PORT}`);
+// Rotta di test per la home
+app.get('/', (req, res) => {
+  res.send('Server API attivo e funzionante sulla porta ' + PORT);
+});
+
+// Avvio server ascoltando su 0.0.0.0 per evitare problemi di localhost
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🚀 Server attivo su http://localhost:${PORT}`);
+  console.log(`📍 Endpoint facoltà: http://localhost:${PORT}/api/auth/faculties\n`);
 });
