@@ -1,74 +1,129 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar color="white">
-    <ion-title>
-      <span class="brand">StudyBuddy</span>
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
-
-  <div class="welcome-section">
-    <h1>Ciao, {{ userName }}! 👋</h1>
-    <p>Ecco i tuoi aggiornamenti per <b>{{ userCourse }}</b></p>
-  </div>
-
-  <div class="section-title">
-    <h2>Prossimo impegno</h2>
-  </div>
-  <ion-card class="main-card">
-    <ion-item lines="none">
-      <div class="icon-box" slot="start">
-        <ion-icon name="calendar-outline"></ion-icon>
-      </div>
-      <ion-label>
-        <h3>Lezione di {{ materie[0] }}</h3>
-        <p>Oggi • 14:30 - Aula T2</p>
-      </ion-label>
-    </ion-item>
-  </ion-card>
-
-  <div class="section-title">
-    <h2>I tuoi corsi</h2>
-    <ion-note>Vedi tutti</ion-note>
-  </div>
-
-  <div class="subjects-grid">
-    <div class="subject-card" *ngFor="let materia of materie">
-      <div class="subject-icon">
-        <ion-icon name="book-outline"></ion-icon>
-      </div>
-      <span class="subject-name">{{ materia }}</span>
-      <span class="subject-count">12 file condivisi</span>
+<ion-content [fullscreen]="true" class="bg-content">
+  
+  <!-- HEADER -->
+  <div class="custom-header">
+    <div class="brand">
+      <ion-icon name="school" class="logo-icon"></ion-icon>
+      <h1>StudyBuddy</h1>
     </div>
-
-    <div class="subject-card add-btn">
-      <ion-icon name="add-outline"></ion-icon>
-      <span>Aggiungi</span>
+    <div class="profile-pic" *ngIf="user">
+      <!-- Se non c'è avatar usa un'icona generica -->
+      <img [src]="user.avatarUrl" *ngIf="user.avatarUrl; else noAvatar">
+      <ng-template #noAvatar><ion-icon name="person"></ion-icon></ng-template>
     </div>
   </div>
 
-  <div class="section-title ion-margin-top">
-    <h2>Gruppi di studio attivi</h2>
+  <div class="main-padding">
+
+    <!-- HERO BANNER -->
+    <div class="hero-card">
+      <div class="hero-text">
+        <!-- Il ? serve a non dare errore se user è ancora null -->
+        <h2>Ciao {{ user?.name }}! 👋</h2>
+        <p>Pronta a studiare?</p>
+        <button class="btn-primary small">
+          <ion-icon name="add"></ion-icon> Crea evento
+        </button>
+      </div>
+      <div class="hero-img">
+        <!-- Inserisci qui il percorso della tua illustrazione in assets -->
+        <img src="assets/img/girl-studying.png" alt="Study Illustration">
+      </div>
+    </div>
+
+    <!-- SEZIONE 1: PROSSIMI IMPEGNI -->
+    <section class="section-block" *ngIf="upcomingEvents.length > 0">
+      <div class="section-header">
+        <h3>Prossimi impegni</h3>
+        <span class="date-label">Vedi calendario <ion-icon name="chevron-forward"></ion-icon></span>
+      </div>
+
+      <!-- Ciclo FOR sugli eventi -->
+      <div class="event-card" *ngFor="let ev of upcomingEvents">
+        <div class="left-strip" [ngClass]="ev.type">
+          <ion-icon [name]="ev.icon"></ion-icon>
+        </div>
+        <div class="card-content">
+          <h4>{{ ev.title }}</h4>
+          <div class="meta-row">
+            <span class="subject" *ngIf="ev.subject">
+              <ion-icon name="ellipse"></ion-icon> {{ ev.subject }}
+            </span>
+            <span class="time">{{ ev.time }}</span>
+          </div>
+          
+          <!-- Partecipanti (si vede solo se ce ne sono) -->
+          <div class="participants" *ngIf="ev.participants && ev.participants.length > 0">
+            <img *ngFor="let p of ev.participants" [src]="p">
+          </div>
+        </div>
+        <ion-icon name="chevron-forward" class="arrow-icon"></ion-icon>
+      </div>
+    </section>
+
+    <!-- SEZIONE 2: GRUPPI (Scroll Orizzontale) -->
+    <section class="section-block" *ngIf="myGroups.length > 0">
+      <div class="section-header">
+        <h3>I tuoi gruppi</h3>
+        <span class="link-label">Vedi tutto <ion-icon name="chevron-forward"></ion-icon></span>
+      </div>
+
+      <div class="horizontal-scroll">
+        <div class="group-card" *ngFor="let group of myGroups" [ngClass]="group.themeColor + '-theme'">
+          <div class="group-top">
+            <div class="icon-square">
+              <ion-icon [name]="group.icon"></ion-icon>
+            </div>
+            <ion-icon name="chevron-forward" class="mini-arrow"></ion-icon>
+          </div>
+          
+          <h4>{{ group.name }}</h4>
+          
+          <div class="group-meta">
+            <div class="avatars-stack">
+              <img *ngFor="let a of group.memberAvatars" [src]="a">
+            </div>
+            <span class="time-ago">{{ group.lastActive }}</span>
+          </div>
+          
+          <div class="msg-preview">
+            {{ group.lastMessage }}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEZIONE 3: ULTIMI APPUNTI -->
+    <section class="section-block" *ngIf="latestNotes.length > 0">
+      <div class="section-header">
+        <h3>Ultimi appunti</h3>
+        <span class="link-label">Vedi tutto <ion-icon name="chevron-forward"></ion-icon></span>
+      </div>
+
+      <div class="note-card" *ngFor="let note of latestNotes">
+        <div class="note-icon-box" [ngClass]="note.iconColor">
+          <ion-icon [name]="note.icon"></ion-icon>
+        </div>
+        <div class="note-info">
+          <h4>{{ note.title }}</h4>
+          <p>{{ note.subtitle }}</p>
+        </div>
+        <div class="doc-preview">
+          <div class="line"></div><div class="line"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION BUTTONS -->
+    <div class="bottom-actions">
+      <button class="btn-primary full">
+        <ion-icon name="add"></ion-icon> Crea evento
+      </button>
+      <button class="btn-secondary full">
+        <ion-icon name="cloud-upload-outline"></ion-icon> Carica appunti
+      </button>
+    </div>
+
   </div>
-  <ion-list lines="none">
-    <ion-item class="group-item">
-      <ion-avatar slot="start">
-        <img src="https://i.pravatar.cc/100?u=tech" />
-      </ion-avatar>
-      <ion-label>
-        <h3>Team Progetto {{ userCourse }}</h3>
-        <p>3 colleghi online ora</p>
-      </ion-label>
-      <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
-    </ion-item>
-  </ion-list>
+  <div class="spacer-bottom"></div>
 </ion-content>

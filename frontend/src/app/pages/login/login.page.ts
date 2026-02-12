@@ -58,24 +58,21 @@ export class LoginPage implements OnInit {
     return re.test(email);
   }
 
-  async handleSocialLogin(type: string) {
+  async handleUniversityLogin() {
     this.loading = true; 
     this.error = '';
     
     try {
-      if (type === 'Google') {
-        await this.authService.loginWithGoogle();
-      } else {
-        await this.authService.loginWithFacebook();
-      }
-
+      console.log('Login istituzionale avviato');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       this.loading = false;
-      this.navCtrl.navigateForward('/home');
+      this.navCtrl.navigateForward('/tabs/home'); 
 
     } catch (err) {
       this.loading = false;
-      console.error(`Eccezione durante login ${type}:`, err);
-      this.error = `Impossibile accedere con ${type}. Riprova.`;
+      console.error(`Eccezione durante login ateneo:`, err);
+      this.error = `Impossibile accedere con le credenziali di Ateneo.`;
     }
   }
 
@@ -93,7 +90,6 @@ export class LoginPage implements OnInit {
       this.error = 'Inserisci un indirizzo email valido';
       return;
     }
-
   
     this.loading = true;
     
@@ -106,7 +102,8 @@ export class LoginPage implements OnInit {
       await lastValueFrom(loginObservable);
 
       this.loading = false;
-      this.navCtrl.navigateForward('/home');
+      
+      this.navCtrl.navigateForward('/tabs/home');
 
     } catch (err: any) {
       this.loading = false;

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "title": "Esame Analisi 2",
+    "subject": "Matematica",
+    "time": "09:00 - 11:00",
+    "type": "exam",
+    "icon": "bookmark",
+    "participants": []
+  },
+  {
+    "id": 2,
+    "title": "Studio di gruppo - Sistemi",
+    "time": "15:00 - 17:00",
+    "type": "group",
+    "icon": "people",
+    "participants": [
+      "https://api.dicebear.com/9.x/avataaars/svg?seed=Felix",
+      "https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka",
+      "https://api.dicebear.com/9.x/avataaars/svg?seed=Dudley"
+    ]
+  },
+  
+  {
+    "id": 1,
+    "title": "Esame Analisi 2",
+    "subject": "Matematica",
+    "date": "2026-04-24",
+    "startTime": "09:00",
+    "endTime": "11:00",
+    "type": "exam"
+  },
+  {
+    "id": 2,
+    "title": "Studio di gruppo - Sistemi",
+    "subject": "Sistemi",
+    "date": "2026-04-24",
+    "startTime": "15:00",
+    "endTime": "17:00",
+    "type": "group"
+  }
+]

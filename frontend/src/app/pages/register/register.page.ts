@@ -100,7 +100,7 @@ export class RegisterPage implements OnInit {
     const alert = await this.alertCtrl.create({
       header: 'Successo',
       message: 'Account creato!',
-      buttons: [{ text: 'Inizia', handler: () => this.navCtrl.navigateRoot('/home') }]
+      buttons: [{ text: 'Inizia', handler: () => this.navCtrl.navigateForward('/complete-profile') }]
     });
     await alert.present();
   }

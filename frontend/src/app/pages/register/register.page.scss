@@ -31,9 +31,13 @@ ion-content {
 }
 
 .card {
-  background: white;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   width: 320px;
-  border-radius: 20px;
+  border-radius: 40px;
   padding: 25px;
   position: relative;
   z-index: 1;
@@ -91,7 +95,7 @@ ion-content {
 }
 
 .main-btn {
-  --background: red;
+  --background: rgb(4, 55, 126);
   --border-radius: 12px;
   margin-top: 20px;
   height: 50px;
@@ -111,7 +115,7 @@ ion-content {
   }
 
   .link-red {
-    color: red;
+    color: rgb(4, 55, 126);
     font-weight: bold;
     margin-left: 5px;
     cursor: pointer;

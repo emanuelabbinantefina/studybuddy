@@ -1,0 +1,62 @@
+.search-wrapper {
+  padding: 12px 16px 24px;
+}
+
+.chip-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 6px 14px;
+  border: none;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 0.8rem;
+}
+
+.chip--active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.section-title {
+  margin: 12px 0 8px;
+  font-weight: 600;
+}
+
+.note-card,
+.group-suggest {
+  margin-bottom: 8px;
+  border-radius: 14px;
+  --background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.placeholder {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+.note-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+
+  &.exam {
+    background: #e0f2fe;
+  }
+}
+
+.note-subject {
+  font-size: 0.75rem;
+  color: #6b7280;
+}

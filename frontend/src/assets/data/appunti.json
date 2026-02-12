@@ -1,0 +1,31 @@
+[
+  {
+    "id": 501,
+    "title": "Appunti Analisi 2",
+    "subtitle": "Matematica • 1 ora fa",
+    "icon": "triangle",
+    "iconColor": "orange"
+  },
+  {
+    "id": 502,
+    "title": "Circuiti elettrici",
+    "subtitle": "Fisica • 3 giorni fa",
+    "icon": "flash",
+    "iconColor": "yellow"
+  },
+
+  {
+    "id": 1,
+    "title": "Appunti Analisi 2",
+    "subject": "Matematica",
+    "date": "2026-04-24",
+    "type": "notes"
+  },
+  {
+    "id": 2,
+    "title": "Circuiti elettrici",
+    "subject": "Fisica",
+    "date": "2026-04-21",
+    "type": "notes"
+  }
+]

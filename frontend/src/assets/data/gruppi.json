@@ -1,0 +1,55 @@
+[
+  {
+    "id": 101,
+    "name": "Fisica",
+    "lastActive": "2 min fa",
+    "lastMessage": "Luca: Ho caricato i grafici",
+    "icon": "magnet",
+    "themeColor": "orange",
+    "memberAvatars": [
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Anna",
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Marco"
+    ]
+  },
+  {
+    "id": 102,
+    "name": "Programmazione C",
+    "lastActive": "1 giorno fa",
+    "lastMessage": "Clara: A che punto siamo col progetto?",
+    "icon": "code-slash",
+    "themeColor": "blue",
+    "memberAvatars": [
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Clara",
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Davide",
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Elena"
+    ]
+  },
+  {
+    "id": 103,
+    "name": "Inglese B2",
+    "lastActive": "3 ore fa",
+    "lastMessage": "Teacher: Tomorrow no lesson",
+    "icon": "language",
+    "themeColor": "purple",
+    "memberAvatars": [
+      "https://api.dicebear.com/9.x/lorelei/svg?seed=Teacher"
+    ]
+  },
+
+  {
+    "id": 1,
+    "name": "Fisica",
+    "color": "#FFE4B5",
+    "lastActivity": "2 min fa",
+    "members": ["Anna", "Luca", "Marco", "Giulia"],
+    "description": "Ho caricato il compito 3 sul drive."
+  },
+  {
+    "id": 2,
+    "name": "Programmazione C",
+    "color": "#E0F2FF",
+    "lastActivity": "3 giorni fa",
+    "members": ["Paolo", "Clara", "Stefano"],
+    "description": "A che punto siamo con gli esercizi 5-8?"
+  }
+]

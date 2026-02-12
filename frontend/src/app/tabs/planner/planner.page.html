@@ -1,13 +1,109 @@
-<ion-header [translucent]="true">
+<ion-header translucent="true">
   <ion-toolbar>
-    <ion-title>planner</ion-title>
+    <ion-title>Planner</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon name="notifications-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear">
+        <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">planner</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content fullscreen>
+  <div class="planner-page">
+
+    <!-- STRISCIA GIORNI (più grossa, con numeri grandi) -->
+    <div class="week-strip">
+      <div
+        *ngFor="let d of weekDays"
+        class="day-pill"
+        [class.day-pill--active]="d.iso === selectedDateIso"
+        (click)="selectDay(d.iso)">
+        <span class="day-pill__dow">{{ d.shortLabel | slice:0:2 | uppercase }}</span>
+        <span class="day-pill__num">{{ d.dayNum }}</span>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="date-header">
+      <h2>
+        {{ (selectedDateIso + 'T00:00:00') | date:'EEEE, d MMM' : '' : 'it' }}
+      </h2>
+    </div>
+
+    <!-- LISTA EVENTI OGGI (card piene) -->
+    <section class="day-section">
+      <ion-list lines="none">
+        <ion-item
+          *ngFor="let e of eventsToday"
+          class="event-card"
+          button
+          detail
+          (click)="onEventClick(e)">
+
+          <div slot="start" class="event-timeline">
+            <span class="time-main">{{ e.startTime }}</span>
+            <span class="time-sub">{{ e.endTime }}</span>
+          </div>
+
+          <ion-label>
+            <div class="event-main-row">
+              <h3>{{ e.title }}</h3>
+              <ion-icon
+                *ngIf="e.type === 'exam'"
+                name="school-outline"
+                class="event-type exam">
+              </ion-icon>
+              <ion-icon
+                *ngIf="e.type === 'group'"
+                name="people-outline"
+                class="event-type group">
+              </ion-icon>
+            </div>
+            <p class="event-subject">
+              <ion-icon name="bookmark-outline"></ion-icon>
+              {{ e.subject }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </section>
+
+    <!-- SEZIONE GIORNO SUCCESSIVO (es. “Giovedì 25 Apr”) -->
+    <section class="day-section next-day" *ngIf="eventsNextDay.length">
+      <h3 class="day-title">
+        {{
+          (eventsNextDay[0].date + 'T00:00:00')
+          | date:'EEEE, d MMM' : '' : 'it'
+        }}
+      </h3>
+
+      <ion-list lines="none">
+        <ion-item *ngFor="let e of eventsNextDay" class="event-card small">
+          <div slot="start" class="event-timeline">
+            <span class="time-main">{{ e.startTime }}</span>
+          </div>
+          <ion-label>
+            <h3>{{ e.title }}</h3>
+            <p class="event-subject">
+              <ion-icon name="bookmark-outline"></ion-icon>
+              {{ e.subject }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </section>
+
+    <!-- BOTTONE FINALE TONDO -->
+    <div class="add-wrapper">
+      <ion-button expand="block" shape="round" class="add-btn" (click)="onAddActivity()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Aggiungi attività
+      </ion-button>
+    </div>
+
+  </div>
 </ion-content>
