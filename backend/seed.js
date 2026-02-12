@@ -1,6 +1,7 @@
-const Faculty = require('./src/models/Faculty');
-const Course = require('./src/models/Course');
-const sequelize = require('./src/config/db');
+require('dotenv').config();
+
+const { run } = require('./src/db/connection');
+const { initDb, nowIso } = require('./src/db/init');
 
 const coursesData = {
   'Architettura': [
@@ -44,7 +45,7 @@ const coursesData = {
   'Scienze Agrarie, Alimentari e Forestali': [
     'Agroingegneria', 'Scienze e Tecnologie Agrarie', 'Scienze Forestali ed Ambientali',
     'Scienze Gastronimiche', 'Sistemi Agricoli Mediterranei', 'Viticoltura ed Enologia',
-    'Agricoltura di Precisione', 'Imprenditorialita e Qualita per il Sistema Agroalimentare',
+    'Imprenditorialita e Qualita per il Sistema Agroalimentare',
     'Mediterranean Food Science and Technology', 'Scienze delle Produzioni e delle Tecnologie Agrarie',
     'Scienze e tecnologie Agroingegneristiche e Forestali', 'Scienze e Tecnologie per la Difesa e la Conservazione del Suolo',
     'Medicina Veterinaria'
@@ -85,25 +86,39 @@ const coursesData = {
 
 async function seed() {
   try {
-    await sequelize.sync({ force: true });
-    console.log('--- Database pulito e pronto per il popolamento ---');
+    // qui creo tabelle se mancano, così seed non esplode su db vuoto
+    await initDb();
 
-    for (const facultyName in coursesData) {
-      const faculty = await Faculty.create({ name: facultyName });
-      console.log(`Creata facoltà: ${faculty.name}`);
+    // qui pulisco solo le tabelle facoltà/corsi, senza toccare Users
+    // se vuoi resettare tutto, lo faccio ma preferisco non distruggere utenti per sbaglio
+    console.log('pulizia tabelle Faculties e Courses...');
+    await run('delete from Courses');
+    await run('delete from Faculties');
 
-      const coursesToCreate = coursesData[facultyName].map(courseName => ({
-        name: courseName,
-        facultyId: faculty.id 
-      }));
+    const now = nowIso();
 
-      await Course.bulkCreate(coursesToCreate);
-      console.log(`  -> Inseriti ${coursesToCreate.length} corsi per ${facultyName}`);
+    for (const facultyName of Object.keys(coursesData)) {
+      const outFaculty = await run(
+        `insert into Faculties (name, createdAt, updatedAt) values (?, ?, ?)`,
+        [facultyName, now, now]
+      );
+
+      const facultyId = outFaculty.lastID;
+      console.log(`creata facoltà: ${facultyName}`);
+
+      for (const courseName of coursesData[facultyName]) {
+        await run(
+          `insert into Courses (name, facultyId, createdAt, updatedAt) values (?, ?, ?, ?)`,
+          [courseName, facultyId, now, now]
+        );
+      }
+
+      console.log(`  -> inseriti ${coursesData[facultyName].length} corsi per ${facultyName}`);
     }
 
-    console.log('--- SEED COMPLETATO CON SUCCESSO ---');
+    console.log('seed completato con successo');
   } catch (error) {
-    console.error('ERRORE DURANTE IL SEED:', error);
+    console.error('errore durante il seed:', error);
   } finally {
     process.exit();
   }
