@@ -13,6 +13,7 @@ app.get('/', (req, res) => {
     res.send('StudyBuddy API is running :)');
 });
 
+// --- NUOVA ROTTA PER LE FACOLTÀ ---
 app.get('/faculties', async (req, res) => {
     try {
         // Interroga il database
