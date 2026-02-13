@@ -1,7 +1,14 @@
-const router = require('express').Router();
-const auth = require('../controllers/auth.controller');
+const express = require('express');
 
-router.post('/register', auth.register);
-router.post('/login', auth.login);
+const authController = require('../controllers/auth.controller');
+const auth = require('../middleware/auth');
+
+const router = express.Router();
+
+// qui espongo le api auth che usa il frontend
+router.get('/faculties', authController.faculties);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.get('/me', auth, authController.me);
 
 module.exports = router;

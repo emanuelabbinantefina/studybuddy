@@ -1,15 +1,6 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 
-const ALLOWED_TYPES = new Set(['exam', 'study', 'event']);
-
-function normalizeIso(input) {
-  if (!input) return null;
-  const d = new Date(input);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
 function badRequest(msg) {
   const err = new Error(msg);
   err.code = 'BAD_REQUEST';
@@ -17,171 +8,150 @@ function badRequest(msg) {
 }
 
 async function createEvent(userId, body) {
-  const title = (body.title || '').trim();
-  const subject = (body.subject || '').trim();
-  const typeRaw = (body.type || 'event').trim();
-  const type = ALLOWED_TYPES.has(typeRaw) ? typeRaw : 'event';
+  const { title, type, subject, startAt, endAt, location, notes } = body;
 
-  const startAt = normalizeIso(body.startAt);
-  const endAt = body.endAt ? normalizeIso(body.endAt) : null;
-
-  const location = body.location ? String(body.location).trim() : null;
-  const notes = body.notes ? String(body.notes).trim() : null;
-
-  if (!title) throw badRequest('title obbligatorio');
-  if (!startAt) throw badRequest('startAt non valido o mancante');
-  if (endAt && endAt < startAt) throw badRequest('endAt non può essere prima di startAt');
+  if (!title || !type || !startAt) {
+    throw badRequest('title, type e startAt sono obbligatori');
+  }
 
   const now = nowIso();
 
   const out = await run(
-    `insert into Events (userId, title, type, subject, startAt, endAt, location, notes, createdAt, updatedAt)
+    `insert into Events
+     (userId, title, type, subject, startAt, endAt, location, notes, createdAt, updatedAt)
      values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, title, type, subject || null, startAt, endAt, location, notes, now, now]
+    [
+      userId,
+      String(title).trim(),
+      String(type).trim(),
+      subject ? String(subject).trim() : null,
+      String(startAt).trim(),
+      endAt ? String(endAt).trim() : null,
+      location ? String(location).trim() : null,
+      notes ? String(notes).trim() : null,
+      now,
+      now
+    ]
   );
 
-  const created = await get(
-    `select id, userId, title, type, subject, startAt, endAt, location, notes, createdAt, updatedAt
-     from Events
-     where id = ?`,
-    [out.lastID]
-  );
-
-  return created;
+  return { id: out.lastID };
 }
 
-async function getUpcoming(userId, limit) {
-  const lim = Number.isFinite(limit) && limit > 0 ? Math.min(limit, 50) : 5;
-  const now = nowIso();
-
-  // qui considero upcoming tutto quello che non è ancora finito
-  return all(
-    `select id, title, type, subject, startAt, endAt, location
+async function getByIdForUser(userId, eventId) {
+  return get(
+    `select *
      from Events
-     where userId = ?
-       and (
-         (endAt is null and startAt >= ?)
-         or (endAt is not null and endAt >= ?)
-       )
-     order by startAt asc
-     limit ?`,
-    [userId, now, now, lim]
-  );
-}
-
-async function getList(userId, from, to) {
-  const fromIso = from ? normalizeIso(from) : null;
-  const toIso = to ? normalizeIso(to) : null;
-
-  if ((from && !fromIso) || (to && !toIso)) throw badRequest('from/to non validi');
-
-  if (fromIso && toIso) {
-    return all(
-      `select id, title, type, subject, startAt, endAt, location, notes
-       from Events
-       where userId = ?
-         and startAt >= ?
-         and startAt <= ?
-       order by startAt asc`,
-      [userId, fromIso, toIso]
-    );
-  }
-
-  if (fromIso && !toIso) {
-    return all(
-      `select id, title, type, subject, startAt, endAt, location, notes
-       from Events
-       where userId = ?
-         and startAt >= ?
-       order by startAt asc`,
-      [userId, fromIso]
-    );
-  }
-
-  if (!fromIso && toIso) {
-    return all(
-      `select id, title, type, subject, startAt, endAt, location, notes
-       from Events
-       where userId = ?
-         and startAt <= ?
-       order by startAt asc`,
-      [userId, toIso]
-    );
-  }
-
-  // qui torno qualcosa anche senza range (utile in debug)
-  return all(
-    `select id, title, type, subject, startAt, endAt, location
-     from Events
-     where userId = ?
-     order by startAt desc
-     limit 100`,
-    [userId]
-  );
-}
-
-async function updateEvent(userId, eventId, body) {
-  if (!Number.isFinite(eventId) || eventId <= 0) throw badRequest('id non valido');
-
-  const existing = await get(
-    `select id from Events where id = ? and userId = ?`,
+     where id = ? and userId = ?`,
     [eventId, userId]
   );
-  if (!existing) return false;
+}
 
-  const title = body.title !== undefined ? String(body.title).trim() : undefined;
-  const subject = body.subject !== undefined ? String(body.subject).trim() : undefined;
-  const typeRaw = body.type !== undefined ? String(body.type).trim() : undefined;
-  const type = typeRaw !== undefined ? (ALLOWED_TYPES.has(typeRaw) ? typeRaw : null) : undefined;
+async function upcoming(userId, limit = 10) {
+  const lim = Number(limit) > 0 ? Number(limit) : 10;
+  const now = nowIso();
 
-  const startAt = body.startAt !== undefined ? normalizeIso(body.startAt) : undefined;
-  const endAt = body.endAt !== undefined ? (body.endAt ? normalizeIso(body.endAt) : null) : undefined;
+  // prendo quelli che devono ancora iniziare (per home "prossimi impegni")
+  return all(
+    `select *
+     from Events
+     where userId = ?
+       and startAt >= ?
+     order by startAt asc
+     limit ?`,
+    [userId, now, lim]
+  );
+}
 
-  const location = body.location !== undefined ? (body.location ? String(body.location).trim() : null) : undefined;
-  const notes = body.notes !== undefined ? (body.notes ? String(body.notes).trim() : null) : undefined;
+async function list(userId, query) {
+  const { from, to, type, q, limit, offset } = query;
 
-  if (title !== undefined && !title) throw badRequest('title non può essere vuoto');
-  if (type !== undefined && type === null) throw badRequest('type non valido');
-  if (startAt !== undefined && !startAt) throw badRequest('startAt non valido');
-  if (endAt !== undefined && endAt && !endAt) throw badRequest('endAt non valido');
+  const params = [userId];
+  const where = [`userId = ?`];
+
+  if (from) {
+    where.push(`startAt >= ?`);
+    params.push(String(from));
+  }
+
+  if (to) {
+    where.push(`startAt <= ?`);
+    params.push(String(to));
+  }
+
+  if (type) {
+    where.push(`type = ?`);
+    params.push(String(type));
+  }
+
+  if (q) {
+    // ricerca base su titolo e materia
+    where.push(`(title like ? or subject like ?)`);
+    params.push(`%${q}%`, `%${q}%`);
+  }
+
+  const lim = Number(limit) > 0 ? Number(limit) : 50;
+  const off = Number(offset) >= 0 ? Number(offset) : 0;
+
+  params.push(lim, off);
+
+  return all(
+    `select *
+     from Events
+     where ${where.join(' and ')}
+     order by startAt asc
+     limit ?
+     offset ?`,
+    params
+  );
+}
+
+async function update(userId, eventId, patch) {
+  const current = await getByIdForUser(userId, eventId);
+  if (!current) return null;
+
+  const next = {
+    title: patch.title !== undefined ? patch.title : current.title,
+    type: patch.type !== undefined ? patch.type : current.type,
+    subject: patch.subject !== undefined ? patch.subject : current.subject,
+    startAt: patch.startAt !== undefined ? patch.startAt : current.startAt,
+    endAt: patch.endAt !== undefined ? patch.endAt : current.endAt,
+    location: patch.location !== undefined ? patch.location : current.location,
+    notes: patch.notes !== undefined ? patch.notes : current.notes
+  };
+
+  if (!next.title || !next.type || !next.startAt) {
+    throw badRequest('title, type e startAt non possono essere vuoti');
+  }
 
   const now = nowIso();
 
-  // qui aggiorno tutto in modo semplice (non faccio patch “parziale” sofisticata)
   await run(
     `update Events
-     set title = coalesce(?, title),
-         type = coalesce(?, type),
-         subject = ?,
-         startAt = coalesce(?, startAt),
-         endAt = ?,
-         location = ?,
-         notes = ?,
-         updatedAt = ?
+     set title = ?, type = ?, subject = ?, startAt = ?, endAt = ?, location = ?, notes = ?, updatedAt = ?
      where id = ? and userId = ?`,
     [
-      title !== undefined ? title : null,
-      type !== undefined ? type : null,
-      subject !== undefined ? (subject || null) : null,
-      startAt !== undefined ? startAt : null,
-      endAt !== undefined ? endAt : null,
-      location !== undefined ? location : null,
-      notes !== undefined ? notes : null,
+      String(next.title).trim(),
+      String(next.type).trim(),
+      next.subject ? String(next.subject).trim() : null,
+      String(next.startAt).trim(),
+      next.endAt ? String(next.endAt).trim() : null,
+      next.location ? String(next.location).trim() : null,
+      next.notes ? String(next.notes).trim() : null,
       now,
       eventId,
       userId
     ]
   );
 
+  return getByIdForUser(userId, eventId);
+}
+
+async function remove(userId, eventId) {
+  const current = await getByIdForUser(userId, eventId);
+  if (!current) return false;
+
+  await run(`delete from Events where id = ? and userId = ?`, [eventId, userId]);
   return true;
 }
 
-async function deleteEvent(userId, eventId) {
-  const out = await run(
-    `delete from Events where id = ? and userId = ?`,
-    [eventId, userId]
-  );
-  return out.changes > 0;
-}
-
-module.exports = { createEvent, getUpcoming, getList, updateEvent, deleteEvent };
+module.exports = { createEvent, upcoming, list, update, remove };
