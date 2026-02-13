@@ -1,23 +1,45 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const authService = require('../services/auth.service');
 
-exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+async function faculties(req, res) {
+  try {
+    // qui ritorno facoltà + corsi per popolare la registrazione
+    const out = await authService.facultiesWithCourses();
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
 
-  const hashed = await bcrypt.hash(password, 10);
-  await User.create({ name, email, password: hashed });
+async function register(req, res) {
+  try {
+    const out = await authService.register(req.body);
+    res.status(201).json({ message: 'utente registrato', userId: out.userId });
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
+    if (e.code === 'EMAIL_EXISTS') return res.status(409).json({ message: e.message });
+    res.status(500).json({ message: e.message });
+  }
+}
 
-  res.json({ message: 'User registered' });
-};
+async function login(req, res) {
+  try {
+    const out = await authService.login(req.body);
+    res.json(out);
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
+    if (e.code === 'BAD_CREDENTIALS') return res.status(401).json({ message: e.message });
+    res.status(500).json({ message: e.message });
+  }
+}
 
-exports.login = async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(404).json({ message: 'User not found' });
+async function me(req, res) {
+  try {
+    const user = await authService.me(req.userData.userId);
+    if (!user) return res.status(404).json({ message: 'utente non trovato' });
+    res.json(user);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
 
-  const ok = await bcrypt.compare(req.body.password, user.password);
-  if (!ok) return res.status(401).json({ message: 'Wrong password' });
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.json({ token });
-};
+module.exports = { faculties, register, login, me };

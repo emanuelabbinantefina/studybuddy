@@ -1,29 +1,46 @@
 const express = require('express');
 const cors = require('cors');
-// IMPORTANTE: Importiamo la funzione per fare query al database
-const { all } = require('./db/connection'); 
+
+const { initDb } = require('./db/init');
+
+const authRoutes = require('./routes/auth.routes');
+const eventsRoutes = require('./routes/events.routes');
+
+const authController = require('./controllers/auth.controller');
 
 const app = express();
 
+// abilito cors in dev
 app.use(cors());
-app.use(express.json());
 
-// Rotta di benvenuto
+// leggo json
+app.use(express.json({ limit: '10mb' }));
+
+// preparo il db
+initDb()
+  .then(() => console.log('db init ok'))
+  .catch(err => console.error('db init error:', err));
+
+// root
 app.get('/', (req, res) => {
-    res.send('StudyBuddy API is running :)');
+  res.send('StudyBuddy API is running :)');
 });
 
-// --- NUOVA ROTTA PER LE FACOLTÀ ---
-app.get('/faculties', async (req, res) => {
-    try {
-        // Interroga il database
-        const faculties = await all('SELECT * FROM Faculties');
-        // Manda la risposta al browser
-        res.json(faculties);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Errore nel database' });
-    }
+// health
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
+
+// monto le api vere
+app.use('/api/auth', authRoutes);
+app.use('/api/events', eventsRoutes);
+
+// tengo l’alias vecchio per vedere la lista faculties dal browser come prima
+app.get('/faculties', authController.faculties);
+
+// 404 pulito
+app.use((req, res) => {
+  res.status(404).send(`Cannot ${req.method} ${req.path}`);
 });
 
 module.exports = app;
