@@ -1,18 +1,17 @@
 <ion-content [fullscreen]="true">
+  
   <div class="auth-container">
 
     <div class="auth-card">
 
-      <!-- Header simile a "Bentornato" -->
       <div class="card-header">
         <h2>Il tuo Profilo</h2>
         <p>Completa i dati per iniziare</p>
       </div>
 
-      <!-- Sezione Avatar -->
       <div class="avatar-section">
         <div class="avatar-carousel">
-          <!-- Bottone Carica -->
+          
           <div class="avatar-item upload-btn" (click)="uploadPhoto()">
             <div class="icon-box">
               <ion-icon name="camera-outline"></ion-icon>
@@ -20,7 +19,6 @@
             <span>Carica</span>
           </div>
 
-          <!-- Lista Avatar (quelli che abbiamo scelto prima) -->
           <div class="avatar-item" *ngFor="let avatar of avatarOptions"
             [class.selected]="profileData.avatarUrl === avatar" (click)="selectAvatar(avatar)">
             <img [src]="avatar">
@@ -28,15 +26,12 @@
               <ion-icon name="checkmark-circle"></ion-icon>
             </div>
           </div>
+
         </div>
       </div>
 
-      <!-- Divisore simile a quello del Login -->
-      <div class="divider">
-        <span>Informazioni</span>
-      </div>
+      <div class="divider"><span>Informazioni</span></div>
 
-      <!-- Input identici al Login -->
       <div class="input-group">
         <div class="custom-input">
           <ion-icon name="person-outline"></ion-icon>
@@ -45,19 +40,14 @@
 
         <div class="custom-input textarea-input">
           <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-
-          <ion-textarea [(ngModel)]="profileData.bio" autoGrow="true" rows="1"
-            placeholder="Scrivi una breve bio...">
-          </ion-textarea>
+          <ion-textarea [(ngModel)]="profileData.bio" autoGrow="true" rows="1" placeholder="Scrivi una breve bio..."></ion-textarea>
         </div>
       </div>
 
       <div class="action-area">
-        <button class="btn-login-style" (click)="saveProfile()">
-          COMPLETA
-        </button>
+        <button class="btn-login-style" (click)="saveProfile()">COMPLETA</button>
       </div>
 
-    </div>
-  </div>
+    </div> </div> <input type="file" accept="image/*" #fileInput (change)="onFileSelected($event)" style="display: none;">
+
 </ion-content>

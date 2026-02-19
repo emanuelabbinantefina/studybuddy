@@ -1,13 +1,10 @@
-$google-red: #DB4437;
-$fb-blue: #1877F2;
-
 :host {
   display: block;
   height: 100%;
 }
 
 ion-content {
-  --background: none; 
+  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
 }
 
 .background-container {
@@ -16,41 +13,24 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.35);
-  }
+  min-height: 100dvh !important;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  background: #ffffff;
   width: 320px;
-  border-radius: 40px;
+  border-radius: 28px;
   padding: 25px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  max-height: 90vh; 
-  overflow-y: auto; 
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .title {
   font-size: 28px;
-  font-weight: bold;
   text-align: center;
-  color: black;
   margin-top: 0;
   margin-bottom: 20px;
 }
@@ -59,7 +39,7 @@ ion-content {
   display: flex;
   align-items: center;
   background-color: #f7f7f7;
-  border-radius: 12px;
+  border-radius: 16px;
   margin-bottom: 15px;
   padding: 0 15px;
   min-height: 50px;
@@ -68,18 +48,18 @@ ion-content {
     color: gray;
     font-size: 20px;
     margin-right: 10px;
-    min-width: 20px; 
+    min-width: 20px;
     display: flex;
     align-items: center;
   }
 
   ion-input, ion-select {
     flex: 1;
-    width: 100%; 
+    width: 100%;
     --padding-start: 0;
     --placeholder-color: gray;
     --color: black;
-    font-size: 16px; 
+    font-size: 16px;
   }
 
   ion-select {
@@ -95,12 +75,12 @@ ion-content {
 }
 
 .main-btn {
-  --background: rgb(4, 55, 126);
-  --border-radius: 12px;
+  --background: #ff6b35;
+  --border-radius: 999px;
   margin-top: 20px;
   height: 50px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   --box-shadow: none;
 }
 
@@ -115,8 +95,8 @@ ion-content {
   }
 
   .link-red {
-    color: rgb(4, 55, 126);
-    font-weight: bold;
+    color: #ff6b35;
+    font-weight: 500;
     margin-left: 5px;
     cursor: pointer;
   }

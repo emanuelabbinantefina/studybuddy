@@ -1,83 +1,54 @@
-<ion-header translucent="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Gruppi</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="search-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <div class="header-title-container">
+      <ion-icon name="people-outline" class="header-icon"></ion-icon>
+      <h1 class="page-title">Gruppi</h1>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen>
-  <div class="groups-page">
-
-    <!-- toggle in alto tipo pill -->
-    <div class="toggle-bar">
-      <button
-        class="toggle-btn"
-        [class.toggle-btn--active]="segment === 'my'"
-        (click)="segment = 'my'">
-        I miei gruppi
-      </button>
-      <button
-        class="toggle-btn"
-        [class.toggle-btn--active]="segment === 'discover'"
-        (click)="segment = 'discover'">
-        Cerca gruppi
-      </button>
+<ion-content class="bg-light">
+  
+  <div class="main-wrapper">
+    
+    <div class="search-container">
+      <input type="text" class="custom-input" placeholder="Cerca tra i tuoi gruppi...">
+      <div class="search-action-btn">
+        <ion-icon name="search"></ion-icon>
+      </div>
     </div>
 
-    <!-- SEZIONE I MIEI GRUPPI -->
-    <section *ngIf="segment === 'my'">
-      <h3 class="section-title">I miei gruppi</h3>
-
-      <div
-        *ngFor="let g of groups"
-        class="group-card"
-        [style.background]="g.color">
-        <div class="group-card__header">
-          <h2>{{ g.name }}</h2>
-          <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+    <div class="cards-list">
+      
+      <div *ngFor="let g of gruppi" class="custom-card" (click)="onGroupClick(g)">
+        
+        <div class="icon-box" [ngClass]="g.colorClass">
+          <span class="char">{{ g.nome.charAt(0) }}</span>
         </div>
 
-        <p class="group-card__last">
-          <strong>{{ g.members[0] }}</strong> · {{ g.description }}
-        </p>
-
-        <div class="group-card__footer">
-          <div class="avatars">
-            <div *ngFor="let m of g.members | slice:0:4" class="avatar-chip">
-              {{ m[0] }}
-            </div>
+        <div class="card-info">
+          <div class="info-header">
+            <h4>{{ g.nome }}</h4>
+            <span class="time-text">{{ g.tempoTrascorso }}</span>
           </div>
-          <span class="time">{{ g.lastActivity }}</span>
+          
+          <div class="info-footer">
+            <p>
+              <span class="sender-bold">{{ g.autoreMessaggio }}: </span>
+              {{ g.ultimoMessaggio }}
+            </p>
+          </div>
         </div>
+
       </div>
 
-      <div class="create-wrap">
-        <ion-button expand="block" shape="round" class="create-btn" (click)="onCreateGroup()">
-          Crea gruppo
-        </ion-button>
-      </div>
-    </section>
-
-    <!-- SEZIONE CERCA GRUPPI -->
-    <section *ngIf="segment === 'discover'">
-      <ion-searchbar placeholder="Cerca gruppi per corso, materia..."></ion-searchbar>
-
-      <h3 class="section-title">Suggeriti per te</h3>
-      <ion-list lines="none">
-        <ion-item *ngFor="let g of groups" class="group-suggest">
-          <ion-label>
-            <h2>{{ g.name }}</h2>
-            <p>{{ g.description }}</p>
-          </ion-label>
-          <ion-button size="small" shape="round" fill="outline">
-            unisciti
-          </ion-button>
-        </ion-item>
-      </ion-list>
-    </section>
+    </div>
   </div>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-elevated">
+    <ion-fab-button (click)="onCreateGroup()" class="fab-btn">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

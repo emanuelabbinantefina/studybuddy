@@ -1,12 +1,13 @@
 {
   "id": 1,
   "nome": "Emanuela",
-  "cognome": "Rossi",
   "email": "emanuela@studenti.it",
   "matricola": "654321",
-  "avatar": "https://api.dicebear.com/9.x/lorelei/svg?seed=Emanuela",
+  "avatar":"https://api.dicebear.com/9.x/adventurer/svg?seed=Daisy",
   "facolta": "Ingegneria Informatica",
   "media": 27.8,
   "cfu": 142,
-  "esamiTotali": 12
+  "esamiTotali": 12,
+  "gruppi": 4,
+  "appunti": 10
 }

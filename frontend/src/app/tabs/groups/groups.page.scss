@@ -1,108 +1,146 @@
-.groups-page {
-  padding: 12px 16px 24px;
-  background: #edf3ff;
+:host {
+  display: block;
+  background-color: #F8FAFC;
 }
 
-/* toggle superiore */
-.toggle-bar {
-  display: flex;
-  background: #e5e7f5;
-  border-radius: 999px;
-  padding: 3px;
-  margin-bottom: 14px;
+.bg-light {
+  --background: #F8FAFC;
+}
+ion-content {
+  --background: #F8FAFC; 
 }
 
-.toggle-btn {
-  flex: 1;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  padding: 6px 0;
-  font-size: 0.8rem;
-  color: #6b7280;
+ion-content::part(background) {
+  background-image: url('/assets/images/sfondo.jpg'); 
+  background-repeat: repeat;
+  background-size: 400px; 
+  background-position: center;
+  opacity: 0.5; 
 }
 
-.toggle-btn--active {
-  background: #ffffff;
-  color: #111827;
-  font-weight: 600;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.10);
+ion-toolbar {
+  --background: #F8FAFC;
+  --min-height: 60px;
+  padding: 0 16px;
 }
 
-.section-title {
-  margin: 6px 0 10px;
-  font-weight: 600;
-}
-
-/* CARD COLORATE */
-.group-card {
-  border-radius: 18px;
-  padding: 12px 14px 10px;
-  margin-bottom: 10px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h2 {
-      margin: 0;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-  }
-
-  &__last {
-    margin: 6px 0 8px;
-    font-size: 0.8rem;
-    color: #374151;
-  }
-
-  &__footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-.avatars {
-  display: flex;
-}
-
-.avatar-chip {
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
+.header-title-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-right: -6px;
+  gap: 8px;
+  height: 100%;
+  padding-top: 12px;
 }
 
-.time {
-  font-size: 0.7rem;
-  color: #4b5563;
+.header-icon {
+  font-size: 24px;
+  color: #2563EB;
+  stroke-width: 4px;
 }
 
-/* bottone grande arancione */
-.create-wrap {
-  margin-top: 16px;
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+  letter-spacing: -0.5px;
 }
 
-.create-btn {
-  --background: #ff7a45;
-  --background-activated: #f9733b;
-  font-weight: 600;
+.main-wrapper {
+  padding: 10px 20px 80px; /* Padding extra in fondo per non coprire l'ultimo gruppo */
 }
 
-/* suggerimenti nella tab "Cerca gruppi" */
-.group-suggest {
-  --background: #ffffff;
-  margin-bottom: 8px;
+/* SEARCH BAR */
+.search-container {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  padding: 4px 6px 4px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+  border: 1px solid #F1F5F9;
+}
+
+.custom-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: #1E293B;
+  &::placeholder { color: #94A3B8; font-weight: 400; }
+}
+
+.search-action-btn {
+  width: 40px; height: 40px;
+  background: #2563EB;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+/* CARD GRUPPI */
+.cards-list {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.custom-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 16px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  border: 1px solid #F1F5F9;
+  transition: transform 0.2s;
+  &:active { transform: scale(0.98); }
+}
+
+.icon-box {
+  width: 50px; height: 50px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.2rem; font-weight: 700;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  
+  &.bg-orange { background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%); }
+  &.bg-blue   { background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%); }
+  &.bg-green  { background: linear-gradient(135deg, #34d399 0%, #10b981 100%); }
+}
+
+.card-info {
+  flex: 1; min-width: 0; 
+  .info-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;
+    h4 { margin: 0; font-size: 1rem; font-weight: 700; color: #1E293B; }
+    .time-text { font-size: 0.75rem; color: #94A3B8; font-weight: 500; }
+  }
+  .info-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    p {
+      margin: 0; font-size: 0.85rem; color: #64748B;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;
+    }
+    .sender-bold { font-weight: 600; color: #1E293B; }
+    .unread-badge {
+      background: #EF4444; color: white; font-size: 0.7rem; font-weight: 700;
+      min-width: 20px; height: 20px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; padding: 0 6px;
+    }
+  }
+}
+
+/* FAB BUTTON (Modificato per alzarsi) */
+.fab-btn {
+  --background: #FB923C;
+  --color: white;
+  --box-shadow: 0 4px 12px #EA580C;
+}
+
+/* IMPORTANTE: Questo alza il bottone sopra la tab bar */
+.fab-elevated {
+  margin-bottom: 70px; /* Alza il bottone di 70px */
+  margin-right: 5px;
 }

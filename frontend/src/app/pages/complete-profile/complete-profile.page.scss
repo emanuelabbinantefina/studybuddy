@@ -3,21 +3,22 @@ ion-content {
 }
 
 .auth-container {
-  min-height: 100%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
+  background: #ffffff;
   width: 100%;
   max-width: 350px;
-  border-radius: 30px;
+  border-radius: 28px;
   padding: 30px 25px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -25,81 +26,91 @@ ion-content {
 
 .card-header {
   text-align: center;
-  
+
   h2 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #1a1a1a;
+    font-size: 28px;
     margin: 0 0 5px 0;
   }
+
   p {
-    color: #7d8998;
-    font-size: 0.95rem;
+    color: #64748b;
+    font-size: 15px;
     margin: 0;
   }
 }
 
 .avatar-section {
   width: 100%;
+
+.avatar-carousel {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding: 10px 5px; /* Un po' di padding per non tagliare le ombre */
   
-  .avatar-carousel {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 5px;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
-    .avatar-item {
-      flex: 0 0 auto;
-      width: 60px;
-      height: 60px;
-      position: relative;
-      cursor: pointer;
-      border-radius: 12px;
-      transition: transform 0.2s;
+  .avatar-item {
+    /* Stile base per tutti i cerchi */
+    width: 70px;
+    height: 70px;
+    min-width: 70px; /* Fondamentale: impedisce che si schiacci */
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
 
-      img {
-        width: 100%;
-        height: 100%;
-        border-radius: 12px;
-        background: #fff;
-        padding: 2px;
+    &.upload-btn {
+      background: #f1f5f9; /* Grigio chiarissimo */
+      border: 2px dashed #cbd5e1; /* Bordo tratteggiato moderno */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: none; /* Niente ombra pesante per il bottone */
+
+      .icon-box ion-icon {
+        font-size: 24px;
+        color: #64748b; /* Grigio icona */
       }
 
-      &.upload-btn {
-        background: #fff;
-        border: 2px dashed #cbd5e0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        
-        .icon-box { font-size: 20px; color: #547ca8; }
-        span { font-size: 9px; color: #7d8998; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+      span {
+        font-size: 10px;
+        font-weight: 600;
+        color: #64748b;
+        margin-top: 2px;
       }
+    }
 
-      &.selected {
-        transform: translateY(-3px);
-        img { border: 2px solid #092C66; } 
-      }
+    &.selected {
+      transform: scale(1.1);
+      border: 3px solid var(--ion-color-primary); /* O il tuo colore blu */
       
-      .check-indicator {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        color: #092C66;
-        font-size: 20px;
-        background: white;
-        border-radius: 50%;
-        height: 18px;
-        width: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      img {
+        border: 2px solid white; /* Doppio bordo carino */
       }
     }
   }
+}
+}
+
+.check-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 9999;
+  font-size: 24px;
+  color: #ff6b35 !important;
 }
 
 .divider {
@@ -108,37 +119,41 @@ ion-content {
   text-align: center;
   color: #a0aec0;
   font-size: 0.8rem;
-  
-  &::before, &::after {
+
+  &::before,
+  &::after {
     content: '';
     flex: 1;
     border-bottom: 1px solid #cbd5e0;
   }
-  span { padding: 0 10px; }
+
+  span {
+    padding: 0 10px;
+  }
 }
 
-/* --- Input Fields (Stile Login Esatto) --- */
 .input-group {
   display: flex;
   flex-direction: column;
   gap: 15px;
 
   .custom-input {
-    background: #ffffff;
-    border-radius: 12px;
+    background: #f7f7f7;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     padding: 0 15px;
-    height: 55px; /* Altezza come nel login */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    height: 55px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 
     ion-icon {
-      color: #9aa5b1; /* Icona grigia */
+      color: #9aa5b1;
       font-size: 22px;
       margin-right: 12px;
     }
 
-    input, textarea {
+    input,
+    textarea {
       width: 100%;
       border: none;
       background: transparent;
@@ -146,55 +161,56 @@ ion-content {
       font-size: 1rem;
       color: #333;
       font-family: inherit;
-      &::placeholder { color: #a0aec0; }
+
+      &::placeholder {
+        color: #a0aec0;
+      }
     }
   }
 
   .textarea-input {
-  display: flex;
-  align-items: flex-start;
-  padding: 14px 15px;
-  height: auto;
-  min-height: 55px;
-  
-  ion-icon {
-    margin-top: 3px;
-    font-size: 20px;       
-    color: #9aa5b1;
-    margin-right: 12px;
-  }
+    display: flex;
+    align-items: flex-start;
+    padding: 14px 15px;
+    height: auto;
+    min-height: 55px;
 
-  ion-textarea {
-    margin: 0 !important;
-    padding: 0 !important;
-    --padding-top: 0;
-    --padding-bottom: 0;
-    --padding-start: 0;
-    --padding-end: 0;
-    line-height: 1.4;      
-    font-size: 1rem;
-    --placeholder-color: #a0aec0;
-    --placeholder-opacity: 1;
-    color: #333;
+    ion-icon {
+      margin-top: 3px;
+      font-size: 20px;
+      color: #9aa5b1;
+      margin-right: 12px;
+    }
+
+    ion-textarea {
+      margin: 0 !important;
+      padding: 0 !important;
+      --padding-top: 0;
+      --padding-bottom: 0;
+      --padding-start: 0;
+      --padding-end: 0;
+      line-height: 1.4;
+      font-size: 1rem;
+      --placeholder-color: #a0aec0;
+      --placeholder-opacity: 1;
+      color: #333;
+    }
   }
-}
 }
 
 .action-area {
   margin-top: 10px;
-  
+
   .btn-login-style {
     width: 100%;
-    background: #092C66; /* Blu Navy Scuro */
+    background: #ff6b35;
     color: white;
-    font-weight: 800; /* Molto grassetto */
+    font-weight: 600;
     font-size: 1.1rem;
-    text-transform: uppercase;
     padding: 18px;
-    border-radius: 12px;
+    border-radius: 999px;
     border: none;
-    box-shadow: 0 5px 15px rgba(9, 44, 102, 0.3);
-    
+
     &:active {
       transform: scale(0.98);
       opacity: 0.9;

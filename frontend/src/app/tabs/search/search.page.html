@@ -1,90 +1,75 @@
-<ion-header translucent="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Cerca</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="person-add-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <div class="header-title-container">
+      <ion-icon name="search-outline" class="header-icon"></ion-icon>
+      <span class="page-title">Cerca</span>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen>
-  <div class="search-wrapper">
+<ion-content [fullscreen]="true" class="bg-light">
+  <div class="main-wrapper">
 
-    <div class="chip-row">
-      <button
-        class="chip"
-        [class.chip--active]="tab === 'notes'"
-        (click)="changeTab('notes')">
-        Appunti
-      </button>
-      <button
-        class="chip"
-        [class.chip--active]="tab === 'groups'"
-        (click)="changeTab('groups')">
-        Gruppi
-      </button>
-      <button
-        class="chip"
-        [class.chip--active]="tab === 'exams'"
-        (click)="changeTab('exams')">
-        Esami
-      </button>
+    <div class="tabs-row">
+      <button class="tab-btn" [class.active]="tab === 'notes'" (click)="changeTab('notes')">Appunti</button>
+      <button class="tab-btn" [class.active]="tab === 'groups'" (click)="changeTab('groups')">Gruppi</button>
+      <button class="tab-btn" [class.active]="tab === 'exams'" (click)="changeTab('exams')">Esami</button>
     </div>
 
-    <ion-searchbar
-      placeholder="Cerca appunti, gruppi, esami..."
-      (ionChange)="onSearchChange($event)">
-    </ion-searchbar>
+    <div class="search-container">
+      <input type="text" class="custom-input" placeholder="Cerca..." [(ngModel)]="query" (input)="onSearchChange($event)">
+      <div class="search-action-btn">
+        <ion-icon name="search-outline"></ion-icon>
+      </div>
+    </div>
 
-    <!-- APPUNTI -->
-    <section *ngIf="tab === 'notes'">
-      <h3 class="section-title">Appunti consigliati</h3>
-      <ion-list lines="none">
-        <ion-item *ngFor="let n of filteredNotes" class="note-card">
-          <div class="note-icon">
-            <ion-icon name="document-text-outline"></ion-icon>
+    <div *ngIf="tab === 'notes'" class="fade-in">
+      <div class="cards-list">
+        <div class="custom-card" *ngFor="let n of filteredNotes">
+          <div class="icon-box" [ngClass]="getIconColor(n.tipoFile)">
+            <ion-icon name="document-text"></ion-icon>
           </div>
-          <ion-label>
-            <h2>{{ n.title }}</h2>
-            <p class="note-subject">{{ n.subject }} · 1 ora fa</p>
-          </ion-label>
-          <ion-icon name="albums-outline" slot="end"></ion-icon>
-        </ion-item>
-      </ion-list>
-    </section>
-
-    <!-- GRUPPI -->
-    <section *ngIf="tab === 'groups'">
-      <h3 class="section-title">Gruppi suggeriti</h3>
-      <ion-list lines="none">
-        <ion-item *ngFor="let g of filteredGroups" class="group-suggest">
-          <ion-label>
-            <h2>{{ g.name }}</h2>
-            <p>{{ g.description }}</p>
-          </ion-label>
-          <ion-button size="small" shape="round" (click)="onJoinGroup(g)">
-            unisciti
-          </ion-button>
-        </ion-item>
-      </ion-list>
-    </section>
-
-    <!-- ESAMI -->
-    <section *ngIf="tab === 'exams'">
-      <h3 class="section-title">Esami in scadenza</h3>
-      <ion-list lines="none">
-        <ion-item *ngFor="let e of filteredNotes | slice:0:3" class="note-card">
-          <div class="note-icon exam">
-            <ion-icon name="school-outline"></ion-icon>
+          
+          <div class="card-info">
+            <h4>{{ n.titolo }}</h4>
+            <p>{{ n.materia }} <span class="dot">·</span> {{ n.tempoUpload }}</p>
           </div>
-          <ion-label>
-            <h2>{{ e.title }}</h2>
-            <p class="note-subject">{{ e.subject }} · {{ e.date }}</p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </section>
+          
+          <div class="doc-preview">
+            <div class="doc-lines"><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="tab === 'groups'" class="fade-in">
+      <div class="cards-list">
+        <div class="custom-card" *ngFor="let g of filteredGroups">
+          <div class="icon-box circle" [ngClass]="g.colorClass || 'bg-blue'">
+            <span class="char">{{ g.nome.charAt(0) }}</span>
+          </div>
+          <div class="card-info">
+            <h4>{{ g.nome }}</h4>
+            <p>{{ g.materia }}</p>
+          </div>
+          <button class="join-btn">Unisciti</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="tab === 'exams'" class="fade-in">
+      <div class="cards-list">
+        <div class="custom-card" *ngFor="let e of filteredExams">
+          <div class="icon-box red-pdf">
+            <ion-icon name="document-text"></ion-icon>
+          </div>
+          <div class="card-info">
+            <h4>{{ e.titolo }}</h4>
+            <p>{{ e.materia }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </ion-content>

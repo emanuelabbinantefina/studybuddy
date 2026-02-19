@@ -12,20 +12,5 @@
     "subtitle": "Fisica • 3 giorni fa",
     "icon": "flash",
     "iconColor": "yellow"
-  },
-
-  {
-    "id": 1,
-    "title": "Appunti Analisi 2",
-    "subject": "Matematica",
-    "date": "2026-04-24",
-    "type": "notes"
-  },
-  {
-    "id": 2,
-    "title": "Circuiti elettrici",
-    "subject": "Fisica",
-    "date": "2026-04-21",
-    "type": "notes"
   }
 ]

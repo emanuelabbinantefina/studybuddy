@@ -1,30 +1,38 @@
-:host {
-  display: block;
-  height: 100%;
+:root {
+  --sb-primary: #3B82F6;      // Blu del logo StudyBuddy
+  --sb-primary-dark: #2563EB;  // Blu più scuro per hover
+  --sb-accent: #FB923C;       // Arancione "Crea evento"
+  --sb-accent-dark: #F97316;  // Arancione hover
+  --sb-bg: #F8FAFC;           // Sfondo grigio chiaro
+  --sb-card-bg: #EFF6FF;      // Azzurro pastello box "Ciao!"
+  --sb-text: #1E293B;         // Testo scuro
+  --sb-text-light: #64748B;   // Testo secondario
+  --sb-border: #E2E8F0;       // Bordi
+  --sb-button-primary: #3B82F6;
+  --sb-button-primary-hover: #2563EB;
+  --sb-button-secondary: #FB923C;
+  --sb-button-secondary-hover: #F97316;
 }
 
 ion-content {
-  --background: none;
+  --padding-top: 0 !important;
+  --padding-bottom: 0 !important;
+  height: 100dvh !important;
 }
 
 .background-container {
-  width: 100%;
-  height: 100%;
+  min-height: 100dvh !important;
+}
+
+ion-content {
+  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
+}
+
+.background-container {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.35);
-  }
 }
 
 .card {
@@ -59,8 +67,6 @@ ion-content {
 }
 
 .social-container {
-  display: flex;
-  justify-content: center;
   margin-bottom: 0; /* Rimosso margine inferiore per gestire lo spazio col divider */
 }
 
@@ -169,7 +175,7 @@ ion-content {
 .custom-checkbox {
   width: 22px;
   height: 22px;
-  border: 2px solid rgb(0, 106, 255);
+  border: 2px solid #4B8AD1;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -185,7 +191,7 @@ ion-content {
   }
 
   &.checked {
-    background: rgb(4, 55, 126);
+    background: #4B8AD1;
 
     ion-icon {
       opacity: 1;
@@ -206,7 +212,7 @@ ion-content {
 }
 
 .main-btn {
-  --background: rgb(4, 55, 126);
+  --background: #FF8A65;
   --border-radius: 12px;
   margin-top: 20px;
   height: 50px;
@@ -226,7 +232,7 @@ ion-content {
   }
 
   .link-red {
-    color: rgb(4, 55, 126);
+    color: #4B8AD1;
     font-weight: bold;
     margin-left: 5px;
     cursor: pointer;

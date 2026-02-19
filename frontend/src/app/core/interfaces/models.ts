@@ -23,6 +23,20 @@ export interface Gruppo {
   autoreMessaggio: string;
   tempoTrascorso: string; 
   membriPreview: string[]; 
+  // Aggiungiamo questi per la gestione grafica nel frontend
+  colorClass?: string;
+  unread?: number;
+}
+
+// Questa serve per la pagina della Chat singola
+export interface Messaggio {
+  id: number;
+  testo: string;
+  autore: string;
+  orario: string;
+  tipo: 'testo' | 'file';
+  nomeFile?: string;
+  isMe: boolean; 
 }
 
 export interface Appunto {

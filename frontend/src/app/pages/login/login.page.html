@@ -1,9 +1,9 @@
 <ion-content [fullscreen]="true">
+
   <div class="background-container">
     <div class="card fade-in">
       <h1 class="title">Bentornato</h1>
       <p class="subtitle">Pronto a studiare?</p>
-
       <div class="social-container">
         <div class="social-btn university" (click)="handleUniversityLogin()">
           <img src="/assets/images/logo-uni.png" alt="Logo" class="uni-logo">
@@ -16,15 +16,14 @@
       <form (ngSubmit)="handleLogin()">
         <div class="input-container">
           <ion-icon name="mail-outline" class="input-icon"></ion-icon>
-          <ion-input type="email" inputmode="email" name="email" placeholder="Email"
-            [(ngModel)]="email" autocorrect="off" autocapitalize="off" required>
+          <ion-input type="email" inputmode="email" name="email" placeholder="Email" [(ngModel)]="email"
+            autocorrect="off" autocapitalize="off" required>
           </ion-input>
         </div>
 
         <div class="input-container">
           <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
-          <ion-input [type]="passwordType" name="password" placeholder="Password"
-            [(ngModel)]="password" required>
+          <ion-input [type]="passwordType" name="password" placeholder="Password" [(ngModel)]="password" required>
           </ion-input>
           <ion-icon [name]="passwordIcon" class="password-toggle" (click)="togglePasswordMode()"></ion-icon>
         </div>

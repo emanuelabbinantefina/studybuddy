@@ -1,0 +1,46 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" class="header-btn">ANNULLA</ion-button>
+    </ion-buttons>
+
+    <ion-title>Nuovo Gruppo</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="confirm()" [disabled]="!groupName" class="header-btn create-btn">CREA</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div style="max-width: 500px; margin: 0 auto;">
+    
+    <div class="preview-section">
+      <div class="icon-square" [ngClass]="selectedColorClass">
+        <span>{{ groupName ? groupName.charAt(0).toUpperCase() : '?' }}</span>
+        <div class="bookmark-tag"></div>
+      </div>
+      <p class="preview-label">ANTEPRIMA ICONA</p>
+    </div>
+
+    <div class="form-item">
+      <label>Nome del gruppo</label>
+      <div class="input-box">
+        <input type="text" [(ngModel)]="groupName" placeholder="Es. Analisi Matematica 2">
+      </div>
+    </div>
+
+    <div class="form-item">
+      <label>Scegli un colore</label>
+      <div class="color-row">
+        <div 
+          *ngFor="let c of colorOptions" 
+          class="color-picker-item" 
+          [ngClass]="[c.class, selectedColorClass === c.class ? 'active' : '']"
+          (click)="selectedColorClass = c.class">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

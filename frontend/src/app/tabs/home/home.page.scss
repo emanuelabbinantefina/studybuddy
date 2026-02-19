@@ -12,7 +12,7 @@
 .main-padding { padding: 0 20px; }
 
 .custom-header {
-  padding: 20px 20px 10px 20px;
+  padding: 20px 20px 25px 20px; // Aumentato padding inferiore
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -42,14 +42,27 @@
   box-shadow: var(--card-shadow);
 
   .hero-text {
-    flex: 1; z-index: 2;
+    flex: 1; 
+    z-index: 2;
+    padding-right: 10px;
     h2 { font-size: 1.4rem; font-weight: 800; color: #1E293B; margin: 0; }
     p { color: #64748B; margin: 5px 0 20px 0; font-size: 0.95rem; }
   }
 
   .hero-img {
-    position: absolute; right: -10px; bottom: -15px; width: 140px; z-index: 1;
-    img { width: 100%; }
+    position: absolute;
+    right: -40px;
+    bottom: -10px;
+    width: 210px;
+    z-index: 1;
+    pointer-events: none;
+    
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    }
   }
 }
 
@@ -58,7 +71,12 @@
   .section-header {
     display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;
     h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin: 0; }
-    .date-label, .link-label { font-size: 0.85rem; color: var(--text-grey); display: flex; align-items: center; }
+    
+    .date-label { 
+      font-size: 0.85rem; color: var(--text-grey); display: flex; align-items: center;
+      ion-icon { color: var(--primary-blue); margin-right: 5px; }
+    }
+    .link-label { font-size: 0.85rem; color: var(--text-grey); display: flex; align-items: center; }
   }
 }
 
@@ -78,13 +96,12 @@
     h4 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-dark); }
     .meta-row {
       display: flex; gap: 10px; margin-top: 5px; font-size: 0.85rem; color: var(--text-grey);
-      .subject { display: flex; align-items: center; gap: 5px; ion-icon{font-size:8px;} }
+      .subject { display: flex; align-items: center; gap: 5px; ion-icon{font-size:8px; color: currentColor;} }
     }
   }
   .participants img { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; margin-right: -8px; }
   .arrow-icon { color: #CBD5E1; }
 }
-
 .horizontal-scroll {
   display: flex; overflow-x: auto; gap: 15px; padding-bottom: 10px;
   margin: 0 -20px; padding: 0 20px 10px 20px;

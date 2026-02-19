@@ -1,29 +1,38 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UserService {
-  // BehaviorSubject tiene in memoria l'utente e avvisa tutte le pagine quando cambia
-  private userProfile = new BehaviorSubject<any>(this.getSavedProfile());
+  private userProfile = new BehaviorSubject<any>(null);
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
-  // Recupera i dati dal salvataggio locale del browser
-  private getSavedProfile() {
-    const saved = localStorage.getItem('user_profile');
-    return saved ? JSON.parse(saved) : null;
-  }
-
-  // Restituisce l'osservabile a cui le pagine (Profile, Home) si iscriveranno
   getProfile(): Observable<any> {
-    return this.userProfile.asObservable();
+    // Se abbiamo già i dati aggiornati in memoria, restituiamoli
+    if (this.userProfile.value) return this.userProfile.asObservable();
+
+    // 1. Prova a leggere dal browser
+    const saved = localStorage.getItem('user_profile');
+    
+    // 2. Carica sempre dal JSON per sicurezza durante lo sviluppo
+    return this.http.get('assets/data/user.json').pipe(
+      tap(data => {
+        // Se il file JSON è diverso dal salvataggio vecchio, vince il JSON
+        this.userProfile.next(data);
+      }),
+      catchError(() => of(null))
+    );
   }
 
-  // Funzione per salvare i nuovi dati
   updateProfile(newData: any) {
     localStorage.setItem('user_profile', JSON.stringify(newData));
-    this.userProfile.next(newData); // Notifica tutte le pagine del cambiamento
+    this.userProfile.next(newData);
+  }
+
+  logout() {
+    localStorage.removeItem('user_profile');
+    this.userProfile.next(null);
   }
 }

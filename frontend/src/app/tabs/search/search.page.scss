@@ -1,62 +1,308 @@
-.search-wrapper {
-  padding: 12px 16px 24px;
+/* --- SETUP GENERALE --- */
+.bg-light {
+  --background: #F8FAFC;
+}
+ion-content {
+  --background: #F8FAFC;
 }
 
-.chip-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+ion-content::part(background) {
+  background-image: url('/assets/images/sfondo.jpg');
+
+  background-repeat: repeat;
+  background-size: 400px;
+  background-position: center;
+  opacity: 0.5;
 }
 
-.chip {
-  flex: 0 0 auto;
-  border-radius: 999px;
-  padding: 6px 14px;
-  border: none;
-  background: #e5e7eb;
-  color: #4b5563;
-  font-size: 0.8rem;
+ion-toolbar {
+  --background: #F8FAFC;
+  --min-height: 60px;
+  padding: 0 16px;
 }
 
-.chip--active {
-  background: #2563eb;
-  color: #ffffff;
-}
-
-.section-title {
-  margin: 12px 0 8px;
-  font-weight: 600;
-}
-
-.note-card,
-.group-suggest {
-  margin-bottom: 8px;
-  border-radius: 14px;
-  --background: #ffffff;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
-}
-
-.placeholder {
-  margin-top: 16px;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-.note-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #fee2e2;
+.header-title-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-right: 10px;
+  gap: 8px;
+  height: 100%;
+  padding-top: 12px;
+}
 
-  &.exam {
-    background: #e0f2fe;
+.header-icon {
+  font-size: 24px;
+  color: #2563EB;
+  stroke-width: 4px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.main-wrapper {
+  padding: 10px 20px 80px;
+}
+
+/* --- TABS (CENTRATI) --- */
+.tabs-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  background: #E2E8F0;
+  color: #64748B;
+  border: none;
+  flex: 1;
+  text-align: center;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &.active {
+    background: #2563EB;
+    color: white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   }
 }
 
-.note-subject {
+/* --- SEARCH BAR --- */
+.search-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 28px;
+
+  .custom-input {
+    width: 100%;
+    height: 52px;
+    background: #FFFFFF;
+    border: 1px solid #F1F5F9;
+    border-radius: 14px;
+    padding: 0 55px 0 16px;
+    font-size: 0.95rem;
+    color: #1E293B;
+    outline: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    transition: border-color 0.2s;
+
+    &::placeholder {
+      color: #94A3B8;
+    }
+
+    &:focus {
+      border-color: #2563EB;
+    }
+  }
+
+  .search-action-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 40px;
+    height: 40px;
+    background: #2563EB;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+
+    ion-icon {
+      font-size: 20px;
+      color: white;
+    }
+  }
+}
+
+/* --- LISTE E CARD --- */
+.section-header {
+  margin-bottom: 14px;
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0;
+  }
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.custom-card {
+  background: white;
+  padding: 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #F1F5F9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+
+  .char {
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    z-index: 2;
+  }
+
+  .bookmark-overlay {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.3);
+    z-index: 1;
+  }
+
+  &.orange {
+    background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%);
+  }
+
+  &.yellow {
+    background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+  }
+
+  &.blue {
+    background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
+  }
+
+  &.circle {
+    border-radius: 50%;
+  }
+
+  &.red-pdf {
+    background: #FEE2E2;
+    color: #EF4444;
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+}
+
+.card-info {
+  flex: 1;
+
+  h4 {
+    margin: 0 0 2px 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1E293B;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+
+    .dot {
+      margin: 0 4px;
+      font-weight: bold;
+    }
+  }
+}
+
+.doc-preview {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 7px 5px;
+  gap: 3px;
+
+  .doc-lines span {
+    display: block;
+    height: 3px;
+    background: #CBD5E1;
+    border-radius: 2px;
+
+    &:first-child {
+      width: 100%;
+      background: #93C5FD;
+    }
+
+    &:last-child {
+      width: 60%;
+    }
+  }
+
+  .doc-menu {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 10px;
+    color: #94A3B8;
+    line-height: 1;
+    font-weight: 700;
+  }
+}
+
+.join-btn {
+  background: #10B981;
+  color: white;
+  border: none;
   font-size: 0.75rem;
-  color: #6b7280;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+
+/* --- ECCO IL BOTTONE DOWNLOAD --- */
+.download-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: 0.2s;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

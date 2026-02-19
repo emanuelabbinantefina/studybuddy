@@ -19,24 +19,5 @@
       "https://api.dicebear.com/9.x/avataaars/svg?seed=Aneka",
       "https://api.dicebear.com/9.x/avataaars/svg?seed=Dudley"
     ]
-  },
-  
-  {
-    "id": 1,
-    "title": "Esame Analisi 2",
-    "subject": "Matematica",
-    "date": "2026-04-24",
-    "startTime": "09:00",
-    "endTime": "11:00",
-    "type": "exam"
-  },
-  {
-    "id": 2,
-    "title": "Studio di gruppo - Sistemi",
-    "subject": "Sistemi",
-    "date": "2026-04-24",
-    "startTime": "15:00",
-    "endTime": "17:00",
-    "type": "group"
   }
 ]

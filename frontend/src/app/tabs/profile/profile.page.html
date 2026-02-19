@@ -1,98 +1,79 @@
-<ion-header translucent="true">
-  <ion-toolbar>
-    <ion-title>Profilo</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="settings-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content fullscreen *ngIf="user as u">
-  <div class="profile-wrapper">
-
-    <!-- intestazione con avatar -->
-    <section class="profile-header">
-      <div class="avatar">
-        <ion-avatar *ngIf="u.avatarUrl; else initials">
-          <img [src]="u.avatarUrl" alt="Avatar" />
-        </ion-avatar>
-        <ng-template #initials>
-          <div class="avatar-placeholder">
-            {{ u.name[0] }}
-          </div>
-        </ng-template>
+<ion-content [fullscreen]="true" class="bg-light">
+  <div class="header-background">
+    <div class="header-top">
+      <div class="brand">
+        <ion-icon name="school" style="font-size: 24px; color: #312E81;"></ion-icon>
+        <span style="margin-left: 8px;">Profilo</span>
       </div>
+      <div class="notification-box" (click)="onReminders()">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <div class="dot"></div>
+      </div>
+    </div>
+  </div>
 
-      <h2>{{ u.name }}</h2>
+  <div class="main-container">
+    <div class="profile-section">
+      <div class="avatar-wrapper" (click)="onEditProfile()">
+        <img [src]="user?.avatar || 'assets/placeholder-avatar.png'" alt="avatar">
+      </div>
+      <h2>{{ user?.nome || 'Emanuela' }}</h2>
+    </div>
 
-      <div class="stats-row" *ngIf="u.stats">
-        <div class="stat">
-          <span class="stat__value">{{ u.stats.groups }}</span>
-          <span class="stat__label">Gruppi</span>
+    <div class="stats-card" (click)="onStats()">
+      <div class="stat-col">
+        <span class="value">{{ user?.esamiTotali || 0 }}</span>
+        <span class="label">Gruppi</span>
+      </div>
+      <div class="vertical-divider"></div>
+      <div class="stat-col">
+        <span class="value">{{ user?.cfu || 0 }}</span>
+        <span class="label">Appunti</span>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <div class="action-btn" (click)="onSavedNotes()">
+        <ion-icon name="bookmark-outline"></ion-icon>
+        <span>Appunti salvati</span>
+      </div>
+      <div class="action-btn" (click)="onMyGroups()">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>I tuoi gruppi</span>
+      </div>
+    </div>
+
+    <div class="section-title" (click)="onSavedNotes()">
+      <h3>Appunti recenti</h3>
+      <ion-icon name="chevron-forward"></ion-icon>
+    </div>
+
+    <div class="notes-list">
+      <div class="note-item" (click)="onViewNote('Analisi 2')">
+        <div class="icon-box orange">
+          <ion-icon name="bookmark"></ion-icon>
         </div>
-        <div class="stat">
-          <span class="stat__value">{{ u.stats.eventsThisWeek }}</span>
-          <span class="stat__label">Eventi</span>
+        <div class="text-info">
+          <h4>Appunti Analisi 2</h4>
+          <p>Matematica · 1 ora fa</p>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- sezione appunti / gruppi -->
-<section>
-  <ion-segment value="saved">
-    <ion-segment-button value="saved">
-      <ion-label>Appunti salvati</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="groups">
-      <ion-label>I tuoi gruppi</ion-label>
-    </ion-segment-button>
-  </ion-segment>
-</section>
-
-<!-- Appunti recenti (mock, usa events) -->
-<section>
-  <h3 class="section-subtitle">Appunti recenti</h3>
-  <ion-list lines="none">
-    <ion-item class="recent-note">
-      <ion-icon name="document-text-outline" slot="start"></ion-icon>
-      <ion-label>
-        <h2>Appunti Analisi 2</h2>
-        <p>Matematica · 1 ora fa</p>
-      </ion-label>
-    </ion-item>
-    <ion-item class="recent-note">
-      <ion-icon name="document-text-outline" slot="start"></ion-icon>
-      <ion-label>
-        <h2>Circuiti elettrici</h2>
-        <p>Fisica · 3 giorni fa</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
-</section>
-
-<!-- azioni -->
-<section>
-  <ion-list lines="full">
-    <ion-item button (click)="onEditProfile()">
-      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
-      <ion-label>Modifica profilo</ion-label>
-    </ion-item>
-
-    <ion-item button>
-      <ion-icon name="notifications-outline" slot="start"></ion-icon>
-      <ion-label>Promemoria</ion-label>
-    </ion-item>
-
-    <ion-item button>
-      <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
-      <ion-label>Statistiche studio</ion-label>
-    </ion-item>
-
-    <ion-item button lines="none" (click)="onLogout()">
-      <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
-      <ion-label color="danger">Esci</ion-label>
-    </ion-item>
-  </ion-list>
-</section>
+    <div class="menu-list">
+      <div class="menu-item" (click)="onEditProfile()">
+        <div class="left">
+          <ion-icon name="settings-outline"></ion-icon>
+          <span>Modifica profilo</span>
+        </div>
+        <ion-icon name="chevron-forward"></ion-icon>
+      </div>
+      <div class="menu-item danger" (click)="onLogout()">
+        <div class="left">
+          <ion-icon name="log-out-outline"></ion-icon>
+          <span>Esci</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

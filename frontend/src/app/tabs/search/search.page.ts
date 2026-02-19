@@ -2,10 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-
-import { DataService, GroupItem, EventItem } from '../../core/services/data.service';
-
-type SearchTab = 'notes' | 'groups' | 'exams';
+import { ApiService } from '../../core/services/api.service';
+import { Gruppo, Appunto, Evento } from '../../core/interfaces/models';
 
 @Component({
   selector: 'app-search',
@@ -15,53 +13,45 @@ type SearchTab = 'notes' | 'groups' | 'exams';
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class SearchPage implements OnInit {
-
-  tab: SearchTab = 'notes';
+  tab: 'notes' | 'groups' | 'exams' = 'notes';
   query = '';
 
-  // mock: riuso EventItem come "appunti/esami"
-  notes: EventItem[] = [];
-  groups: GroupItem[] = [];
+  // Usiamo le interfacce corrette
+  filteredNotes: Appunto[] = [];
+  filteredGroups: Gruppo[] = [];
+  filteredExams: Evento[] = []; // Aggiunto questo array che mancava
 
-  filteredNotes: EventItem[] = [];
-  filteredGroups: GroupItem[] = [];
-
-  constructor(private dataService: DataService) {}
+  constructor(private apiService: ApiService) {}
 
   ngOnInit() {
-    this.dataService.getEvents().subscribe(ev => {
-      this.notes = ev;
-      this.filteredNotes = ev;
-    });
-    this.dataService.getGroups().subscribe(gs => {
-      this.groups = gs;
-      this.filteredGroups = gs;
-    });
+    this.eseguiRicerca();
   }
 
-  changeTab(t: SearchTab) {
+  changeTab(t: 'notes' | 'groups' | 'exams') {
     this.tab = t;
+    this.eseguiRicerca();
   }
 
-  onSearchChange(ev: any) {
-    this.query = (ev.detail.value || '').toLowerCase();
+  onSearchChange(event: any) {
+    this.query = event.target.value;
+    this.eseguiRicerca();
+  }
 
-    if (!this.query) {
-      this.filteredNotes = this.notes;
-      this.filteredGroups = this.groups;
-      return;
+  eseguiRicerca() {
+    // Esempio logica di ricerca
+    if (this.tab === 'notes') {
+      this.apiService.getAppunti(this.query).subscribe(res => this.filteredNotes = res);
+    } 
+    else if (this.tab === 'groups') {
+      this.apiService.getGruppi().subscribe(res => {
+        this.filteredGroups = res.filter(g => g.nome.toLowerCase().includes(this.query.toLowerCase()));
+      });
     }
-
-    this.filteredNotes = this.notes.filter(n =>
-      n.title.toLowerCase().includes(this.query)
-      || n.subject.toLowerCase().includes(this.query)
-    );
-
-    this.filteredGroups = this.groups.filter(g =>
-      g.name.toLowerCase().includes(this.query)
-      || g.description.toLowerCase().includes(this.query)
-    );
+    // else if exams... (implementare API per esami se serve)
   }
-
-  onJoinGroup(_g: GroupItem) {}
+  
+  getIconColor(tipo: string): string {
+    if (tipo === 'pdf') return 'red-pdf';
+    return 'bg-blue';
+  }
 }
