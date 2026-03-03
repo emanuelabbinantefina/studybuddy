@@ -39,7 +39,9 @@ async function createGroup(userId, body) {
   const description = payload.description ?? payload.descrizione;
   const course = payload.course ?? payload.corso;
   const subject = payload.subject ?? payload.materia;
-  const colorClass = normalizeColorClass(payload.colorClass);
+  const colorClass = normalizeColorClass(
+    payload.colorClass ?? payload.colore ?? payload.color ?? payload.selectedColorClass
+  );
 
   if (!name || !String(name).trim()) {
     throw badRequest('name e obbligatorio');

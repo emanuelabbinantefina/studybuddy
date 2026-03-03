@@ -24,6 +24,8 @@ export class ChatPage implements OnInit, OnDestroy {
   
   newMessage: string = '';
   groupId: number = 0;
+  groupName: string = 'Gruppo';
+  groupColorClass: string = 'bg-blue';
   messages: Message[] = [];
   
   private pollingInterval: any;
@@ -48,9 +50,21 @@ export class ChatPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
+    const nameParam = this.route.snapshot.queryParamMap.get('nome');
+    const colorParam = this.route.snapshot.queryParamMap.get('colorClass');
+
+    if (nameParam) {
+      this.groupName = nameParam;
+    }
+    if (colorParam) {
+      this.groupColorClass = this.normalizeColorClass(colorParam);
+    }
     
     if (idParam) {
       this.groupId = +idParam; 
+      if (!nameParam) {
+        this.groupName = `Gruppo ${this.groupId}`;
+      }
       this.loadMessages(true); 
       
       this.startPolling();
@@ -143,5 +157,10 @@ export class ChatPage implements OnInit, OnDestroy {
   handleAttachmentSelection(type: string) {
     console.log('Utente vuole allegare:', type);
     alert(`Funzione ${type} pronta per essere collegata al plugin nativo!`);
+  }
+
+  private normalizeColorClass(colorClass: string): string {
+    const allowed = new Set(['bg-blue', 'bg-orange', 'bg-green', 'bg-purple']);
+    return allowed.has(colorClass) ? colorClass : 'bg-blue';
   }
 }

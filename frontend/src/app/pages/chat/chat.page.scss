@@ -34,6 +34,9 @@ ion-toolbar {
     display: flex; align-items: center; justify-content: center;
     color: white; font-weight: 700;
     &.bg-orange { background: linear-gradient(135deg, #FB923C, #EA580C); }
+    &.bg-blue { background: linear-gradient(135deg, #60A5FA, #2563EB); }
+    &.bg-green { background: linear-gradient(135deg, #34D399, #10B981); }
+    &.bg-purple { background: linear-gradient(135deg, #C084FC, #9333EA); }
   }
   .header-text {
     display: flex; flex-direction: column;

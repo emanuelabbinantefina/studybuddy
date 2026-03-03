@@ -59,7 +59,12 @@ export class GroupsPage implements OnInit {
   }
 
   onGroupClick(g: Gruppo) {
-    this.router.navigate(['/chat', g.id]);
+    this.router.navigate(['/chat', g.id], {
+      queryParams: {
+        nome: g.nome,
+        colorClass: g.colorClass || this.getColoreMateria(g.materia)
+      }
+    });
   }
 
   getColoreMateria(materia: string) {

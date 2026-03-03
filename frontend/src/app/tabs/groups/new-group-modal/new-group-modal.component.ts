@@ -36,7 +36,8 @@ export class NewGroupModalComponent {
     const dati = {
       nome: this.groupName,
       materia: 'Generale',
-      colorClass: this.selectedColorClass
+      colorClass: this.selectedColorClass,
+      colore: this.selectedColorClass
     };
 
     this.apiService.creaGruppo(dati).subscribe({

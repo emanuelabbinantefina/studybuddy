@@ -5,11 +5,11 @@
     </ion-buttons>
 
     <div class="chat-header-info">
-      <div class="header-avatar bg-orange">
-        <span>A</span>
+      <div class="header-avatar" [ngClass]="groupColorClass">
+        <span>{{ groupName.charAt(0).toUpperCase() }}</span>
       </div>
       <div class="header-text">
-        <h2>Analisi Matematica 2</h2>
+        <h2>{{ groupName }}</h2>
       </div>
     </div>
 
