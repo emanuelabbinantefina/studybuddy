@@ -1,99 +1,125 @@
-<ion-content [fullscreen]="true" class="bg-content">
+﻿<ion-content [fullscreen]="true" class="bg-content">
   <div class="main-padding">
-
-    <div class="hero-card">
-  <div class="hero-text">
-    <h2>Ciao {{ user?.name || 'Studente' }}! 👋</h2>
-    <p>Pronto a studiare?</p>
-    <button class="btn-primary small">
-      <ion-icon name="add"></ion-icon> Crea evento
-    </button>
-  </div>
-  <div class="hero-img">
-    <img src="assets/images/students.png" alt="Study Group">
-  </div>
-</div>
-
-    <section class="section-block" *ngIf="upcomingEvents.length > 0">
-      <div class="section-header">
-        <h3>Prossimi impegni</h3>
-        <span class="date-label">
-           <ion-icon name="calendar-clear-outline"></ion-icon> Oggi
-        </span>
+    <section class="hero-card">
+      <div class="hero-text">
+        <p class="hero-kicker">BENTORNATA/O, {{ displayName }}</p>
+        <h2>Gestisci studio, appunti e gruppi da qui.</h2>
+        <p>La home ora usa dati reali: se il backend e vuoto vedrai sezioni vuote.</p>
+        <button type="button" class="btn-primary small" (click)="openPlanner()">
+          Vai al Planner
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </button>
       </div>
-
-      <div class="event-card" *ngFor="let ev of upcomingEvents">
-        <div class="left-strip" [ngClass]="ev.type">
-          <ion-icon [name]="ev.icon"></ion-icon>
-        </div>
-        <div class="card-content">
-          <h4>{{ ev.title }}</h4>
-          <div class="meta-row">
-            <span class="subject" *ngIf="ev.subject">
-              <ion-icon name="ellipse"></ion-icon> {{ ev.subject }}
-            </span>
-            <span class="time">{{ ev.time }}</span>
-          </div>
-          
-          <div class="participants" *ngIf="ev.participants && ev.participants.length > 0">
-            <img *ngFor="let p of ev.participants" [src]="p">
-          </div>
-        </div>
-        <ion-icon name="chevron-forward" class="arrow-icon"></ion-icon>
+      <div class="hero-img">
+        <img src="assets/images/students.png" alt="Studio collaborativo">
       </div>
     </section>
 
-    <section class="section-block" *ngIf="myGroups.length > 0">
+    <section class="section-block">
+      <div class="section-header">
+        <h3>Collegamenti rapidi</h3>
+      </div>
+
+      <div class="quick-links">
+        <button type="button" class="quick-link" (click)="openAppunti()">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <span>Appunti</span>
+        </button>
+        <button type="button" class="quick-link" (click)="openGruppi()">
+          <ion-icon name="people-outline"></ion-icon>
+          <span>Gruppi</span>
+        </button>
+        <button type="button" class="quick-link" (click)="openPlanner()">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span>Planner</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="section-block">
+      <div class="section-header">
+        <h3>Prossimi esami</h3>
+        <button type="button" class="link-label" (click)="openPlanner()">
+          Apri planner
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="exam-grid" *ngIf="upcomingExams.length > 0; else emptyExams">
+        <article class="exam-card" *ngFor="let exam of upcomingExams" (click)="openPlanner()">
+          <span class="exam-dot" [ngClass]="exam.accentClass"></span>
+          <h4>{{ exam.title }}</h4>
+          <p>{{ exam.dateLabel }}</p>
+          <strong [ngClass]="exam.accentClass">{{ exam.daysLeft }}gg</strong>
+        </article>
+      </div>
+      <ng-template #emptyExams>
+        <div class="empty-card">
+          <p>Nessun esame pianificato nel planner.</p>
+          <button type="button" class="btn-link" (click)="openPlanner()">Apri Planner</button>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="section-block">
+      <div class="section-header">
+        <h3>Appunti recenti</h3>
+        <button type="button" class="link-label" (click)="openAppunti()">
+          Vedi tutti
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="cards-list" *ngIf="recentNotes.length > 0; else emptyNotes">
+        <article class="note-card" *ngFor="let note of recentNotes" (click)="openAppunti()">
+          <div class="note-icon-box">
+            <ion-icon name="document-text-outline"></ion-icon>
+          </div>
+          <div class="note-info">
+            <h4>{{ note.titolo }}</h4>
+            <p>{{ note.materia }} - {{ note.tempoUpload }}</p>
+          </div>
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+        </article>
+      </div>
+      <ng-template #emptyNotes>
+        <div class="empty-card">
+          <p>Nessun appunto disponibile.</p>
+          <button type="button" class="btn-link" (click)="openAppunti()">Apri Appunti</button>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="section-block">
       <div class="section-header">
         <h3>I tuoi gruppi</h3>
-        <span class="link-label">Vedi tutto <ion-icon name="chevron-forward"></ion-icon></span>
+        <button type="button" class="link-label" (click)="openGruppi()">
+          Vedi tutti
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </button>
       </div>
 
-      <div class="horizontal-scroll">
-        <div class="group-card" *ngFor="let group of myGroups" [ngClass]="group.themeColor + '-theme'">
-          <div class="group-top">
-            <div class="icon-square">
-              <ion-icon [name]="group.icon"></ion-icon>
-            </div>
+      <div class="cards-list" *ngIf="myGroups.length > 0; else emptyGroups">
+        <article class="group-row" *ngFor="let group of myGroups" (click)="openGruppi()">
+          <div class="group-icon" [ngClass]="getGroupColorClass(group)">
+            {{ group.nome.charAt(0) }}
           </div>
-          
-          <h4>{{ group.name }}</h4>
-          
-          <div class="group-meta">
-            <div class="avatars-stack">
-              <img *ngFor="let a of group.memberAvatars" [src]="a">
-            </div>
-            <span class="time-ago">{{ group.lastActive }}</span>
+          <div class="group-info">
+            <h4>{{ group.nome }}</h4>
+            <p>{{ group.materia }} - {{ group.membersCount || 0 }} membri</p>
           </div>
-          
-          <div class="msg-preview">
-            {{ group.lastMessage }}
-          </div>
-        </div>
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+        </article>
       </div>
-    </section>
-
-    <section class="section-block" *ngIf="latestNotes.length > 0">
-      <div class="section-header">
-        <h3>Ultimi appunti</h3>
-        <span class="link-label">Vedi tutto <ion-icon name="chevron-forward"></ion-icon></span>
-      </div>
-
-      <div class="note-card" *ngFor="let note of latestNotes">
-        <div class="note-icon-box" [ngClass]="note.iconColor">
-          <ion-icon [name]="note.icon"></ion-icon>
+      <ng-template #emptyGroups>
+        <div class="empty-card">
+          <p>Nessun gruppo trovato.</p>
+          <button type="button" class="btn-link" (click)="openGruppi()">Apri Gruppi</button>
         </div>
-        <div class="note-info">
-          <h4>{{ note.title }}</h4>
-          <p>{{ note.subtitle }}</p>
-        </div>
-        <div class="doc-preview">
-          <div class="line"></div><div class="line"></div>
-        </div>
-      </div>
+      </ng-template>
     </section>
 
     <div class="spacer-bottom"></div>
-
   </div>
 </ion-content>
+
