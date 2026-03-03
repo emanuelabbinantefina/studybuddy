@@ -88,6 +88,24 @@ async function initDb() {
     )
   `);
 
+  // notes uploaded by users
+  await run(`
+    create table if not exists Notes (
+      id integer primary key autoincrement,
+      userId integer not null,
+      title text not null,
+      subject text not null,
+      fileName text not null,
+      fileType text not null,
+      mimeType text,
+      sizeBytes integer not null,
+      fileData text not null,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (userId) references Users(id) on delete cascade
+    )
+  `);
+
   // groups
   await run(`
     create table if not exists Groups (
@@ -140,6 +158,7 @@ async function initDb() {
 
   await run(`create index if not exists idx_courses_facultyId on Courses(facultyId)`);
   await run(`create index if not exists idx_events_user_start on Events(userId, startAt)`);
+  await run(`create index if not exists idx_notes_user_created on Notes(userId, createdAt desc)`);
   await run(`create index if not exists idx_groupmembers_user on GroupMembers(userId)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
 }

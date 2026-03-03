@@ -1,8 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Gruppo, Appunto, Messaggio } from '../interfaces/models';
+
+interface UploadAppuntoPayload {
+  titolo: string;
+  materia: string;
+  tipoFile?: 'pdf' | 'doc' | 'img';
+  fileName: string;
+  mimeType?: string;
+  sizeBytes: number;
+  fileData: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -87,6 +97,33 @@ export class ApiService {
   }
 
   getAppunti(query: string): Observable<Appunto[]> {
-    return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, { params: { cerca: query } });
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) return of([]);
+
+    const q = (query || '').trim();
+    return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
+      headers: this.authHeaders(),
+      params: q ? { cerca: q } : undefined
+    });
+  }
+
+  uploadAppunto(payload: UploadAppuntoPayload): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.baseUrl}/appunti`, payload, {
+      headers: this.authHeaders()
+    });
+  }
+
+  downloadAppunto(noteId: number): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.baseUrl}/appunti/${noteId}/download`, {
+      headers: this.authHeaders(),
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
+
+  deleteAppunto(noteId: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}`, {
+      headers: this.authHeaders()
+    });
   }
 }

@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth.routes');
 const eventsRoutes = require('./routes/events.routes');
+const notesRoutes = require('./routes/notes.routes');
 const { groupsRouter, gruppiRouter } = require('./routes/groups.routes');
 
 const app = express();
@@ -23,6 +24,9 @@ app.use('/', authRoutes);
 
 // events
 app.use('/api/events', eventsRoutes);
+
+// notes
+app.use('/api/appunti', notesRoutes);
 
 // secure groups api
 app.use('/api/groups', groupsRouter);

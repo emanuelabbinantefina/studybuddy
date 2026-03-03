@@ -1,10 +1,9 @@
 <ion-content [fullscreen]="true" class="bg-light">
   <div class="main-wrapper">
-
     <div class="tabs-row">
-      <button class="tab-btn" [class.active]="tab === 'notes'" (click)="changeTab('notes')">Appunti</button>
-      <button class="tab-btn" [class.active]="tab === 'groups'" (click)="changeTab('groups')">Gruppi</button>
-      <button class="tab-btn" [class.active]="tab === 'exams'" (click)="changeTab('exams')">Esami</button>
+      <button type="button" class="tab-btn" [class.active]="tab === 'notes'" (click)="changeTab('notes')">Appunti</button>
+      <button type="button" class="tab-btn" [class.active]="tab === 'groups'" (click)="changeTab('groups')">Gruppi</button>
+      <button type="button" class="tab-btn" [class.active]="tab === 'exams'" (click)="changeTab('exams')">Esami</button>
     </div>
 
     <div class="search-container">
@@ -14,20 +13,101 @@
       </div>
     </div>
 
+    <div *ngIf="tab === 'notes'" class="upload-banner" (click)="toggleUploadPanel()">
+      <div class="upload-banner-icon">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </div>
+      <div class="upload-banner-text">
+        <h4>Condividi i tuoi appunti</h4>
+        <p>Aiuta gli altri studenti caricando i tuoi file</p>
+      </div>
+      <ion-icon [name]="showUploadPanel ? 'chevron-up-outline' : 'chevron-forward-outline'" class="upload-banner-arrow"></ion-icon>
+    </div>
+
+    <section *ngIf="tab === 'notes' && showUploadPanel" class="upload-panel fade-in">
+      <div class="upload-panel-header">
+        <h3>
+          <ion-icon name="briefcase-outline"></ion-icon>
+          Carica Appunti
+        </h3>
+        <p>Trascina o seleziona un file</p>
+      </div>
+
+      <div
+        class="upload-dropzone"
+        [class.drag-active]="dragActive"
+        (click)="openFilePicker()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)">
+        <input
+          #fileInput
+          type="file"
+          [attr.accept]="fileAccept"
+          (change)="onFileSelected($event)"
+          hidden>
+
+        <ion-icon name="folder-open-outline" class="dropzone-icon"></ion-icon>
+        <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
+        <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
+        <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
+        <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
+
+        <div class="format-chips">
+          <span class="format-chip" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
+        </div>
+      </div>
+
+      <div class="upload-fields">
+        <input
+          type="text"
+          class="upload-input"
+          placeholder="Titolo appunto"
+          [(ngModel)]="uploadTitle">
+        <input
+          type="text"
+          class="upload-input"
+          placeholder="Materia"
+          [(ngModel)]="uploadSubject">
+      </div>
+
+      <div class="upload-actions">
+        <button type="button" class="secondary-btn" (click)="resetUploadForm()">Annulla</button>
+        <button type="button" class="primary-btn" [disabled]="uploading" (click)="submitUpload()">
+          {{ uploading ? 'Caricamento...' : 'Carica appunto' }}
+        </button>
+      </div>
+    </section>
+
     <div *ngIf="tab === 'notes'" class="fade-in">
       <div class="cards-list">
         <div class="custom-card" *ngFor="let n of filteredNotes">
           <div class="icon-box" [ngClass]="getIconColor(n.tipoFile)">
             <ion-icon name="document-text"></ion-icon>
           </div>
-          
+
           <div class="card-info">
             <h4>{{ n.titolo }}</h4>
-            <p>{{ n.materia }} <span class="dot">·</span> {{ n.tempoUpload }}</p>
+            <p>{{ n.materia }} <span class="dot">&middot;</span> {{ n.tempoUpload }}</p>
           </div>
-          
-          <div class="doc-preview">
-            <div class="doc-lines"><span></span><span></span></div>
+
+          <div class="note-actions">
+            <button
+              type="button"
+              class="note-action-btn"
+              [disabled]="downloadingNoteId === n.id"
+              (click)="downloadNote(n, $event)">
+              {{ downloadingNoteId === n.id ? '...' : 'Scarica' }}
+            </button>
+
+            <button
+              *ngIf="n.canDelete"
+              type="button"
+              class="note-action-btn danger"
+              [disabled]="deletingNoteId === n.id"
+              (click)="deleteNote(n, $event)">
+              {{ deletingNoteId === n.id ? '...' : 'Elimina' }}
+            </button>
           </div>
         </div>
       </div>
@@ -41,14 +121,15 @@
           </div>
           <div class="card-info">
             <h4>{{ g.nome }}</h4>
-            <p>{{ g.materia }} <span class="dot">·</span> {{ g.membersCount || 0 }} membri</p>
+            <p>{{ g.materia }} <span class="dot">&middot;</span> {{ g.membersCount || 0 }} membri</p>
           </div>
           <button
+            type="button"
             class="join-btn"
             [class.member]="g.isMember"
             [disabled]="g.isMember || joiningGroupId === g.id"
             (click)="joinGroup(g)">
-            {{ g.isMember ? 'Già dentro' : (joiningGroupId === g.id ? '...' : 'Unisciti') }}
+            {{ g.isMember ? 'Gia dentro' : (joiningGroupId === g.id ? '...' : 'Unisciti') }}
           </button>
         </div>
       </div>
@@ -67,6 +148,5 @@
         </div>
       </div>
     </div>
-
   </div>
 </ion-content>
