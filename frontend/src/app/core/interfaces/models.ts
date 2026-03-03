@@ -26,6 +26,8 @@ export interface Gruppo {
   // Aggiungiamo questi per la gestione grafica nel frontend
   colorClass?: string;
   unread?: number;
+  isMember?: boolean;
+  membersCount?: number;
 }
 
 // Questa serve per la pagina della Chat singola

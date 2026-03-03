@@ -50,9 +50,15 @@
           </div>
           <div class="card-info">
             <h4>{{ g.nome }}</h4>
-            <p>{{ g.materia }}</p>
+            <p>{{ g.materia }} <span class="dot">·</span> {{ g.membersCount || 0 }} membri</p>
           </div>
-          <button class="join-btn">Unisciti</button>
+          <button
+            class="join-btn"
+            [class.member]="g.isMember"
+            [disabled]="g.isMember || joiningGroupId === g.id"
+            (click)="joinGroup(g)">
+            {{ g.isMember ? 'Già dentro' : (joiningGroupId === g.id ? '...' : 'Unisciti') }}
+          </button>
         </div>
       </div>
     </div>

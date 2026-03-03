@@ -245,11 +245,53 @@ function toLegacyGroup(row) {
     nome: row.name,
     materia: row.subject || row.course || 'Generale',
     colorClass: normalizeColorClass(row.colorClass),
+    isMember: !!row.isMember,
+    membersCount: row.membersCount || 0,
     ultimoMessaggio: row.lastMessage || 'Nessun messaggio',
     autoreMessaggio: row.lastMessage ? 'Utente' : 'Sistema',
     tempoTrascorso: 'Ora',
     membriPreview: []
   };
+}
+
+async function publicGroups(userId, query) {
+  const q = query && query.q ? String(query.q).trim() : '';
+  const params = [userId];
+  const where = [];
+
+  if (q) {
+    where.push(`(g.name like ? or g.course like ? or g.subject like ?)`);
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+  }
+
+  const whereClause = where.length ? `where ${where.join(' and ')}` : '';
+
+  const rows = await all(
+    `
+    select
+      g.id,
+      g.name,
+      g.course,
+      g.subject,
+      g.colorClass,
+      g.updatedAt,
+      case when gm.userId is null then 0 else 1 end as isMember,
+      (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
+      (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
+    from Groups g
+    left join GroupMembers gm
+      on gm.groupId = g.id and gm.userId = ?
+    ${whereClause}
+    order by coalesce(
+      (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1),
+      g.updatedAt
+    ) desc
+    `,
+    params
+  );
+
+  return rows.map(toLegacyGroup);
 }
 
 async function legacyGroupsList() {
@@ -279,6 +321,7 @@ module.exports = {
   createGroup,
   myGroups,
   suggestedGroups,
+  publicGroups,
   joinGroup,
   leaveGroup,
   groupDetail,

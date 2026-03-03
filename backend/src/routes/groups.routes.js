@@ -10,6 +10,7 @@ groupsRouter.use(auth);
 
 groupsRouter.get('/my', groupsController.my);
 groupsRouter.get('/suggested', groupsController.suggested);
+groupsRouter.get('/public', groupsController.publicList);
 
 groupsRouter.post('/', groupsController.create);
 

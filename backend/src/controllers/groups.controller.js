@@ -28,6 +28,15 @@ async function suggested(req, res) {
   }
 }
 
+async function publicList(req, res) {
+  try {
+    const out = await groupsService.publicGroups(req.userData.userId, req.query);
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
 async function join(req, res) {
   try {
     const groupId = Number(req.params.id);
@@ -109,6 +118,7 @@ module.exports = {
   create,
   my,
   suggested,
+  publicList,
   join,
   leave,
   detail,

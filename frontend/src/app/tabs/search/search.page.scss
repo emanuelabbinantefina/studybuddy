@@ -190,6 +190,22 @@ ion-toolbar {
     background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
   }
 
+  &.bg-blue {
+    background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
+  }
+
+  &.bg-orange {
+    background: linear-gradient(135deg, #FB923C 0%, #EA580C 100%);
+  }
+
+  &.bg-green {
+    background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  }
+
+  &.bg-purple {
+    background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%);
+  }
+
   &.circle {
     border-radius: 50%;
   }
@@ -275,6 +291,15 @@ ion-toolbar {
   font-weight: 600;
   padding: 6px 14px;
   border-radius: 8px;
+  min-width: 84px;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  &.member {
+    background: #64748B;
+  }
 }
 
 /* --- ECCO IL BOTTONE DOWNLOAD --- */
