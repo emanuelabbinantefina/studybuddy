@@ -88,35 +88,6 @@
   }
 }
 
-.quick-links {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.quick-link {
-  border: 1px solid #dbe7ff;
-  border-radius: 14px;
-  background: #f8fbff;
-  color: var(--primary-blue);
-  height: 72px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-
-  ion-icon {
-    font-size: 1.2rem;
-  }
-
-  span {
-    font-size: 0.8rem;
-  }
-}
-
 .exam-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -323,10 +294,6 @@ button {
 
 @media (max-width: 380px) {
   .exam-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .quick-links {
     grid-template-columns: 1fr;
   }
 
