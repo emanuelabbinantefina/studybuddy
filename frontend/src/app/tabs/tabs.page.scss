@@ -1,0 +1,142 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.tabs-shell {
+  --topbar-height: calc(env(safe-area-inset-top) + 64px);
+  --search-overlay-bottom: calc(env(safe-area-inset-bottom) + 78px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8fafc;
+}
+
+.global-topbar {
+  height: var(--topbar-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(env(safe-area-inset-top) + 8px) 14px 8px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 10;
+}
+
+.brand-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: #2563eb;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.search-btn {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #64748b;
+  border-radius: 14px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+
+  &.active {
+    border-color: #2563eb;
+    color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  }
+
+  ion-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.avatar-btn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  padding: 2px;
+  background: #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+ion-tabs {
+  flex: 1;
+  min-height: 0;
+}
+
+.custom-tab-bar {
+  --background: #ffffff;
+  --border: transparent;
+  --color: #64748b;
+  --color-selected: #2563eb;
+  padding: 6px 4px calc(env(safe-area-inset-bottom) + 6px);
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+  position: relative;
+  z-index: 140;
+}
+
+.custom-tab-btn {
+  min-height: 56px;
+  position: relative;
+  font-size: 12px;
+  font-weight: 500;
+
+  ion-icon {
+    font-size: 1.2rem;
+  }
+
+  ion-label {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  &::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    margin-top: 4px;
+    background: transparent;
+  }
+
+  &.tab-selected::after {
+    background: #2563eb;
+  }
+
+  &.tab-selected ion-icon,
+  &.tab-selected ion-label {
+    color: #2563eb;
+  }
+}

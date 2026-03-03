@@ -1,0 +1,102 @@
+<div class="overlay-backdrop" (click)="closeOverlay()">
+  <section class="search-surface" (click)="$event.stopPropagation()">
+    <div class="search-field">
+      <ion-icon name="search-outline"></ion-icon>
+      <input
+        #searchInput
+        type="text"
+        class="search-input"
+        placeholder="Cerca appunti, materie, gruppi..."
+        [(ngModel)]="query"
+        (input)="onSearchChange($event)">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Chiudi ricerca"
+        (click)="closeOverlay()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+
+    <div class="chips-row">
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let subject of suggestedSubjects"
+        [class.active]="query === subject"
+        (click)="useChip(subject)">
+        {{ subject }}
+      </button>
+    </div>
+
+    <div class="tabs-row">
+      <button type="button" class="tab-btn" [class.active]="tab === 'notes'" (click)="changeTab('notes')">Appunti</button>
+      <button type="button" class="tab-btn" [class.active]="tab === 'groups'" (click)="changeTab('groups')">Gruppi</button>
+      <button type="button" class="tab-btn" [class.active]="tab === 'exams'" (click)="changeTab('exams')">Esami</button>
+    </div>
+
+    <div class="results-wrap">
+      <ng-container *ngIf="tab === 'notes'">
+        <div class="cards-list" *ngIf="filteredNotes.length; else noNotes">
+          <article class="custom-card" *ngFor="let note of filteredNotes">
+            <div class="icon-box" [ngClass]="getIconColor(note.tipoFile)">
+              <ion-icon name="document-text"></ion-icon>
+            </div>
+
+            <div class="card-info">
+              <h4>{{ note.titolo }}</h4>
+              <p>{{ note.materia }} <span class="dot">&middot;</span> {{ note.tempoUpload }}</p>
+            </div>
+          </article>
+        </div>
+        <ng-template #noNotes>
+          <p class="empty-state">Nessun appunto trovato.</p>
+        </ng-template>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'groups'">
+        <div class="cards-list" *ngIf="filteredGroups.length; else noGroups">
+          <article class="custom-card" *ngFor="let group of filteredGroups">
+            <div class="icon-box circle" [ngClass]="group.colorClass || 'bg-blue'">
+              <span class="char">{{ group.nome.charAt(0) }}</span>
+            </div>
+
+            <div class="card-info">
+              <h4>{{ group.nome }}</h4>
+              <p>{{ group.materia }} <span class="dot">&middot;</span> {{ group.membersCount || 0 }} membri</p>
+            </div>
+
+            <button
+              type="button"
+              class="join-btn"
+              [class.member]="group.isMember"
+              [disabled]="group.isMember || joiningGroupId === group.id"
+              (click)="joinGroup(group)">
+              {{ group.isMember ? 'Gia dentro' : (joiningGroupId === group.id ? '...' : 'Unisciti') }}
+            </button>
+          </article>
+        </div>
+        <ng-template #noGroups>
+          <p class="empty-state">Nessun gruppo disponibile.</p>
+        </ng-template>
+      </ng-container>
+
+      <ng-container *ngIf="tab === 'exams'">
+        <div class="cards-list" *ngIf="filteredExams.length; else noExams">
+          <article class="custom-card" *ngFor="let exam of filteredExams">
+            <div class="icon-box red-pdf">
+              <ion-icon name="document-text"></ion-icon>
+            </div>
+            <div class="card-info">
+              <h4>{{ exam.titolo }}</h4>
+              <p>{{ exam.materia }}</p>
+            </div>
+          </article>
+        </div>
+        <ng-template #noExams>
+          <p class="empty-state">Nessun esame trovato.</p>
+        </ng-template>
+      </ng-container>
+    </div>
+  </section>
+</div>

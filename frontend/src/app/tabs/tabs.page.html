@@ -1,30 +1,51 @@
-<ion-tabs>
-  <ion-tab-bar slot="bottom">
+<div class="tabs-shell" [class.search-open]="isSearchOpen">
+  <div class="global-topbar" *ngIf="!isProfileRoute">
+    <button type="button" class="brand-btn" (click)="openHome()">StudyBuddy</button>
 
-    <ion-tab-button tab="home">
-      <ion-icon name="home-outline"></ion-icon>
-      <ion-label>Home</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="planner">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <ion-label>Planner</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="groups">
-      <ion-icon name="people-outline"></ion-icon>
-      <ion-label>Groups</ion-label>
-    </ion-tab-button>
-
-    <ion-tab-button tab="search">
+    <button
+      type="button"
+      class="search-btn"
+      [class.active]="isSearchOpen"
+      (click)="openSearch()">
       <ion-icon name="search-outline"></ion-icon>
-      <ion-label>Search</ion-label>
-    </ion-tab-button>
+      <span>Cerca...</span>
+    </button>
 
-    <ion-tab-button tab="profile">
-      <ion-icon name="person-outline"></ion-icon>
-      <ion-label>Profile</ion-label>
-    </ion-tab-button>
+    <button
+      type="button"
+      class="avatar-btn"
+      aria-label="Vai al profilo"
+      (click)="openProfile()">
+      <img
+        [src]="profileAvatar || fallbackAvatar"
+        (error)="onAvatarError($event)"
+        alt="Avatar profilo">
+    </button>
+  </div>
 
-  </ion-tab-bar>
-</ion-tabs>
+  <ion-tabs>
+    <ion-tab-bar slot="bottom" class="custom-tab-bar">
+      <ion-tab-button tab="home" class="custom-tab-btn">
+        <ion-icon name="home-outline"></ion-icon>
+        <ion-label>Home</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="search" class="custom-tab-btn">
+        <ion-icon name="document-text"></ion-icon>
+        <ion-label>Appunti</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="groups" class="custom-tab-btn">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>Gruppi</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="planner" class="custom-tab-btn">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <ion-label>Planner</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+
+  <app-search-overlay *ngIf="isSearchOpen" (close)="closeSearchOverlay()"></app-search-overlay>
+</div>

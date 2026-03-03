@@ -1,16 +1,4 @@
 <ion-content [fullscreen]="true" class="bg-content">
-  
-  <div class="custom-header">
-    <div class="brand">
-      <ion-icon name="school" class="logo-icon"></ion-icon>
-      <h1>StudyBuddy</h1>
-    </div>
-    <div class="profile-pic" *ngIf="user">
-      <img [src]="user.avatarUrl" *ngIf="user.avatarUrl; else noAvatar">
-      <ng-template #noAvatar><ion-icon name="person"></ion-icon></ng-template>
-    </div>
-  </div>
-
   <div class="main-padding">
 
     <div class="hero-card">
