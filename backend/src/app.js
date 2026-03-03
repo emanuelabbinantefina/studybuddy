@@ -3,7 +3,7 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/auth.routes');
 const eventsRoutes = require('./routes/events.routes');
-const groupsRoutes = require('./routes/groups.routes');
+const { groupsRouter, gruppiRouter } = require('./routes/groups.routes');
 
 const app = express();
 
@@ -24,8 +24,11 @@ app.use('/', authRoutes);
 // events
 app.use('/api/events', eventsRoutes);
 
-// groups
-app.use('/api/groups', groupsRoutes);
+// secure groups api
+app.use('/api/groups', groupsRouter);
+
+// legacy italian groups api used by current frontend
+app.use('/api/gruppi', gruppiRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'endpoint non trovato' });

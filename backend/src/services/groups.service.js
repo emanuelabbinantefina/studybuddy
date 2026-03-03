@@ -1,43 +1,72 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 
-const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
-
 function badRequest(message) {
   const err = new Error(message);
   err.code = 'BAD_REQUEST';
   return err;
 }
 
-async function createGroup(userId, body) {
-  const { name, description, course, subject } = body || {};
+const ALLOWED_COLOR_CLASSES = new Set(['bg-blue', 'bg-orange', 'bg-green', 'bg-purple']);
 
-  // qui mi assicuro che il nome ci sia, altrimenti il gruppo nasce “rotto”
+function normalizeColorClass(value) {
+  const parsed = String(value || '').trim().toLowerCase();
+  if (ALLOWED_COLOR_CLASSES.has(parsed)) return parsed;
+  return 'bg-blue';
+}
+
+async function resolveOwnerId(authenticatedUserId, bodyUserId) {
+  if (authenticatedUserId) return Number(authenticatedUserId);
+  if (bodyUserId) return Number(bodyUserId);
+
+  const existing = await get(`select id from Users order by id asc limit 1`);
+  if (existing && existing.id) return existing.id;
+
+  const now = nowIso();
+  const seed = Date.now();
+  const out = await run(
+    `insert into Users (name, email, password, facolta, corso, createdAt, updatedAt)
+     values (?, ?, ?, ?, ?, ?, ?)`,
+    ['Guest User', `guest_${seed}@local.studybuddy`, 'guest_password', null, null, now, now]
+  );
+
+  return out.lastID;
+}
+
+async function createGroup(userId, body) {
+  const payload = body || {};
+  const name = payload.name ?? payload.nome;
+  const description = payload.description ?? payload.descrizione;
+  const course = payload.course ?? payload.corso;
+  const subject = payload.subject ?? payload.materia;
+  const colorClass = normalizeColorClass(payload.colorClass);
+
   if (!name || !String(name).trim()) {
-    throw badRequest('name è obbligatorio');
+    throw badRequest('name e obbligatorio');
   }
 
+  const ownerId = await resolveOwnerId(userId, payload.userId);
   const now = nowIso();
 
   const out = await run(
-    `insert into Groups (name, description, course, subject, ownerId, createdAt, updatedAt)
-     values (?, ?, ?, ?, ?, ?, ?)`,
+    `insert into Groups (name, description, course, subject, colorClass, ownerId, createdAt, updatedAt)
+     values (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       String(name).trim(),
       description ? String(description).trim() : null,
       course ? String(course).trim() : null,
       subject ? String(subject).trim() : null,
-      userId,
+      colorClass,
+      ownerId,
       now,
       now
     ]
   );
 
-  // mi auto-iscrivo come owner così "i miei gruppi" lo vede subito
   await run(
     `insert or ignore into GroupMembers (groupId, userId, role, createdAt)
      values (?, ?, 'owner', ?)`,
-    [out.lastID, userId, now]
+    [out.lastID, ownerId, now]
   );
 
   return { id: out.lastID };
@@ -47,7 +76,7 @@ async function myGroups(userId) {
   return all(
     `
     select
-      g.id, g.name, g.description, g.course, g.subject, g.ownerId, g.createdAt, g.updatedAt,
+      g.id, g.name, g.description, g.course, g.subject, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
@@ -77,7 +106,7 @@ async function suggestedGroups(userId, query) {
 
   const sql = `
     select
-      g.id, g.name, g.description, g.course, g.subject, g.ownerId, g.createdAt, g.updatedAt,
+      g.id, g.name, g.description, g.course, g.subject, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
@@ -124,7 +153,7 @@ async function leaveGroup(userId, groupId) {
   if (!m) return { ok: true };
 
   if (m.role === 'owner') {
-    const err = new Error('l owner non può uscire dal proprio gruppo');
+    const err = new Error('l owner non puo uscire dal proprio gruppo');
     err.code = 'BAD_REQUEST';
     throw err;
   }
@@ -135,7 +164,7 @@ async function leaveGroup(userId, groupId) {
 
 async function groupDetail(userId, groupId) {
   const g = await get(
-    `select id, name, description, course, subject, ownerId, createdAt, updatedAt
+    `select id, name, description, course, subject, colorClass, ownerId, createdAt, updatedAt
      from Groups
      where id = ?`,
     [groupId]
@@ -156,7 +185,6 @@ async function groupDetail(userId, groupId) {
 }
 
 async function listMessages(userId, groupId, query) {
-  // qui blocco la lettura chat se non sono membro
   const isMember = await get(
     `select 1 as ok from GroupMembers where groupId = ? and userId = ?`,
     [groupId, userId]
@@ -184,7 +212,7 @@ async function listMessages(userId, groupId, query) {
 
 async function sendMessage(userId, groupId, body) {
   const text = body && body.text ? String(body.text).trim() : '';
-  if (!text) throw badRequest('text è obbligatorio');
+  if (!text) throw badRequest('text e obbligatorio');
 
   const isMember = await get(
     `select 1 as ok from GroupMembers where groupId = ? and userId = ?`,
@@ -204,10 +232,45 @@ async function sendMessage(userId, groupId, body) {
     [groupId, userId, text, now]
   );
 
-  // qui aggiorno updatedAt del gruppo per ordinamenti tipo "miei gruppi"
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
 
   return { id: out.lastID };
+}
+
+function toLegacyGroup(row) {
+  return {
+    id: row.id,
+    nome: row.name,
+    materia: row.subject || row.course || 'Generale',
+    colorClass: normalizeColorClass(row.colorClass),
+    ultimoMessaggio: row.lastMessage || 'Nessun messaggio',
+    autoreMessaggio: row.lastMessage ? 'Utente' : 'Sistema',
+    tempoTrascorso: 'Ora',
+    membriPreview: []
+  };
+}
+
+async function legacyGroupsList() {
+  const rows = await all(
+    `
+    select
+      g.id,
+      g.name,
+      g.course,
+      g.subject,
+      g.colorClass,
+      g.updatedAt,
+      (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
+    from Groups g
+    order by coalesce(
+      (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1),
+      g.updatedAt
+    ) desc
+    `
+  );
+
+  return rows.map(toLegacyGroup);
 }
 
 module.exports = {
@@ -218,5 +281,7 @@ module.exports = {
   leaveGroup,
   groupDetail,
   listMessages,
-  sendMessage
+  sendMessage,
+  legacyGroupsList,
+  toLegacyGroup
 };

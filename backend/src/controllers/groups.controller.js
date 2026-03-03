@@ -84,4 +84,36 @@ async function sendMessage(req, res) {
   }
 }
 
-module.exports = { create, my, suggested, join, leave, detail, messages, sendMessage };
+async function legacyList(req, res) {
+  try {
+    const out = await groupsService.legacyGroupsList();
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
+async function legacyCreate(req, res) {
+  try {
+    const out = await groupsService.createGroup(null, req.body);
+    const detail = await groupsService.groupDetail(req.body?.userId || 1, out.id);
+    if (!detail) return res.status(201).json({ id: out.id });
+    res.status(201).json(groupsService.toLegacyGroup(detail));
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
+    res.status(500).json({ message: e.message });
+  }
+}
+
+module.exports = {
+  create,
+  my,
+  suggested,
+  join,
+  leave,
+  detail,
+  messages,
+  sendMessage,
+  legacyList,
+  legacyCreate
+};

@@ -69,12 +69,21 @@ async function initDb() {
       description text,
       course text,
       subject text,
+      colorClass text,
       ownerId integer not null,
       createdAt text not null,
       updatedAt text not null,
       foreign key (ownerId) references Users(id) on delete cascade
     )
   `);
+
+  try {
+    await run(`alter table Groups add column colorClass text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
 
   // group members
   await run(`
