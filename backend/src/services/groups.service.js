@@ -43,8 +43,13 @@ async function createGroup(userId, body) {
     payload.colorClass ?? payload.colore ?? payload.color ?? payload.selectedColorClass
   );
 
-  if (!name || !String(name).trim()) {
+  const normalizedName = String(name || '').trim();
+
+  if (!normalizedName) {
     throw badRequest('name e obbligatorio');
+  }
+  if (normalizedName.length > 30) {
+    throw badRequest('name massimo 30 caratteri');
   }
 
   const ownerId = await resolveOwnerId(userId, payload.userId);
@@ -54,7 +59,7 @@ async function createGroup(userId, body) {
     `insert into Groups (name, description, course, subject, colorClass, ownerId, createdAt, updatedAt)
      values (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      String(name).trim(),
+      normalizedName,
       description ? String(description).trim() : null,
       course ? String(course).trim() : null,
       subject ? String(subject).trim() : null,

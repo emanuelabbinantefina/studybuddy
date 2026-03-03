@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private apiUrl = 'http://localhost:3000/api/auth';
+  private groupsApiUrl = 'http://localhost:3000/api/groups';
   private userProfile = new BehaviorSubject<any>(null);
   private profileLoaded = false;
   private fallbackAvatar = 'assets/images/logo-uni.png';
@@ -48,8 +49,18 @@ export class UserService {
   }
 
   private fetchProfile(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/me`, { headers: this.authHeaders() }).pipe(
-      map((user) => this.mapBackendUser(user)),
+    const headers = this.authHeaders();
+
+    return forkJoin({
+      user: this.http.get<any>(`${this.apiUrl}/me`, { headers }),
+      myGroups: this.http.get<any[]>(`${this.groupsApiUrl}/my`, { headers })
+    }).pipe(
+      map(({ user, myGroups }) => {
+        const mapped = this.mapBackendUser(user);
+        const groupsCount = Array.isArray(myGroups) ? myGroups.length : 0;
+        mapped.esamiTotali = groupsCount;
+        return mapped;
+      }),
       tap((profile) => {
         localStorage.setItem('user_profile', JSON.stringify(profile));
         this.userProfile.next(profile);
@@ -92,6 +103,7 @@ export class UserService {
     return this.http.patch<any>(`${this.apiUrl}/me`, payload, { headers: this.authHeaders() }).pipe(
       map((user) => {
         const mapped = this.mapBackendUser(user);
+        mapped.esamiTotali = this.userProfile.value?.esamiTotali || 0;
         if (newData?.avatarUrl) {
           mapped.avatar = newData.avatarUrl;
           const avatarKey = mapped?.id ? `user_avatar_${mapped.id}` : 'user_avatar';

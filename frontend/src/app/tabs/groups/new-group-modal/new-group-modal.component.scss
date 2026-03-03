@@ -121,6 +121,14 @@ ion-toolbar {
       }
     }
   }
+
+  .input-meta {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
 }
 
 /* --- SELEZIONE COLORE --- */

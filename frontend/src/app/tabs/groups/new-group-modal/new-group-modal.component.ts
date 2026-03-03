@@ -33,8 +33,15 @@ export class NewGroupModalComponent {
   }
 
   confirm() {
+    const normalizedName = this.groupName.trim();
+    if (!normalizedName) return;
+    if (normalizedName.length > 30) {
+      alert('Il nome gruppo puo avere massimo 30 caratteri');
+      return;
+    }
+
     const dati = {
-      nome: this.groupName,
+      nome: normalizedName,
       materia: 'Generale',
       colorClass: this.selectedColorClass,
       colore: this.selectedColorClass

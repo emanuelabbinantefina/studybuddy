@@ -7,7 +7,7 @@
     <ion-title>Nuovo Gruppo</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button (click)="confirm()" [disabled]="!groupName" class="header-btn create-btn">CREA</ion-button>
+      <ion-button (click)="confirm()" [disabled]="!groupName?.trim() || groupName.trim().length > 30" class="header-btn create-btn">CREA</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -26,7 +26,10 @@
     <div class="form-item">
       <label>Nome del gruppo</label>
       <div class="input-box">
-        <input type="text" [(ngModel)]="groupName" placeholder="Es. Analisi Matematica 2">
+        <input type="text" [(ngModel)]="groupName" maxlength="30" placeholder="Es. Analisi Matematica 2">
+      </div>
+      <div class="input-meta">
+        <span>{{ (groupName || '').length }}/30</span>
       </div>
     </div>
 

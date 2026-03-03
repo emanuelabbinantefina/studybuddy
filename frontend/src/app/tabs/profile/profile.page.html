@@ -19,6 +19,7 @@
       </div>
       <h2>{{ user?.nome || 'Emanuela' }}</h2>
       <p class="profile-bio" *ngIf="user?.bio">{{ (user?.bio || '') | slice:0:120 }}</p>
+      <p class="profile-facolta" *ngIf="user?.facolta">{{ user?.facolta }}</p>
     </div>
 
     <div class="stats-card" (click)="onStats()">
