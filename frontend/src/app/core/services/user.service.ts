@@ -8,6 +8,7 @@ export class UserService {
   private apiUrl = 'http://localhost:3000/api/auth';
   private userProfile = new BehaviorSubject<any>(null);
   private profileLoaded = false;
+  private fallbackAvatar = 'assets/images/logo-uni.png';
 
   constructor(private http: HttpClient) {}
 
@@ -25,13 +26,19 @@ export class UserService {
       localUser = null;
     }
 
+    const userId = user?.id || localUser?.id || null;
+    const avatarKey = userId ? `user_avatar_${userId}` : null;
+    const storedAvatar = (avatarKey && localStorage.getItem(avatarKey))
+      || localStorage.getItem('user_avatar')
+      || this.fallbackAvatar;
+
     return {
-      id: user?.id,
+      id: userId,
       nome: user?.nickname || user?.name || localUser?.name || 'Utente',
       nickname: user?.nickname || '',
       bio: user?.bio || '',
       email: user?.email || localUser?.email || '',
-      avatar: localStorage.getItem('user_avatar') || 'assets/placeholder-avatar.png',
+      avatar: storedAvatar,
       facolta: user?.facolta || localUser?.facolta || '',
       media: 0,
       cfu: 0,
@@ -85,6 +92,9 @@ export class UserService {
         const mapped = this.mapBackendUser(user);
         if (newData?.avatarUrl) {
           mapped.avatar = newData.avatarUrl;
+          const avatarKey = mapped?.id ? `user_avatar_${mapped.id}` : 'user_avatar';
+          localStorage.setItem(avatarKey, newData.avatarUrl);
+          // legacy key per compatibilità con versioni precedenti
           localStorage.setItem('user_avatar', newData.avatarUrl);
         }
         return mapped;
@@ -112,7 +122,7 @@ export class UserService {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_profile');
-    localStorage.removeItem('user_avatar');
     this.userProfile.next(null);
+    this.profileLoaded = false;
   }
 }

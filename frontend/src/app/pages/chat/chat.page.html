@@ -20,3 +20,40 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="messages-container">
+    <div class="empty-state" *ngIf="messages.length === 0">
+      Nessun messaggio ancora. Scrivi il primo qui sotto.
+    </div>
+
+    <div
+      *ngFor="let m of messages"
+      class="message-wrapper"
+      [ngClass]="isMine(m) ? 'sent' : 'received'">
+      <div class="msg-avatar" *ngIf="!isMine(m)">{{ senderInitial(m) }}</div>
+
+      <div class="message-bubble">
+        <span class="sender-name" *ngIf="!isMine(m)">{{ m.userName }}</span>
+        <p>{{ m.text }}</p>
+        <span class="msg-time">{{ formatTime(m.createdAt) }}</span>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border chat-footer">
+  <div class="chat-input-bar">
+    <div class="input-wrapper">
+      <textarea
+        [(ngModel)]="newMessage"
+        placeholder="Scrivi un messaggio..."
+        rows="1"
+        (keydown.enter)="sendMessage(); $event.preventDefault()"></textarea>
+    </div>
+
+    <ion-button class="send-btn" (click)="sendMessage()" [disabled]="sending || !newMessage.trim()">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+  </div>
+</ion-footer>

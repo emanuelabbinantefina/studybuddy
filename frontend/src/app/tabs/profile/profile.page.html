@@ -15,7 +15,7 @@
   <div class="main-container">
     <div class="profile-section">
       <div class="avatar-wrapper" (click)="onEditProfile()">
-        <img [src]="user?.avatar || 'assets/placeholder-avatar.png'" alt="avatar">
+        <img [src]="user?.avatar || fallbackAvatar" (error)="onAvatarError($event)" alt="avatar">
       </div>
       <h2>{{ user?.nome || 'Emanuela' }}</h2>
       <p class="profile-bio" *ngIf="user?.bio">{{ (user?.bio || '') | slice:0:120 }}</p>

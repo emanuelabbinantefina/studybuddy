@@ -1,36 +1,41 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
 
-export interface Message {
+export interface GroupMessage {
   id: number;
-  text?: string;
-  sender: string;
-  time: string;
-  type: 'text' | 'file';
-  fileName?: string;
+  groupId: number;
+  userId: number;
+  userName: string;
+  text: string;
+  createdAt: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
-  private apiUrl = `${environment.apiUrl}/chat`; 
+  private apiUrl = 'http://localhost:3000/api/groups';
 
   constructor(private http: HttpClient) {}
 
-  getMessages(groupId: number): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.apiUrl}/groups/${groupId}/messages`);
+  private authHeaders(): HttpHeaders {
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) return new HttpHeaders();
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  sendMessage(groupId: number, text: string): Observable<Message> {
-    return this.http.post<Message>(`${this.apiUrl}/groups/${groupId}/send`, { text });
+  getMessages(groupId: number): Observable<GroupMessage[]> {
+    return this.http.get<GroupMessage[]>(`${this.apiUrl}/${groupId}/messages`, {
+      headers: this.authHeaders()
+    });
   }
 
-  uploadFile(groupId: number, file: File): Observable<Message> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<Message>(`${this.apiUrl}/groups/${groupId}/upload`, formData);
+  sendMessage(groupId: number, text: string): Observable<GroupMessage> {
+    return this.http.post<GroupMessage>(
+      `${this.apiUrl}/${groupId}/messages`,
+      { text },
+      { headers: this.authHeaders() }
+    );
   }
 }

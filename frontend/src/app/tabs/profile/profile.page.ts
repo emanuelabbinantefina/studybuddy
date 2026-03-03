@@ -24,6 +24,7 @@ export interface UserProfile {
 })
 export class ProfilePage implements OnInit {
   user: UserProfile | null = null;
+  fallbackAvatar = 'assets/images/logo-uni.png';
 
   constructor(
     private userService: UserService,
@@ -66,5 +67,13 @@ export class ProfilePage implements OnInit {
       position: 'bottom'
     });
     await toast.present();
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    if (!img.src.includes(this.fallbackAvatar)) {
+      img.src = this.fallbackAvatar;
+    }
   }
 }

@@ -49,6 +49,14 @@ ion-toolbar {
 .messages-container {
   padding: 10px 16px 20px;
   display: flex; flex-direction: column; gap: 4px;
+  min-height: 100%;
+}
+
+.empty-state {
+  margin: 18px auto;
+  color: #64748B;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .message-wrapper {
@@ -102,6 +110,12 @@ ion-toolbar {
 ion-footer {
   background: #F8FAFC; 
   padding: 0 10px 10px;
+}
+
+.chat-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
 }
 
 .chat-input-bar {

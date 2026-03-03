@@ -236,7 +236,17 @@ async function sendMessage(userId, groupId, body) {
 
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
 
-  return { id: out.lastID };
+  const saved = await get(
+    `
+    select m.id, m.groupId, m.userId, u.name as userName, m.text, m.createdAt
+    from GroupMessages m
+    join Users u on u.id = m.userId
+    where m.id = ?
+    `,
+    [out.lastID]
+  );
+
+  return saved || { id: out.lastID, groupId, userId, text, createdAt: now };
 }
 
 function toLegacyGroup(row) {
