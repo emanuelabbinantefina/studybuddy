@@ -16,10 +16,28 @@ async function initDb() {
       password text not null,
       facolta text,
       corso text,
+      nickname text,
+      bio text,
       createdAt text not null,
       updatedAt text not null
     )
   `);
+
+  try {
+    await run(`alter table Users add column nickname text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Users add column bio text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
 
   // faculties
   await run(`

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
   try {
+    const secret = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
     const authHeader = req.headers.authorization || '';
     const parts = authHeader.split(' ');
 
@@ -10,7 +11,7 @@ module.exports = (req, res, next) => {
     }
 
     const token = parts[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, secret);
 
     const userId = decoded.userId || decoded.id;
     if (!userId) {

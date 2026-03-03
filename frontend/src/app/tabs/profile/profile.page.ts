@@ -6,6 +6,7 @@ import { UserService } from '../../core/services/user.service';
 export interface UserProfile {
   id: number;
   nome: string;
+  bio?: string;
   email: string;
   avatar: string;
   facolta: string;
@@ -31,11 +32,14 @@ export class ProfilePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Usiamo il service invece di HttpClient diretto per coerenza
     this.userService.getProfile().subscribe({
       next: (data) => { this.user = data; },
       error: (err) => { console.error('Errore caricamento:', err); }
     });
+  }
+
+  ionViewWillEnter() {
+    this.userService.reloadProfile();
   }
 
   // Navigazione Reale

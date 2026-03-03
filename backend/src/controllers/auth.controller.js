@@ -13,7 +13,7 @@ async function faculties(req, res) {
 async function register(req, res) {
   try {
     const out = await authService.register(req.body);
-    res.status(201).json({ message: 'utente registrato', userId: out.userId });
+    res.status(201).json({ message: 'utente registrato', ...out });
   } catch (e) {
     if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
     if (e.code === 'EMAIL_EXISTS') return res.status(409).json({ message: e.message });
@@ -42,4 +42,15 @@ async function me(req, res) {
   }
 }
 
-module.exports = { faculties, register, login, me };
+async function updateMe(req, res) {
+  try {
+    const user = await authService.updateProfile(req.userData.userId, req.body);
+    res.json(user);
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
+    if (e.code === 'NOT_FOUND') return res.status(404).json({ message: e.message });
+    res.status(500).json({ message: e.message });
+  }
+}
+
+module.exports = { faculties, register, login, me, updateMe };

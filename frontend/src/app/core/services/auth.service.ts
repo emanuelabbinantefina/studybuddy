@@ -13,23 +13,27 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
+  private persistSession(response: any) {
+    if (!response?.token) return;
+    localStorage.setItem('auth_token', response.token);
+    if (response.user) {
+      localStorage.setItem('user_data', JSON.stringify(response.user));
+    }
+  }
+
   getFaculties(): Observable<any[]>{
     return this.http.get<any[]>(`${this.apiUrl}/faculties`);
   }
 
   register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
+    return this.http.post(`${this.apiUrl}/register`, userData).pipe(
+      tap((response: any) => this.persistSession(response))
+    );
   }
 
   login(credentials: { email: string, password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response: any) => {
-        // Se il backend restituisce un token, lo salviamo
-        if (response.token) {
-          localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('user_data', JSON.stringify(response.user));
-        }
-      })
+      tap((response: any) => this.persistSession(response))
     );
   }
 

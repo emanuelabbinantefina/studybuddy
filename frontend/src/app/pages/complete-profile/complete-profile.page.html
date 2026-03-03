@@ -40,8 +40,9 @@
 
         <div class="custom-input textarea-input">
           <ion-icon name="chatbox-ellipses-outline"></ion-icon>
-          <ion-textarea [(ngModel)]="profileData.bio" autoGrow="true" rows="1" placeholder="Scrivi una breve bio..."></ion-textarea>
+          <ion-textarea [(ngModel)]="profileData.bio" autoGrow="true" rows="1" maxlength="120" placeholder="Scrivi una breve bio..."></ion-textarea>
         </div>
+        <div class="bio-counter">{{ (profileData.bio?.length || 0) }}/120</div>
       </div>
 
       <div class="action-area">

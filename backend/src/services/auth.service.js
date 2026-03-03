@@ -57,7 +57,25 @@ async function register(body) {
     [name.trim(), email.trim(), hashed, facolta || null, corso || null, now, now]
   );
 
-  return { userId: out.lastID };
+  const token = jwt.sign(
+    { id: out.lastID, userId: out.lastID, email: email.trim() },
+    SECRET_KEY,
+    { expiresIn: '24h' }
+  );
+
+  return {
+    userId: out.lastID,
+    token,
+    user: {
+      id: out.lastID,
+      name: name.trim(),
+      email: email.trim(),
+      facolta: facolta || null,
+      corso: corso || null,
+      nickname: null,
+      bio: null
+    }
+  };
 }
 
 async function login(body) {
@@ -66,7 +84,7 @@ async function login(body) {
   if (!email || !password) throw badRequest('email e password sono obbligatori');
 
   const user = await get(
-    `select id, name, email, password, facolta, corso
+    `select id, name, email, password, facolta, corso, nickname, bio
      from Users
      where email = ?`,
     [email.trim()]
@@ -99,18 +117,55 @@ async function login(body) {
       name: user.name,
       email: user.email,
       facolta: user.facolta,
-      corso: user.corso
+      corso: user.corso,
+      nickname: user.nickname,
+      bio: user.bio
     }
   };
 }
 
 async function me(userId) {
   return get(
-    `select id, name, email, facolta, corso, createdAt, updatedAt
+    `select id, name, email, facolta, corso, nickname, bio, createdAt, updatedAt
      from Users
      where id = ?`,
     [userId]
   );
 }
 
-module.exports = { facultiesWithCourses, register, login, me };
+async function updateProfile(userId, body) {
+  const nicknameIn = body && typeof body.nickname === 'string' ? body.nickname.trim() : undefined;
+  const bioIn = body && typeof body.bio === 'string' ? body.bio.trim() : undefined;
+
+  const updates = [];
+  const params = [];
+
+  if (nicknameIn !== undefined) {
+    if (!nicknameIn) throw badRequest('nickname obbligatorio');
+    updates.push('nickname = ?');
+    params.push(nicknameIn);
+  }
+
+  if (bioIn !== undefined) {
+    if (bioIn.length > 120) throw badRequest('bio massimo 120 caratteri');
+    updates.push('bio = ?');
+    params.push(bioIn || null);
+  }
+
+  if (!updates.length) throw badRequest('nessun campo da aggiornare');
+
+  const now = nowIso();
+  updates.push('updatedAt = ?');
+  params.push(now, userId);
+
+  const out = await run(`update Users set ${updates.join(', ')} where id = ?`, params);
+  if (!out.changes) {
+    const err = new Error('utente non trovato');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  return me(userId);
+}
+
+module.exports = { facultiesWithCourses, register, login, me, updateProfile };

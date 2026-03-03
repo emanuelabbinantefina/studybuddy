@@ -1,38 +1,118 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
+  private apiUrl = 'http://localhost:3000/api/auth';
   private userProfile = new BehaviorSubject<any>(null);
+  private profileLoaded = false;
 
   constructor(private http: HttpClient) {}
 
-  getProfile(): Observable<any> {
-    // Se abbiamo già i dati aggiornati in memoria, restituiamoli
-    if (this.userProfile.value) return this.userProfile.asObservable();
+  private authHeaders(): HttpHeaders {
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) return new HttpHeaders();
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-    // 1. Prova a leggere dal browser
-    const saved = localStorage.getItem('user_profile');
-    
-    // 2. Carica sempre dal JSON per sicurezza durante lo sviluppo
-    return this.http.get('assets/data/user.json').pipe(
-      tap(data => {
-        // Se il file JSON è diverso dal salvataggio vecchio, vince il JSON
-        this.userProfile.next(data);
+  private mapBackendUser(user: any) {
+    let localUser: any = null;
+    try {
+      localUser = JSON.parse(localStorage.getItem('user_data') || 'null');
+    } catch {
+      localUser = null;
+    }
+
+    return {
+      id: user?.id,
+      nome: user?.nickname || user?.name || localUser?.name || 'Utente',
+      nickname: user?.nickname || '',
+      bio: user?.bio || '',
+      email: user?.email || localUser?.email || '',
+      avatar: localStorage.getItem('user_avatar') || 'assets/placeholder-avatar.png',
+      facolta: user?.facolta || localUser?.facolta || '',
+      media: 0,
+      cfu: 0,
+      esamiTotali: 0
+    };
+  }
+
+  private fetchProfile(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/me`, { headers: this.authHeaders() }).pipe(
+      map((user) => this.mapBackendUser(user)),
+      tap((profile) => {
+        localStorage.setItem('user_profile', JSON.stringify(profile));
+        this.userProfile.next(profile);
       }),
-      catchError(() => of(null))
+      catchError(() => {
+        const saved = localStorage.getItem('user_profile');
+        let fallback: any = null;
+        if (saved) {
+          try {
+            fallback = JSON.parse(saved);
+          } catch {
+            fallback = null;
+          }
+        }
+        this.userProfile.next(fallback);
+        return of(fallback);
+      })
     );
   }
 
-  updateProfile(newData: any) {
-    localStorage.setItem('user_profile', JSON.stringify(newData));
-    this.userProfile.next(newData);
+  getProfile(): Observable<any> {
+    if (!this.profileLoaded) {
+      this.profileLoaded = true;
+      this.fetchProfile().subscribe();
+    }
+    return this.userProfile.asObservable();
+  }
+
+  reloadProfile(): void {
+    this.fetchProfile().subscribe();
+  }
+
+  updateProfile(newData: any): Observable<any> {
+    const payload = {
+      nickname: String(newData?.nickname || '').trim(),
+      bio: typeof newData?.bio === 'string' ? newData.bio.trim() : ''
+    };
+
+    return this.http.patch<any>(`${this.apiUrl}/me`, payload, { headers: this.authHeaders() }).pipe(
+      map((user) => {
+        const mapped = this.mapBackendUser(user);
+        if (newData?.avatarUrl) {
+          mapped.avatar = newData.avatarUrl;
+          localStorage.setItem('user_avatar', newData.avatarUrl);
+        }
+        return mapped;
+      }),
+      tap((mapped) => {
+        localStorage.setItem('user_profile', JSON.stringify(mapped));
+        this.userProfile.next(mapped);
+
+        try {
+          const session = JSON.parse(localStorage.getItem('user_data') || 'null');
+          if (session) {
+            session.name = mapped.nome || session.name;
+            session.nickname = mapped.nickname || session.nickname || null;
+            session.bio = mapped.bio || null;
+            localStorage.setItem('user_data', JSON.stringify(session));
+          }
+        } catch {
+          // ignore local session parse errors
+        }
+      })
+    );
   }
 
   logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
     localStorage.removeItem('user_profile');
+    localStorage.removeItem('user_avatar');
     this.userProfile.next(null);
   }
 }
