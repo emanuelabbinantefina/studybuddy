@@ -22,6 +22,7 @@ export class ChatPage implements OnInit, OnDestroy {
   groupName = 'Gruppo';
   groupColorClass = 'bg-blue';
   currentUserId = 0;
+  fallbackAvatar = 'assets/images/logo-uni.png';
   messages: GroupMessage[] = [];
   sending = false;
 
@@ -41,7 +42,7 @@ export class ChatPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.currentUserId = Number(this.readSessionUserId() || 0);
+    this.syncSessionUser();
 
     const idParam = this.route.snapshot.paramMap.get('id');
     const nameParam = this.route.snapshot.queryParamMap.get('nome');
@@ -59,6 +60,18 @@ export class ChatPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.stopPolling();
+  }
+
+  ionViewWillEnter() {
+    this.syncSessionUser();
+    if (this.groupId) {
+      this.loadMessages(true);
+      this.startPolling();
+    }
+  }
+
+  ionViewDidLeave() {
     this.stopPolling();
   }
 
@@ -124,6 +137,19 @@ export class ChatPage implements OnInit, OnDestroy {
     return source.charAt(0).toUpperCase();
   }
 
+  messageAvatar(message: GroupMessage): string {
+    const value = (message.userAvatar || '').trim();
+    return value || this.fallbackAvatar;
+  }
+
+  onMessageAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    if (!img.src.includes(this.fallbackAvatar)) {
+      img.src = this.fallbackAvatar;
+    }
+  }
+
   formatTime(iso: string): string {
     const d = new Date(iso);
     const hh = String(d.getHours()).padStart(2, '0');
@@ -132,9 +158,10 @@ export class ChatPage implements OnInit, OnDestroy {
   }
 
   private startPolling() {
+    this.stopPolling();
     this.pollingInterval = setInterval(() => {
       this.loadMessages(false);
-    }, 3000);
+    }, 2000);
   }
 
   private stopPolling() {
@@ -154,6 +181,10 @@ export class ChatPage implements OnInit, OnDestroy {
     } catch {
       return null;
     }
+  }
+
+  private syncSessionUser() {
+    this.currentUserId = Number(this.readSessionUserId() || 0);
   }
 
   private normalizeColorClass(colorClass: string): string {

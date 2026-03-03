@@ -7,6 +7,7 @@ export interface GroupMessage {
   groupId: number;
   userId: number;
   userName: string;
+  userAvatar?: string | null;
   text: string;
   createdAt: string;
 }

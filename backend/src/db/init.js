@@ -18,6 +18,7 @@ async function initDb() {
       corso text,
       nickname text,
       bio text,
+      avatarUrl text,
       createdAt text not null,
       updatedAt text not null
     )
@@ -33,6 +34,14 @@ async function initDb() {
 
   try {
     await run(`alter table Users add column bio text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Users add column avatarUrl text`);
   } catch (err) {
     if (!/duplicate column name/i.test(String(err.message || ''))) {
       throw err;

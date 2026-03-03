@@ -52,9 +52,9 @@ async function register(body) {
   const now = nowIso();
 
   const out = await run(
-    `insert into Users (name, email, password, facolta, corso, createdAt, updatedAt)
-     values (?, ?, ?, ?, ?, ?, ?)`,
-    [name.trim(), email.trim(), hashed, facolta || null, corso || null, now, now]
+    `insert into Users (name, email, password, facolta, corso, nickname, bio, avatarUrl, createdAt, updatedAt)
+     values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name.trim(), email.trim(), hashed, facolta || null, corso || null, null, null, null, now, now]
   );
 
   const token = jwt.sign(
@@ -73,7 +73,8 @@ async function register(body) {
       facolta: facolta || null,
       corso: corso || null,
       nickname: null,
-      bio: null
+      bio: null,
+      avatarUrl: null
     }
   };
 }
@@ -84,7 +85,7 @@ async function login(body) {
   if (!email || !password) throw badRequest('email e password sono obbligatori');
 
   const user = await get(
-    `select id, name, email, password, facolta, corso, nickname, bio
+    `select id, name, email, password, facolta, corso, nickname, bio, avatarUrl
      from Users
      where email = ?`,
     [email.trim()]
@@ -119,14 +120,15 @@ async function login(body) {
       facolta: user.facolta,
       corso: user.corso,
       nickname: user.nickname,
-      bio: user.bio
+      bio: user.bio,
+      avatarUrl: user.avatarUrl
     }
   };
 }
 
 async function me(userId) {
   return get(
-    `select id, name, email, facolta, corso, nickname, bio, createdAt, updatedAt
+    `select id, name, email, facolta, corso, nickname, bio, avatarUrl, createdAt, updatedAt
      from Users
      where id = ?`,
     [userId]
@@ -136,6 +138,7 @@ async function me(userId) {
 async function updateProfile(userId, body) {
   const nicknameIn = body && typeof body.nickname === 'string' ? body.nickname.trim() : undefined;
   const bioIn = body && typeof body.bio === 'string' ? body.bio.trim() : undefined;
+  const avatarUrlIn = body && typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
 
   const updates = [];
   const params = [];
@@ -150,6 +153,11 @@ async function updateProfile(userId, body) {
     if (bioIn.length > 120) throw badRequest('bio massimo 120 caratteri');
     updates.push('bio = ?');
     params.push(bioIn || null);
+  }
+
+  if (avatarUrlIn !== undefined) {
+    updates.push('avatarUrl = ?');
+    params.push(avatarUrlIn || null);
   }
 
   if (!updates.length) throw badRequest('nessun campo da aggiornare');

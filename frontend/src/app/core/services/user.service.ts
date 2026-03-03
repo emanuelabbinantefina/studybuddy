@@ -28,7 +28,8 @@ export class UserService {
 
     const userId = user?.id || localUser?.id || null;
     const avatarKey = userId ? `user_avatar_${userId}` : null;
-    const storedAvatar = (avatarKey && localStorage.getItem(avatarKey))
+    const storedAvatar = user?.avatarUrl
+      || (avatarKey && localStorage.getItem(avatarKey))
       || localStorage.getItem('user_avatar')
       || this.fallbackAvatar;
 
@@ -84,7 +85,8 @@ export class UserService {
   updateProfile(newData: any): Observable<any> {
     const payload = {
       nickname: String(newData?.nickname || '').trim(),
-      bio: typeof newData?.bio === 'string' ? newData.bio.trim() : ''
+      bio: typeof newData?.bio === 'string' ? newData.bio.trim() : '',
+      avatarUrl: typeof newData?.avatarUrl === 'string' ? newData.avatarUrl : ''
     };
 
     return this.http.patch<any>(`${this.apiUrl}/me`, payload, { headers: this.authHeaders() }).pipe(

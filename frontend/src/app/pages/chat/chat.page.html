@@ -31,7 +31,9 @@
       *ngFor="let m of messages"
       class="message-wrapper"
       [ngClass]="isMine(m) ? 'sent' : 'received'">
-      <div class="msg-avatar" *ngIf="!isMine(m)">{{ senderInitial(m) }}</div>
+      <div class="msg-avatar">
+        <img [src]="messageAvatar(m)" (error)="onMessageAvatarError($event)" alt="avatar">
+      </div>
 
       <div class="message-bubble">
         <span class="sender-name" *ngIf="!isMine(m)">{{ m.userName }}</span>

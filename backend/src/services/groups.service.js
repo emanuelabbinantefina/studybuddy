@@ -81,6 +81,7 @@ async function myGroups(userId) {
       g.id, g.name, g.description, g.course, g.subject, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
     join GroupMembers gm on gm.groupId = g.id and gm.userId = ?
@@ -111,6 +112,7 @@ async function suggestedGroups(userId, query) {
       g.id, g.name, g.description, g.course, g.subject, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
     left join GroupMembers gm
@@ -201,7 +203,7 @@ async function listMessages(userId, groupId, query) {
 
   return all(
     `
-    select m.id, m.groupId, m.userId, u.name as userName, m.text, m.createdAt
+    select m.id, m.groupId, m.userId, coalesce(u.nickname, u.name) as userName, u.avatarUrl as userAvatar, m.text, m.createdAt
     from GroupMessages m
     join Users u on u.id = m.userId
     where m.groupId = ?
@@ -238,7 +240,7 @@ async function sendMessage(userId, groupId, body) {
 
   const saved = await get(
     `
-    select m.id, m.groupId, m.userId, u.name as userName, m.text, m.createdAt
+    select m.id, m.groupId, m.userId, coalesce(u.nickname, u.name) as userName, u.avatarUrl as userAvatar, m.text, m.createdAt
     from GroupMessages m
     join Users u on u.id = m.userId
     where m.id = ?
@@ -258,7 +260,7 @@ function toLegacyGroup(row) {
     isMember: !!row.isMember,
     membersCount: row.membersCount || 0,
     ultimoMessaggio: row.lastMessage || 'Nessun messaggio',
-    autoreMessaggio: row.lastMessage ? 'Utente' : 'Sistema',
+    autoreMessaggio: row.lastMessageUserName || (row.lastMessage ? 'Utente' : 'Sistema'),
     tempoTrascorso: 'Ora',
     membriPreview: []
   };
@@ -288,6 +290,7 @@ async function publicGroups(userId, query) {
       case when gm.userId is null then 0 else 1 end as isMember,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
     left join GroupMembers gm
@@ -315,6 +318,7 @@ async function legacyGroupsList() {
       g.colorClass,
       g.updatedAt,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
+      (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
     order by coalesce(

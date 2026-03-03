@@ -26,7 +26,7 @@ export class ApiService {
         isMember: typeof raw.isMember === 'boolean' ? raw.isMember : false,
         membersCount: raw.membersCount || 0,
         ultimoMessaggio: raw.ultimoMessaggio || 'Nessun messaggio',
-        autoreMessaggio: raw.autoreMessaggio || 'Sistema',
+        autoreMessaggio: raw.autoreMessaggio || raw.lastMessageUserName || 'Sistema',
         tempoTrascorso: raw.tempoTrascorso || 'Ora',
         membriPreview: raw.membriPreview || []
       };
@@ -40,7 +40,7 @@ export class ApiService {
       isMember: !!raw?.isMember,
       membersCount: raw?.membersCount || 0,
       ultimoMessaggio: raw?.lastMessage || 'Nessun messaggio',
-      autoreMessaggio: raw?.lastMessage ? 'Utente' : 'Sistema',
+      autoreMessaggio: raw?.lastMessageUserName || (raw?.lastMessage ? 'Utente' : 'Sistema'),
       tempoTrascorso: 'Ora',
       membriPreview: []
     };
