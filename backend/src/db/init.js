@@ -125,7 +125,10 @@ async function initDb() {
       name text not null,
       description text,
       course text,
+      faculty text,
       subject text,
+      examDate text,
+      visibility text not null default 'public',
       colorClass text,
       ownerId integer not null,
       createdAt text not null,
@@ -142,6 +145,30 @@ async function initDb() {
     }
   }
 
+  try {
+    await run(`alter table Groups add column faculty text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Groups add column examDate text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Groups add column visibility text not null default 'public'`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
   // group members
   await run(`
     create table if not exists GroupMembers (
@@ -152,6 +179,55 @@ async function initDb() {
       primary key (groupId, userId),
       foreign key (groupId) references Groups(id) on delete cascade,
       foreign key (userId) references Users(id) on delete cascade
+    )
+  `);
+
+  // study topics / syllabus for each group
+  await run(`
+    create table if not exists GroupTopics (
+      id integer primary key autoincrement,
+      groupId integer not null,
+      title text not null,
+      position integer not null default 0,
+      assignedUserId integer,
+      done integer not null default 0,
+      createdByUserId integer not null,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (groupId) references Groups(id) on delete cascade,
+      foreign key (assignedUserId) references Users(id) on delete set null,
+      foreign key (createdByUserId) references Users(id) on delete cascade
+    )
+  `);
+
+  // planned study sessions inside a group
+  await run(`
+    create table if not exists GroupSessions (
+      id integer primary key autoincrement,
+      groupId integer not null,
+      title text not null,
+      startsAt text,
+      notes text,
+      createdByUserId integer not null,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (groupId) references Groups(id) on delete cascade,
+      foreign key (createdByUserId) references Users(id) on delete cascade
+    )
+  `);
+
+  // exam questions bank shared by group members
+  await run(`
+    create table if not exists GroupQuestions (
+      id integer primary key autoincrement,
+      groupId integer not null,
+      question text not null,
+      answer text,
+      createdByUserId integer not null,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (groupId) references Groups(id) on delete cascade,
+      foreign key (createdByUserId) references Users(id) on delete cascade
     )
   `);
 
@@ -173,7 +249,12 @@ async function initDb() {
   await run(`create index if not exists idx_notes_user_created on Notes(userId, createdAt desc)`);
   await run(`create index if not exists idx_bookmarks_user_created on NoteBookmarks(userId, createdAt desc)`);
   await run(`create index if not exists idx_bookmarks_note on NoteBookmarks(noteId)`);
+  await run(`create index if not exists idx_groups_faculty_subject on Groups(faculty, subject)`);
   await run(`create index if not exists idx_groupmembers_user on GroupMembers(userId)`);
+  await run(`create index if not exists idx_groupmembers_group on GroupMembers(groupId)`);
+  await run(`create index if not exists idx_grouptopics_group_position on GroupTopics(groupId, position)`);
+  await run(`create index if not exists idx_groupsessions_group_starts on GroupSessions(groupId, startsAt)`);
+  await run(`create index if not exists idx_groupquestions_group_created on GroupQuestions(groupId, createdAt desc)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
 }
 

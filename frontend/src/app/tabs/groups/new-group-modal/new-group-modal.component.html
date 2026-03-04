@@ -1,49 +1,118 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="cancel()" class="header-btn">ANNULLA</ion-button>
-    </ion-buttons>
-
-    <ion-title>Nuovo Gruppo</ion-title>
-
-    <ion-buttons slot="end">
-      <ion-button (click)="confirm()" [disabled]="!groupName?.trim() || groupName.trim().length > 30" class="header-btn create-btn">CREA</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <div style="max-width: 500px; margin: 0 auto;">
-    
-    <div class="preview-section">
-      <div class="icon-square" [ngClass]="selectedColorClass">
-        <span>{{ groupName ? groupName.charAt(0).toUpperCase() : '?' }}</span>
-        <div class="bookmark-tag"></div>
+<ion-content class="modal-bg">
+  <section class="modal-card">
+    <header class="modal-header">
+      <div>
+        <h2>Crea gruppo studio</h2>
+        <p>Step {{ step }} di 3</p>
       </div>
-      <p class="preview-label">ANTEPRIMA ICONA</p>
+      <button type="button" class="close-btn" (click)="cancel()">&times;</button>
+    </header>
+
+    <div class="steps-track">
+      <span [class.active]="step >= 1"></span>
+      <span [class.active]="step >= 2"></span>
+      <span [class.active]="step >= 3"></span>
     </div>
 
-    <div class="form-item">
-      <label>Nome del gruppo</label>
-      <div class="input-box">
-        <input type="text" [(ngModel)]="groupName" maxlength="30" placeholder="Es. Analisi Matematica 2">
-      </div>
-      <div class="input-meta">
-        <span>{{ (groupName || '').length }}/30</span>
-      </div>
-    </div>
+    <section *ngIf="step === 1" class="step-pane">
+      <label>NOME DEL GRUPPO</label>
+      <input type="text" placeholder="Es. Analisi II - Sessione giugno" [(ngModel)]="groupName" maxlength="60">
 
-    <div class="form-item">
-      <label>Scegli un colore</label>
-      <div class="color-row">
-        <div 
-          *ngFor="let c of colorOptions" 
-          class="color-picker-item" 
-          [ngClass]="[c.class, selectedColorClass === c.class ? 'active' : '']"
-          (click)="selectedColorClass = c.class">
+      <label>FACOLTA</label>
+      <div class="chips-wrap">
+        <button
+          type="button"
+          class="chip"
+          *ngFor="let f of faculties"
+          [class.active]="selectedFacultyId === f.id"
+          (click)="selectFaculty(f)">
+          {{ f.name }}
+        </button>
+      </div>
+
+      <label>MATERIA</label>
+      <div class="chips-wrap">
+        <button
+          type="button"
+          class="chip"
+          *ngFor="let subject of subjectOptions"
+          [class.active]="selectedSubject === subject"
+          (click)="selectedSubject = subject">
+          {{ subject }}
+        </button>
+      </div>
+
+      <label>DATA ESAME (opzionale)</label>
+      <input type="date" [(ngModel)]="examDate">
+
+      <label>VISIBILITA</label>
+      <div class="visibility-box">
+        <ion-icon name="globe-outline"></ion-icon>
+        <div>
+          <strong>{{ visibility }}</strong>
+          <p>Visibile a tutti gli utenti dell'app</p>
         </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+    <section *ngIf="step === 2" class="step-pane">
+      <article class="preview-card">
+        <div class="icon-box" [ngClass]="selectedColorClass">{{ groupName ? groupName.charAt(0) : '?' }}</div>
+        <div>
+          <h3>{{ groupName || 'Nome gruppo' }}</h3>
+          <p>{{ selectedSubject || 'Materia' }} · {{ selectedFacultyName || 'Facoltà' }}</p>
+        </div>
+        <span class="visibility-pill">Pubblico</span>
+      </article>
+
+      <label>COLORE GRUPPO</label>
+      <div class="color-row">
+        <button
+          type="button"
+          class="color-dot"
+          *ngFor="let color of colorOptions"
+          [ngClass]="[color, selectedColorClass === color ? 'active' : '']"
+          (click)="selectedColorClass = color">
+        </button>
+      </div>
+
+      <label>DESCRIZIONE (opzionale)</label>
+      <textarea
+        rows="4"
+        placeholder="Descrivi obiettivo del gruppo, approccio e organizzazione."
+        [(ngModel)]="description"
+        maxlength="400">
+      </textarea>
+    </section>
+
+    <section *ngIf="step === 3" class="step-pane">
+      <article class="helper-box">
+        <h3>Come funziona il programma</h3>
+        <p>Inserisci gli argomenti principali, uno per riga. Ogni membro potra prenotarne uno.</p>
+      </article>
+
+      <label>ARGOMENTI DEL PROGRAMMA</label>
+      <textarea
+        rows="8"
+        placeholder="Integrali multipli&#10;Serie numeriche&#10;Successioni"
+        [(ngModel)]="topicsRaw">
+      </textarea>
+
+      <p class="counter">{{ parsedTopics().length }} argomenti aggiunti</p>
+
+      <div class="topics-preview" *ngIf="parsedTopics().length > 0">
+        <div class="topic-pill" *ngFor="let t of parsedTopics()">{{ t }}</div>
+      </div>
+    </section>
+
+    <footer class="modal-actions">
+      <button type="button" class="btn secondary" *ngIf="step > 1" (click)="prevStep()">Indietro</button>
+      <button type="button" class="btn primary" *ngIf="step < 3" [disabled]="step === 1 && !canContinueStep1()" (click)="nextStep()">
+        Continua
+      </button>
+      <button type="button" class="btn primary" *ngIf="step === 3" [disabled]="!canCreate()" (click)="createGroup()">
+        {{ creating ? 'Creazione...' : 'Crea gruppo' }}
+      </button>
+    </footer>
+  </section>
 </ion-content>

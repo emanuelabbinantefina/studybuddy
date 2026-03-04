@@ -1,161 +1,307 @@
-/* --- HEADER E TOOLBAR --- */
-ion-toolbar {
-  --padding-top: 10px;
-  --padding-bottom: 10px;
-  --background: #ffffff;
-  position: relative; /* Necessario per il posizionamento assoluto del titolo */
-
-  ion-title {
-    /* Centratura assoluta: il titolo ignora i bottoni a destra e sinistra */
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin-left: auto;
-    margin-right: auto;
-    width: fit-content;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1e293b;
-    z-index: 1; /* Sotto i bottoni per non bloccare il click */
-  }
+.modal-bg {
+  --background: rgba(31, 41, 55, 0.12);
 }
 
-.header-btn {
-  --color: #94a3b8; /* Grigio per Annulla */
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  z-index: 10; /* Sopra al titolo */
-  
-  &.create-btn {
-    --color: #2563eb; /* Blu per Crea */
-  }
+.modal-card {
+  min-height: 100%;
+  background: #f7f9ff;
+  padding: 16px;
+  color: #1f2b4f;
 }
 
-/* --- LAYOUT GENERALE --- */
-.modal-wrapper {
+.modal-header {
   display: flex;
-  flex-direction: column;
-  padding: 10px 12px;
-}
+  justify-content: space-between;
+  align-items: flex-start;
 
-/* --- SEZIONE ANTEPRIMA (PERFETTAMENTE CENTRATA) --- */
-.preview-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Centra orizzontalmente l'icona e la scritta */
-  justify-content: center;
-  width: 100%;
-  margin: 30px 0 45px 0; /* Aumentato il margine per dare aria */
-
-  .icon-square {
-    width: 100px;
-    height: 100px;
-    border-radius: 24px; /* Angoli stondati come nella tua foto 'Cerca' */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: white;
-    position: relative;
-    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-    margin-bottom: 16px;
-
-    /* Decorazione segnalibro interna */
-    .bookmark-tag {
-      position: absolute;
-      top: 0; 
-      right: 20px;
-      width: 15px; 
-      height: 22px;
-      background: rgba(255, 255, 255, 0.3);
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
-    }
-  }
-
-  .preview-label {
+  h2 {
     margin: 0;
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: #94a3b8;
-    letter-spacing: 1.2px;
-    text-align: center;
-    text-transform: uppercase;
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: #1f2b4f;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: #5f709f;
+    font-weight: 600;
   }
 }
 
-/* --- FORM E INPUT --- */
-.form-item {
-  margin-bottom: 28px;
-  
-  label {
+.close-btn {
+  border: 1px solid #d7def7;
+  background: #ffffff;
+  color: #6a7ba7;
+  border-radius: 11px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.steps-track {
+  margin: 14px 0 18px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+
+  span {
+    height: 4px;
+    border-radius: 999px;
+    background: #dde4fa;
+  }
+
+  span.active {
+    background: linear-gradient(120deg, #4f46e5, #6366f1);
+  }
+}
+
+.step-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+label {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: #596a98;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #d7def7;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2b4f;
+  outline: none;
+  font-size: 0.92rem;
+}
+
+input {
+  min-height: 46px;
+  padding: 0 12px;
+}
+
+textarea {
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid #d7def7;
+  background: #ffffff;
+  color: #556592;
+  border-radius: 18px;
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  &.active {
+    border-color: transparent;
+    color: #ffffff;
+    background: linear-gradient(120deg, #4f46e5, #6366f1);
+  }
+}
+
+.visibility-box {
+  border: 1px solid #c6ebdf;
+  background: #ecfaf4;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  ion-icon {
+    font-size: 1.1rem;
+    color: #0f766e;
+  }
+
+  strong {
+    color: #0f766e;
+    font-size: 0.91rem;
     display: block;
-    font-weight: 700;
-    color: #1e293b;
-    font-size: 1rem;
-    margin-bottom: 12px;
   }
 
-  .input-box {
-    background: #f1f5f9; /* Grigio chiarissimo della tua barra di ricerca */
-    border-radius: 14px;
-    padding: 14px 18px;
-    
-    input {
-      width: 100%;
-      border: none;
-      background: transparent;
-      outline: none;
-      font-size: 1rem;
-      color: #1e293b;
-      &::placeholder {
-        color: #94a3b8;
-      }
-    }
-  }
-
-  .input-meta {
-    margin-top: 8px;
-    display: flex;
-    justify-content: flex-end;
-    font-size: 0.8rem;
-    color: #64748b;
+  p {
+    margin: 2px 0 0;
+    color: #4f6f66;
+    font-size: 0.78rem;
   }
 }
 
-/* --- SELEZIONE COLORE --- */
+.preview-card {
+  border: 1px solid #d7def7;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1f2b4f;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #5f709f;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+}
+
+.icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.visibility-pill {
+  border: 1px solid #a2d7c2;
+  background: #ecfaf4;
+  color: #0f766e;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .color-row {
   display: flex;
-  justify-content: flex-start;
-  gap: 14px;
-  padding: 4px 0;
-  
-  .color-picker-item {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
-    /* Effetto quando selezionato */
-    &.active {
-      transform: scale(1.1);
-      box-shadow: 0 0 0 3px white, 0 0 0 6px #2563eb;
-      z-index: 2;
-    }
+.color-dot {
+  border: 2px solid transparent;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+
+  &.active {
+    border-color: #1f2b4f;
+    box-shadow: 0 0 0 3px #d7def7;
   }
 }
 
-/* --- PALETTE COLORI (Allineati alla tua foto) --- */
-.bg-blue   { background: #3b82f6; }
-.bg-orange { background: #f97316; }
-.bg-purple { background: #a855f7; }
-.bg-green  { background: #10b981; }
+.helper-box {
+  border: 1px solid #d7def7;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 12px;
+
+  h3 {
+    margin: 0;
+    color: #1f2b4f;
+    font-size: 1.02rem;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 5px 0 0;
+    color: #5f709f;
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+}
+
+.counter {
+  margin: 0;
+  color: #5f709f;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.topics-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.topic-pill {
+  border: 1px solid #d7def7;
+  background: #ffffff;
+  color: #4f5f8f;
+  border-radius: 14px;
+  padding: 5px 10px;
+  font-size: 0.77rem;
+  font-weight: 700;
+}
+
+.modal-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  min-height: 46px;
+  padding: 0 16px;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.btn.secondary {
+  background: #e6ebff;
+  color: #546292;
+}
+
+.btn.primary {
+  margin-left: auto;
+  background: linear-gradient(120deg, #4f46e5, #6366f1);
+  color: #ffffff;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+}
+
+.bg-blue {
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.bg-green {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+.bg-teal {
+  background: linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%);
+}
+
+.bg-purple {
+  background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+}
+
+.bg-pink {
+  background: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+}
+
+.bg-orange {
+  background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+}

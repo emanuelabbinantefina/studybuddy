@@ -1,45 +1,185 @@
-<ion-content class="bg-light">
-  
-  <div class="main-wrapper">
-    
-    <div class="search-container">
-      <input type="text" class="custom-input" placeholder="Cerca tra i tuoi gruppi...">
-      <div class="search-action-btn">
-        <ion-icon name="search"></ion-icon>
+﻿<ion-content class="bg-light">
+  <div class="main-wrapper" *ngIf="!selectedGroup; else groupWorkspace">
+    <header class="groups-head">
+      <div class="title-wrap">
+        <ion-icon name="people"></ion-icon>
+        <h1>Gruppi studio</h1>
       </div>
+      <button type="button" class="create-btn" (click)="onCreateGroup()">
+        <ion-icon name="add-outline"></ion-icon>
+        Crea
+      </button>
+    </header>
+
+    <div class="chips-row">
+      <button type="button" class="chip" [class.active]="activeFilter === 'all'" (click)="setFilter('all')">Tutti</button>
+      <button type="button" class="chip" [class.active]="activeFilter === 'my'" (click)="setFilter('my')">I miei</button>
+      <button type="button" class="chip" [class.active]="activeFilter === 'public'" (click)="setFilter('public')">Pubblici</button>
     </div>
 
-    <div class="cards-list">
-      
-      <div *ngFor="let g of gruppi" class="custom-card" (click)="onGroupClick(g)">
-        
-        <div class="icon-box" [ngClass]="g.colorClass">
-          <span class="char">{{ g.nome.charAt(0) }}</span>
+    <ng-container *ngIf="activeFilter === 'all'; else groupsPlaceholderTpl">
+      <div class="search-container">
+        <input type="text" class="custom-input" placeholder="Cerca gruppi, facolta o materia..." [value]="query" (input)="onSearchInput($event)">
+        <div class="search-action-btn">
+          <ion-icon name="search-outline"></ion-icon>
         </div>
-
-        <div class="card-info">
-          <div class="info-header">
-            <h4>{{ g.nome }}</h4>
-            <span class="time-text">{{ g.tempoTrascorso }}</span>
-          </div>
-          
-          <div class="info-footer">
-            <p>
-              <span class="sender-bold">{{ g.autoreMessaggio }}: </span>
-              {{ g.ultimoMessaggio }}
-            </p>
-          </div>
-        </div>
-
       </div>
 
-    </div>
+      <section class="promo-card" (click)="onCreateGroup()">
+        <div class="promo-icon">
+          <ion-icon name="sparkles-outline"></ion-icon>
+        </div>
+        <div>
+          <h3>Non trovi il tuo gruppo?</h3>
+          <p>Creane uno in meno di un minuto, con programma condiviso e sessioni.</p>
+        </div>
+        <ion-icon name="arrow-forward-outline"></ion-icon>
+      </section>
+
+      <div class="cards-list" *ngIf="gruppi.length > 0; else noGroupsTpl">
+        <article class="group-card" *ngFor="let g of gruppi">
+          <div class="group-card-top">
+            <div class="icon-box" [ngClass]="g.colorClass || 'bg-blue'">
+              <span>{{ g.nome.charAt(0) }}</span>
+            </div>
+            <div class="group-main">
+              <h4>{{ g.nome }}</h4>
+              <p class="meta">{{ g.facolta || 'Facolta' }} &middot; {{ g.materia }}</p>
+              <p class="desc">{{ g.descrizione || 'Gruppo per studiare insieme e condividere materiale utile.' }}</p>
+            </div>
+            <button type="button" class="open-btn" (click)="openGroup(g)">Apri</button>
+          </div>
+
+          <div class="group-stats">
+            <span><ion-icon name="people-outline"></ion-icon> {{ g.membersCount || 0 }} membri</span>
+            <span><ion-icon name="list-outline"></ion-icon> {{ g.topicsDone || 0 }}/{{ g.topicsTotal || 0 }} argomenti</span>
+            <span *ngIf="g.examDate"><ion-icon name="calendar-outline"></ion-icon> nel planner</span>
+          </div>
+        </article>
+      </div>
+
+      <ng-template #noGroupsTpl>
+        <div class="empty-card" *ngIf="!loadingList">
+          <p>Nessun gruppo trovato con questi filtri.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <ng-template #groupsPlaceholderTpl>
+      <div class="empty-card placeholder-card">
+        <p>Da decidere successivamente logica groups</p>
+      </div>
+    </ng-template>
   </div>
 
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="fab-elevated">
-    <ion-fab-button (click)="onCreateGroup()" class="fab-btn">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+  <ng-template #groupWorkspace>
+    <div class="workspace-wrapper" *ngIf="selectedGroup as group">
+      <button type="button" class="back-link" (click)="closeGroup()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+        Tutti i gruppi
+      </button>
 
+      <section class="workspace-card" [ngClass]="group.colorClass || 'bg-blue'">
+        <div class="workspace-card-top">
+          <div class="icon-box" [ngClass]="group.colorClass || 'bg-blue'">
+            <span>{{ group.nome.charAt(0) }}</span>
+          </div>
+          <div>
+            <h2>{{ group.nome }}</h2>
+            <p>{{ group.facolta || 'Facolta' }} &middot; {{ group.materia }} &middot; {{ group.membersCount || 0 }} membri</p>
+          </div>
+          <span class="visibility-pill">Pubblico</span>
+        </div>
+        <p class="workspace-desc">{{ group.descrizione || 'Gruppo studio pubblico della community StudyBuddy.' }}</p>
+        <div class="progress-row">
+          <div>
+            <strong>Programma coperto</strong>
+          </div>
+          <strong>{{ group.progressPercent || 0 }}%</strong>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="group.progressPercent || 0"></div>
+        </div>
+      </section>
+
+      <div class="workspace-tabs">
+        <button type="button" [class.active]="activeTab === 'programma'" (click)="setTab('programma')">Programma</button>
+        <button type="button" [class.active]="activeTab === 'sessioni'" (click)="setTab('sessioni')">Sessioni</button>
+        <button type="button" [class.active]="activeTab === 'domande'" (click)="setTab('domande')">Domande esame</button>
+      </div>
+
+      <section class="tab-pane" *ngIf="activeTab === 'programma'">
+        <p class="pane-caption">Ogni membro prenota un argomento e carica il riassunto per tutti.</p>
+
+        <div class="topic-list" *ngIf="topics.length > 0; else noTopicsTpl">
+          <article class="topic-item" *ngFor="let t of topics">
+            <button type="button" class="done-dot" [class.done]="t.done" [disabled]="!canToggleDone(t)" (click)="onToggleTopicDone(t)"></button>
+            <div class="topic-main">
+              <h4 [class.done]="t.done">{{ t.title }}</h4>
+              <p>{{ t.assignedUserName || 'non assegnato' }}</p>
+            </div>
+            <button type="button" class="topic-action" [class.mine]="isMineTopic(t)" (click)="onReserveTopic(t)">
+              {{ isMineTopic(t) ? 'Rilascia' : (t.assignedUserId ? 'Occupato' : 'Prenota') }}
+            </button>
+          </article>
+        </div>
+
+        <ng-template #noTopicsTpl>
+          <div class="empty-card small">
+            <p>Nessun argomento inserito.</p>
+          </div>
+        </ng-template>
+
+        <div class="inline-form" *ngIf="group.isMember">
+          <input type="text" placeholder="Nuovo argomento (es. Integrali doppi)" [(ngModel)]="newTopicTitle">
+          <button type="button" [disabled]="savingTopic || !newTopicTitle.trim()" (click)="onAddTopic()">Aggiungi</button>
+        </div>
+      </section>
+
+      <section class="tab-pane" *ngIf="activeTab === 'sessioni'">
+        <div class="inline-form grid">
+          <input type="text" placeholder="Titolo sessione" [(ngModel)]="newSessionTitle">
+          <input type="datetime-local" [(ngModel)]="newSessionDate">
+          <input type="text" placeholder="Note (opzionale)" [(ngModel)]="newSessionNotes">
+          <button type="button" [disabled]="savingSession || !newSessionTitle.trim()" (click)="onAddSession()">Crea sessione</button>
+        </div>
+
+        <div class="session-list" *ngIf="sessions.length > 0; else noSessionsTpl">
+          <article class="session-item" *ngFor="let s of sessions">
+            <h4>{{ s.title }}</h4>
+            <p>{{ formatDateTimeLabel(s.startsAt) }} &middot; da {{ s.createdByName || 'membro' }}</p>
+            <small *ngIf="s.notes">{{ s.notes }}</small>
+          </article>
+        </div>
+
+        <ng-template #noSessionsTpl>
+          <div class="empty-card small">
+            <p>Ancora nessuna sessione programmata.</p>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="tab-pane" *ngIf="activeTab === 'domande'">
+        <div class="inline-form grid">
+          <input type="text" placeholder="Inserisci una domanda d'esame" [(ngModel)]="newQuestionText">
+          <input type="text" placeholder="Risposta breve (opzionale)" [(ngModel)]="newQuestionAnswer">
+          <button type="button" [disabled]="savingQuestion || !newQuestionText.trim()" (click)="onAddQuestion()">Aggiungi domanda</button>
+        </div>
+
+        <div class="question-list" *ngIf="questions.length > 0; else noQuestionsTpl">
+          <article class="question-item" *ngFor="let q of questions">
+            <h4>{{ q.question }}</h4>
+            <p *ngIf="q.answer">{{ q.answer }}</p>
+            <small>inserita da {{ q.createdByName || 'membro' }}</small>
+          </article>
+        </div>
+
+        <ng-template #noQuestionsTpl>
+          <div class="empty-card small">
+            <p>Nessuna domanda ancora. Inizia tu.</p>
+          </div>
+        </ng-template>
+      </section>
+    </div>
+  </ng-template>
 </ion-content>
