@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
-import { Gruppo, Appunto, Evento } from '../../core/interfaces/models';
+import { Appunto } from '../../core/interfaces/models'; // Rimosso Gruppo e Evento
 
 @Component({
   selector: 'app-search',
@@ -16,14 +16,14 @@ import { Gruppo, Appunto, Evento } from '../../core/interfaces/models';
 export class SearchPage implements OnInit {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
-  tab: 'notes' | 'groups' | 'exams' = 'notes';
   query = '';
   sessionUserName = 'Utente';
   activeCategory = 'Tutti';
-  joiningGroupId: number | null = null;
+  
   downloadingNoteId: number | null = null;
   deletingNoteId: number | null = null;
   savingNoteId: number | null = null;
+  
   showUploadPanel = false;
   uploading = false;
   dragActive = false;
@@ -33,12 +33,9 @@ export class SearchPage implements OnInit {
 
   allNotes: Appunto[] = [];
   filteredNotes: Appunto[] = [];
-  filteredGroups: Gruppo[] = [];
-  filteredExams: Evento[] = [];
   selectedNote: Appunto | null = null;
 
   readonly categoryChips = ['Tutti', 'Analisi', 'Diritto', 'Informatica', 'Economia'];
-
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
   readonly uploadExtensions = ['PDF', 'DOC', 'DOCX', 'JPG', 'PNG'];
   private readonly maxFileBytes = 5 * 1024 * 1024;
@@ -57,21 +54,6 @@ export class SearchPage implements OnInit {
     this.eseguiRicerca();
   }
 
-  changeTab(t: 'notes' | 'groups' | 'exams') {
-    this.tab = t;
-    if (t === 'groups') {
-      this.query = '';
-    }
-    if (t === 'notes') {
-      this.activeCategory = 'Tutti';
-      this.selectedNote = null;
-    }
-    if (t !== 'notes') {
-      this.showUploadPanel = false;
-    }
-    this.eseguiRicerca();
-  }
-
   onSearchChange(event: Event) {
     const target = event.target as HTMLInputElement | null;
     this.query = target?.value || '';
@@ -79,31 +61,10 @@ export class SearchPage implements OnInit {
   }
 
   eseguiRicerca() {
-    if (this.tab === 'notes') {
-      this.apiService.getAppunti(this.query).subscribe(res => {
-        this.allNotes = Array.isArray(res) ? res : [];
-        this.applyNoteFilters();
-      });
-    } 
-    else if (this.tab === 'groups') {
-      this.apiService.getPublicGroups(this.query).subscribe({
-        next: (res) => {
-          this.filteredGroups = res;
-        },
-        error: async (err) => {
-          this.filteredGroups = [];
-          const toast = await this.toastCtrl.create({
-            message: 'Sessione scaduta o errore nel caricamento gruppi',
-            duration: 1800,
-            color: 'warning',
-            position: 'bottom'
-          });
-          await toast.present();
-          console.error('Errore gruppi pubblici', err);
-        }
-      });
-    }
-    // exams: al momento non collegati
+    this.apiService.getAppunti(this.query).subscribe(res => {
+      this.allNotes = Array.isArray(res) ? res : [];
+      this.applyNoteFilters();
+    });
   }
 
   setCategory(category: string) {
@@ -142,41 +103,6 @@ export class SearchPage implements OnInit {
     if (normalized) return normalized;
     if (note.canDelete) return this.sessionUserName;
     return 'Utente';
-  }
-
-  async joinGroup(group: Gruppo) {
-    if (group.isMember || this.joiningGroupId) return;
-
-    this.joiningGroupId = group.id;
-    this.apiService.joinPublicGroup(group.id).subscribe({
-      next: async () => {
-        this.filteredGroups = this.filteredGroups.filter(g => g.id !== group.id);
-
-        const toast = await this.toastCtrl.create({
-          message: `Entrato in "${group.nome}"`,
-          duration: 1400,
-          color: 'success',
-          position: 'bottom'
-        });
-        await toast.present();
-        this.joiningGroupId = null;
-      },
-      error: async (err) => {
-        const toast = await this.toastCtrl.create({
-          message: err?.error?.message || 'Impossibile unirsi al gruppo',
-          duration: 1800,
-          color: 'danger',
-          position: 'bottom'
-        });
-        await toast.present();
-        this.joiningGroupId = null;
-      }
-    });
-  }
-  
-  getIconColor(tipo: string): string {
-    if (tipo === 'pdf') return 'red-pdf';
-    return 'bg-blue';
   }
 
   toggleUploadPanel(): void {

@@ -1,28 +1,25 @@
 <ion-content [fullscreen]="true" class="bg-light">
   <div class="main-wrapper">
-    <div class="tabs-row">
-      <button type="button" class="tab-btn" [class.active]="tab === 'notes'" (click)="changeTab('notes')">Appunti</button>
-      <button type="button" class="tab-btn" [class.active]="tab === 'groups'" (click)="changeTab('groups')">Gruppi</button>
-      <button type="button" class="tab-btn" [class.active]="tab === 'exams'" (click)="changeTab('exams')">Esami</button>
-    </div>
-
-    <div class="search-container">
-      <input type="text" class="custom-input" placeholder="Cerca..." [(ngModel)]="query" (input)="onSearchChange($event)">
-      <div class="search-action-btn">
-        <ion-icon name="search-outline"></ion-icon>
-      </div>
-    </div>
-
-    <section *ngIf="tab === 'notes'" class="notes-shell fade-in">
+    
+    <section class="notes-shell fade-in">
+      
       <div class="notes-header-row">
         <h2>
           <ion-icon name="folder-open-outline"></ion-icon>
           Appunti
         </h2>
+        
         <button type="button" class="upload-compact-btn" (click)="toggleUploadPanel()">
-          <ion-icon name="arrow-up-outline"></ion-icon>
+          <ion-icon name="add-outline"></ion-icon>
           Carica
         </button>
+      </div>
+
+      <div class="search-container">
+        <input type="text" class="custom-input" placeholder="Cerca appunti..." [(ngModel)]="query" (input)="onSearchChange($event)">
+        <div class="search-action-btn">
+          <ion-icon name="search-outline"></ion-icon>
+        </div>
       </div>
 
       <div class="category-chips">
@@ -71,16 +68,8 @@
         </div>
 
         <div class="upload-fields">
-          <input
-            type="text"
-            class="upload-input"
-            placeholder="Titolo appunto"
-            [(ngModel)]="uploadTitle">
-          <input
-            type="text"
-            class="upload-input"
-            placeholder="Materia"
-            [(ngModel)]="uploadSubject">
+          <input type="text" class="upload-input" placeholder="Titolo appunto" [(ngModel)]="uploadTitle">
+          <input type="text" class="upload-input" placeholder="Materia" [(ngModel)]="uploadSubject">
         </div>
 
         <div class="upload-actions">
@@ -108,42 +97,6 @@
         </div>
       </ng-template>
     </section>
-
-    <div *ngIf="tab === 'groups'" class="fade-in">
-      <div class="cards-list">
-        <div class="custom-card" *ngFor="let g of filteredGroups">
-          <div class="icon-box circle" [ngClass]="g.colorClass || 'bg-blue'">
-            <span class="char">{{ g.nome.charAt(0) }}</span>
-          </div>
-          <div class="card-info">
-            <h4>{{ g.nome }}</h4>
-            <p>{{ g.materia }} <span class="dot">&middot;</span> {{ g.membersCount || 0 }} membri</p>
-          </div>
-          <button
-            type="button"
-            class="join-btn"
-            [class.member]="g.isMember"
-            [disabled]="g.isMember || joiningGroupId === g.id"
-            (click)="joinGroup(g)">
-            {{ g.isMember ? 'Gia dentro' : (joiningGroupId === g.id ? '...' : 'Unisciti') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="tab === 'exams'" class="fade-in">
-      <div class="cards-list">
-        <div class="custom-card" *ngFor="let e of filteredExams">
-          <div class="icon-box red-pdf">
-            <ion-icon name="document-text"></ion-icon>
-          </div>
-          <div class="card-info">
-            <h4>{{ e.titolo }}</h4>
-            <p>{{ e.materia }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="note-detail-overlay" *ngIf="selectedNote" (click)="closeNoteDetail()">

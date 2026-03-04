@@ -2,14 +2,7 @@
   <div class="global-topbar" *ngIf="!isProfileRoute">
     <button type="button" class="brand-btn" (click)="openHome()">StudyBuddy</button>
 
-    <button
-      type="button"
-      class="search-btn"
-      [class.active]="isSearchOpen"
-      (click)="openSearch()">
-      <ion-icon name="search-outline"></ion-icon>
-      <span>Cerca...</span>
-    </button>
+    <div style="flex: 1;"></div>
 
     <button
       type="button"

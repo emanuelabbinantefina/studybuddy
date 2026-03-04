@@ -28,6 +28,7 @@ import {
   pencilOutline, statsChartOutline, search, desktopOutline,
   cloudDownloadOutline, documentText, calculator, hardwareChip,
   arrowBack, chevronBack, ellipsisHorizontal, send,
+  addOutline, folderOpenOutline, briefcaseOutline, downloadOutline,
   image, document, close // Aggiunti per il menu allegati
 } from 'ionicons/icons';
 
@@ -91,6 +92,10 @@ addIcons({
   'chevron-back': chevronBack,
   'ellipsis-horizontal': ellipsisHorizontal,
   'send': send,
+  'add-outline': addOutline,
+  'folder-open-outline': folderOpenOutline,
+  'briefcase-outline': briefcaseOutline,
+  'download-outline': downloadOutline,
   'image': image,     // NUOVO
   'document': document, // NUOVO
   'close': close      // NUOVO
