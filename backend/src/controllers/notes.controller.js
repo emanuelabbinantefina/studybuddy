@@ -9,6 +9,15 @@ async function list(req, res) {
   }
 }
 
+async function listSaved(req, res) {
+  try {
+    const notes = await notesService.listSaved(req.userData.userId, req.query);
+    res.json(notes);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
 async function create(req, res) {
   try {
     const out = await notesService.create(req.userData.userId, req.body);
@@ -65,4 +74,39 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { list, create, download, remove };
+async function addBookmark(req, res) {
+  try {
+    const noteId = Number(req.params.id);
+    if (!Number.isFinite(noteId) || noteId <= 0) {
+      return res.status(400).json({ message: 'id appunto non valido' });
+    }
+
+    const out = await notesService.addBookmark(req.userData.userId, noteId);
+    if (!out?.added && out?.reason === 'NOT_FOUND') {
+      return res.status(404).json({ message: 'appunto non trovato' });
+    }
+
+    return res.status(201).json({ ok: true });
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') {
+      return res.status(400).json({ message: e.message });
+    }
+    res.status(500).json({ message: e.message });
+  }
+}
+
+async function removeBookmark(req, res) {
+  try {
+    const noteId = Number(req.params.id);
+    if (!Number.isFinite(noteId) || noteId <= 0) {
+      return res.status(400).json({ message: 'id appunto non valido' });
+    }
+
+    await notesService.removeBookmark(req.userData.userId, noteId);
+    return res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
+module.exports = { list, listSaved, create, download, remove, addBookmark, removeBookmark };

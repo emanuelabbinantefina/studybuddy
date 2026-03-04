@@ -107,6 +107,17 @@ export class ApiService {
     });
   }
 
+  getSavedAppunti(query: string): Observable<Appunto[]> {
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) return of([]);
+
+    const q = (query || '').trim();
+    return this.http.get<Appunto[]>(`${this.baseUrl}/appunti/saved`, {
+      headers: this.authHeaders(),
+      params: q ? { cerca: q } : undefined
+    });
+  }
+
   uploadAppunto(payload: UploadAppuntoPayload): Observable<{ id: number }> {
     return this.http.post<{ id: number }>(`${this.baseUrl}/appunti`, payload, {
       headers: this.authHeaders()
@@ -123,6 +134,20 @@ export class ApiService {
 
   deleteAppunto(noteId: number): Observable<{ ok: boolean }> {
     return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  saveAppunto(noteId: number): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>(
+      `${this.baseUrl}/appunti/${noteId}/bookmark`,
+      {},
+      { headers: this.authHeaders() }
+    );
+  }
+
+  unsaveAppunto(noteId: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}/bookmark`, {
       headers: this.authHeaders()
     });
   }

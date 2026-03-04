@@ -13,105 +13,101 @@
       </div>
     </div>
 
-    <div *ngIf="tab === 'notes'" class="upload-banner" (click)="toggleUploadPanel()">
-      <div class="upload-banner-icon">
-        <ion-icon name="cloud-upload-outline"></ion-icon>
-      </div>
-      <div class="upload-banner-text">
-        <h4>Condividi i tuoi appunti</h4>
-        <p>Aiuta gli altri studenti caricando i tuoi file</p>
-      </div>
-      <ion-icon [name]="showUploadPanel ? 'chevron-up-outline' : 'chevron-forward-outline'" class="upload-banner-arrow"></ion-icon>
-    </div>
-
-    <section *ngIf="tab === 'notes' && showUploadPanel" class="upload-panel fade-in">
-      <div class="upload-panel-header">
-        <h3>
-          <ion-icon name="briefcase-outline"></ion-icon>
-          Carica Appunti
-        </h3>
-        <p>Trascina o seleziona un file</p>
-      </div>
-
-      <div
-        class="upload-dropzone"
-        [class.drag-active]="dragActive"
-        (click)="openFilePicker()"
-        (dragover)="onDragOver($event)"
-        (dragleave)="onDragLeave($event)"
-        (drop)="onDrop($event)">
-        <input
-          #fileInput
-          type="file"
-          [attr.accept]="fileAccept"
-          (change)="onFileSelected($event)"
-          hidden>
-
-        <ion-icon name="folder-open-outline" class="dropzone-icon"></ion-icon>
-        <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
-        <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
-        <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
-        <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
-
-        <div class="format-chips">
-          <span class="format-chip" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
-        </div>
-      </div>
-
-      <div class="upload-fields">
-        <input
-          type="text"
-          class="upload-input"
-          placeholder="Titolo appunto"
-          [(ngModel)]="uploadTitle">
-        <input
-          type="text"
-          class="upload-input"
-          placeholder="Materia"
-          [(ngModel)]="uploadSubject">
-      </div>
-
-      <div class="upload-actions">
-        <button type="button" class="secondary-btn" (click)="resetUploadForm()">Annulla</button>
-        <button type="button" class="primary-btn" [disabled]="uploading" (click)="submitUpload()">
-          {{ uploading ? 'Caricamento...' : 'Carica appunto' }}
+    <section *ngIf="tab === 'notes'" class="notes-shell fade-in">
+      <div class="notes-header-row">
+        <h2>
+          <ion-icon name="folder-open-outline"></ion-icon>
+          Appunti
+        </h2>
+        <button type="button" class="upload-compact-btn" (click)="toggleUploadPanel()">
+          <ion-icon name="arrow-up-outline"></ion-icon>
+          Carica
         </button>
       </div>
-    </section>
 
-    <div *ngIf="tab === 'notes'" class="fade-in">
-      <div class="cards-list">
-        <div class="custom-card" *ngFor="let n of filteredNotes">
-          <div class="icon-box" [ngClass]="getIconColor(n.tipoFile)">
-            <ion-icon name="document-text"></ion-icon>
-          </div>
+      <div class="category-chips">
+        <button
+          type="button"
+          class="chip-btn"
+          *ngFor="let chip of categoryChips"
+          [class.active]="activeCategory === chip"
+          (click)="setCategory(chip)">
+          {{ chip }}
+        </button>
+      </div>
 
-          <div class="card-info">
-            <h4>{{ n.titolo }}</h4>
-            <p>{{ n.materia }} <span class="dot">&middot;</span> {{ n.tempoUpload }}</p>
-          </div>
+      <section *ngIf="showUploadPanel" class="upload-panel fade-in">
+        <div class="upload-panel-header">
+          <h3>
+            <ion-icon name="briefcase-outline"></ion-icon>
+            Carica Appunti
+          </h3>
+          <p>Trascina o seleziona un file</p>
+        </div>
 
-          <div class="note-actions">
-            <button
-              type="button"
-              class="note-action-btn"
-              [disabled]="downloadingNoteId === n.id"
-              (click)="downloadNote(n, $event)">
-              {{ downloadingNoteId === n.id ? '...' : 'Scarica' }}
-            </button>
+        <div
+          class="upload-dropzone"
+          [class.drag-active]="dragActive"
+          (click)="openFilePicker()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)">
+          <input
+            #fileInput
+            type="file"
+            [attr.accept]="fileAccept"
+            (change)="onFileSelected($event)"
+            hidden>
 
-            <button
-              *ngIf="n.canDelete"
-              type="button"
-              class="note-action-btn danger"
-              [disabled]="deletingNoteId === n.id"
-              (click)="deleteNote(n, $event)">
-              {{ deletingNoteId === n.id ? '...' : 'Elimina' }}
-            </button>
+          <ion-icon name="folder-open-outline" class="dropzone-icon"></ion-icon>
+          <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
+          <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
+          <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
+          <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
+
+          <div class="format-chips">
+            <span class="format-chip" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
           </div>
         </div>
+
+        <div class="upload-fields">
+          <input
+            type="text"
+            class="upload-input"
+            placeholder="Titolo appunto"
+            [(ngModel)]="uploadTitle">
+          <input
+            type="text"
+            class="upload-input"
+            placeholder="Materia"
+            [(ngModel)]="uploadSubject">
+        </div>
+
+        <div class="upload-actions">
+          <button type="button" class="secondary-btn" (click)="resetUploadForm()">Annulla</button>
+          <button type="button" class="primary-btn" [disabled]="uploading" (click)="submitUpload()">
+            {{ uploading ? 'Caricamento...' : 'Carica appunto' }}
+          </button>
+        </div>
+      </section>
+
+      <div class="notes-grid" *ngIf="filteredNotes.length > 0; else emptyNotes">
+        <article class="note-tile" *ngFor="let n of filteredNotes" [ngClass]="getNoteAccent(n.tipoFile)" (click)="openNoteDetail(n)">
+          <div class="tile-top">
+            <span class="file-badge" [ngClass]="getNoteAccent(n.tipoFile)">{{ getFileLabel(n.tipoFile) }}</span>
+            <span class="tile-meta">{{ n.tempoUpload }}</span>
+          </div>
+          <h4>{{ n.titolo }}</h4>
+          <p>di {{ getUploaderName(n) }} &middot; {{ n.materia }}</p>
+        </article>
       </div>
-    </div>
+
+      <ng-template #emptyNotes>
+        <div class="empty-card">
+          <p>Nessun appunto trovato.</p>
+        </div>
+      </ng-template>
+    </section>
 
     <div *ngIf="tab === 'groups'" class="fade-in">
       <div class="cards-list">
@@ -148,5 +144,51 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="note-detail-overlay" *ngIf="selectedNote" (click)="closeNoteDetail()">
+    <section class="note-detail-card" [ngClass]="getNoteAccent(selectedNote.tipoFile)" (click)="$event.stopPropagation()">
+      <div class="detail-top">
+        <span class="file-badge" [ngClass]="getNoteAccent(selectedNote.tipoFile)">{{ getFileLabel(selectedNote.tipoFile) }}</span>
+        <button type="button" class="close-detail-btn" aria-label="Chiudi dettaglio" (click)="closeNoteDetail()">
+          &times;
+        </button>
+      </div>
+
+      <h3>{{ selectedNote.titolo }}</h3>
+      <p class="detail-meta">{{ selectedNote.materia }} &middot; {{ getUploaderName(selectedNote) }}</p>
+
+      <div class="detail-actions">
+        <button
+          type="button"
+          class="detail-action primary"
+          [disabled]="downloadingNoteId === selectedNote.id"
+          (click)="downloadNote(selectedNote, $event)">
+          <ion-icon name="download-outline"></ion-icon>
+          {{ downloadingNoteId === selectedNote.id ? '...' : 'Scarica' }}
+        </button>
+
+        <button
+          *ngIf="!selectedNote.canDelete"
+          type="button"
+          class="detail-action"
+          [class.active]="selectedNote.isSaved"
+          [disabled]="savingNoteId === selectedNote.id"
+          (click)="toggleBookmark(selectedNote, $event)">
+          <ion-icon [name]="selectedNote.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+          {{ savingNoteId === selectedNote.id ? '...' : (selectedNote.isSaved ? 'Salvato' : 'Salva') }}
+        </button>
+
+        <button
+          *ngIf="selectedNote.canDelete"
+          type="button"
+          class="detail-action danger"
+          [disabled]="deletingNoteId === selectedNote.id"
+          (click)="deleteNote(selectedNote, $event)">
+          <ion-icon name="trash-outline"></ion-icon>
+          {{ deletingNoteId === selectedNote.id ? '...' : 'Elimina' }}
+        </button>
+      </div>
+    </section>
   </div>
 </ion-content>

@@ -18,9 +18,12 @@ export class SearchPage implements OnInit {
 
   tab: 'notes' | 'groups' | 'exams' = 'notes';
   query = '';
+  sessionUserName = 'Utente';
+  activeCategory = 'Tutti';
   joiningGroupId: number | null = null;
   downloadingNoteId: number | null = null;
   deletingNoteId: number | null = null;
+  savingNoteId: number | null = null;
   showUploadPanel = false;
   uploading = false;
   dragActive = false;
@@ -28,9 +31,13 @@ export class SearchPage implements OnInit {
   uploadTitle = '';
   uploadSubject = '';
 
+  allNotes: Appunto[] = [];
   filteredNotes: Appunto[] = [];
   filteredGroups: Gruppo[] = [];
   filteredExams: Evento[] = [];
+  selectedNote: Appunto | null = null;
+
+  readonly categoryChips = ['Tutti', 'Analisi', 'Diritto', 'Informatica', 'Economia'];
 
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
   readonly uploadExtensions = ['PDF', 'DOC', 'DOCX', 'JPG', 'PNG'];
@@ -42,6 +49,7 @@ export class SearchPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.sessionUserName = this.readSessionUserName();
     this.eseguiRicerca();
   }
 
@@ -53,6 +61,10 @@ export class SearchPage implements OnInit {
     this.tab = t;
     if (t === 'groups') {
       this.query = '';
+    }
+    if (t === 'notes') {
+      this.activeCategory = 'Tutti';
+      this.selectedNote = null;
     }
     if (t !== 'notes') {
       this.showUploadPanel = false;
@@ -68,7 +80,10 @@ export class SearchPage implements OnInit {
 
   eseguiRicerca() {
     if (this.tab === 'notes') {
-      this.apiService.getAppunti(this.query).subscribe(res => this.filteredNotes = res);
+      this.apiService.getAppunti(this.query).subscribe(res => {
+        this.allNotes = Array.isArray(res) ? res : [];
+        this.applyNoteFilters();
+      });
     } 
     else if (this.tab === 'groups') {
       this.apiService.getPublicGroups(this.query).subscribe({
@@ -89,6 +104,44 @@ export class SearchPage implements OnInit {
       });
     }
     // exams: al momento non collegati
+  }
+
+  setCategory(category: string) {
+    this.activeCategory = category;
+    this.applyNoteFilters();
+  }
+
+  openNoteDetail(note: Appunto) {
+    this.selectedNote = note;
+  }
+
+  closeNoteDetail() {
+    this.selectedNote = null;
+  }
+
+  getFileLabel(tipo: Appunto['tipoFile']): string {
+    if (tipo === 'pdf') return 'PDF';
+    if (tipo === 'doc') return 'DOC';
+    return 'IMG';
+  }
+
+  getNoteAccent(tipo: Appunto['tipoFile']): string {
+    if (tipo === 'pdf') return 'note-pdf';
+    if (tipo === 'doc') return 'note-doc';
+    return 'note-img';
+  }
+
+  getUploaderName(note: Appunto): string {
+    const raw =
+      note.autoreNome ||
+      (note as any).autore ||
+      (note as any).authorName ||
+      (note as any).uploaderName;
+
+    const normalized = String(raw || '').trim();
+    if (normalized) return normalized;
+    if (note.canDelete) return this.sessionUserName;
+    return 'Utente';
   }
 
   async joinGroup(group: Gruppo) {
@@ -255,12 +308,41 @@ export class SearchPage implements OnInit {
       this.deletingNoteId = note.id;
       await firstValueFrom(this.apiService.deleteAppunto(note.id));
       await this.showToast('Appunto eliminato', 'success');
+      if (this.selectedNote?.id === note.id) {
+        this.selectedNote = null;
+      }
       this.eseguiRicerca();
     } catch (err: any) {
       const message = err?.error?.message || 'Impossibile eliminare appunto';
       await this.showToast(message, 'danger');
     } finally {
       this.deletingNoteId = null;
+    }
+  }
+
+  async toggleBookmark(note: Appunto, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (note.canDelete || this.savingNoteId) return;
+
+    const nextState = !note.isSaved;
+
+    try {
+      this.savingNoteId = note.id;
+      if (nextState) {
+        await firstValueFrom(this.apiService.saveAppunto(note.id));
+      } else {
+        await firstValueFrom(this.apiService.unsaveAppunto(note.id));
+      }
+      note.isSaved = nextState;
+      if (this.selectedNote?.id === note.id) {
+        this.selectedNote.isSaved = nextState;
+      }
+      await this.showToast(nextState ? 'Appunto salvato nei bookmark' : 'Appunto rimosso dai bookmark', 'success');
+    } catch (err: any) {
+      const message = err?.error?.message || 'Impossibile aggiornare i bookmark';
+      await this.showToast(message, 'danger');
+    } finally {
+      this.savingNoteId = null;
     }
   }
 
@@ -336,5 +418,45 @@ export class SearchPage implements OnInit {
       position: 'bottom'
     });
     await toast.present();
+  }
+
+  private readSessionUserName(): string {
+    const fromProfile = localStorage.getItem('user_profile');
+    if (fromProfile) {
+      try {
+        const parsed = JSON.parse(fromProfile);
+        const name = String(parsed?.nome || parsed?.nickname || '').trim();
+        if (name) return name;
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    const fromSession = localStorage.getItem('user_data');
+    if (fromSession) {
+      try {
+        const parsed = JSON.parse(fromSession);
+        const name = String(parsed?.name || parsed?.nickname || '').trim();
+        if (name) return name;
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    return 'Utente';
+  }
+
+  private applyNoteFilters(): void {
+    const category = this.activeCategory.toLowerCase();
+    const source = Array.isArray(this.allNotes) ? this.allNotes : [];
+
+    if (this.activeCategory === 'Tutti') {
+      this.filteredNotes = source;
+      return;
+    }
+
+    this.filteredNotes = source.filter((note) =>
+      String(note.materia || '').toLowerCase().includes(category)
+    );
   }
 }

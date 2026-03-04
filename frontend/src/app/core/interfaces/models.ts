@@ -46,6 +46,8 @@ export interface Appunto {
   titolo: string;
   materia: string;
   tipoFile: 'pdf' | 'doc' | 'img';
+  autoreNome?: string;
   tempoUpload: string;
   canDelete?: boolean;
+  isSaved?: boolean;
 }

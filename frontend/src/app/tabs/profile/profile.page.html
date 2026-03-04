@@ -24,13 +24,13 @@
 
     <div class="stats-card" (click)="onStats()">
       <div class="stat-col">
-        <span class="value">{{ user?.esamiTotali || 0 }}</span>
-        <span class="label">Gruppi</span>
+        <span class="value">{{ savedNotesCount }}</span>
+        <span class="label">Appunti</span>
       </div>
       <div class="vertical-divider"></div>
       <div class="stat-col">
-        <span class="value">{{ user?.cfu || 0 }}</span>
-        <span class="label">Appunti</span>
+        <span class="value">{{ groupsCount }}</span>
+        <span class="label">Gruppi</span>
       </div>
     </div>
 
@@ -46,21 +46,35 @@
     </div>
 
     <div class="section-title" (click)="onSavedNotes()">
-      <h3>Appunti recenti</h3>
+      <h3>Appunti salvati</h3>
       <ion-icon name="chevron-forward"></ion-icon>
     </div>
 
-    <div class="notes-list">
-      <div class="note-item" (click)="onViewNote('Analisi 2')">
-        <div class="icon-box orange">
+    <div class="notes-list" *ngIf="savedNotes.length > 0; else emptySavedNotes">
+      <div class="note-item" *ngFor="let note of savedNotes" (click)="onViewNote(note)">
+        <div class="icon-box" [class.orange]="note.tipoFile === 'pdf'" [class.yellow]="note.tipoFile !== 'pdf'">
           <ion-icon name="bookmark"></ion-icon>
         </div>
         <div class="text-info">
-          <h4>Appunti Analisi 2</h4>
-          <p>Matematica · 1 ora fa</p>
+          <h4>{{ note.titolo }}</h4>
+          <p>{{ note.materia }} <span class="dot">&middot;</span> {{ note.tempoUpload }}</p>
         </div>
+        <button
+          type="button"
+          class="mini-download"
+          [disabled]="downloadingSavedNoteId === note.id"
+          (click)="onViewNote(note, $event)">
+          {{ downloadingSavedNoteId === note.id ? '...' : 'Scarica' }}
+        </button>
       </div>
     </div>
+
+    <ng-template #emptySavedNotes>
+      <div class="empty-notes">
+        <p>Non hai ancora appunti salvati.</p>
+        <button type="button" (click)="goToSearch()">Sfoglia appunti</button>
+      </div>
+    </ng-template>
 
     <div class="menu-list">
       <div class="menu-item" (click)="onEditProfile()">

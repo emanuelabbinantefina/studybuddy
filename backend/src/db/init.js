@@ -106,6 +106,18 @@ async function initDb() {
     )
   `);
 
+  // bookmarks for notes saved by users
+  await run(`
+    create table if not exists NoteBookmarks (
+      noteId integer not null,
+      userId integer not null,
+      createdAt text not null,
+      primary key (noteId, userId),
+      foreign key (noteId) references Notes(id) on delete cascade,
+      foreign key (userId) references Users(id) on delete cascade
+    )
+  `);
+
   // groups
   await run(`
     create table if not exists Groups (
@@ -159,6 +171,8 @@ async function initDb() {
   await run(`create index if not exists idx_courses_facultyId on Courses(facultyId)`);
   await run(`create index if not exists idx_events_user_start on Events(userId, startAt)`);
   await run(`create index if not exists idx_notes_user_created on Notes(userId, createdAt desc)`);
+  await run(`create index if not exists idx_bookmarks_user_created on NoteBookmarks(userId, createdAt desc)`);
+  await run(`create index if not exists idx_bookmarks_note on NoteBookmarks(noteId)`);
   await run(`create index if not exists idx_groupmembers_user on GroupMembers(userId)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
 }

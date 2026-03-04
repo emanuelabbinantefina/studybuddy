@@ -61,16 +61,21 @@ async function list(userId, query = {}) {
 
   const rows = await all(
     `select
-       id,
-       userId,
-       title as titolo,
-       subject as materia,
-       fileType as tipoFile,
-       createdAt
+       Notes.id as id,
+       Notes.userId as userId,
+       Notes.title as titolo,
+       Notes.subject as materia,
+       Notes.fileType as tipoFile,
+       Notes.createdAt as createdAt,
+       coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
+       case when saved.noteId is not null then 1 else 0 end as isSaved
      from Notes
-     order by createdAt desc
+     left join Users on Users.id = Notes.userId
+     left join NoteBookmarks saved
+       on saved.noteId = Notes.id and saved.userId = ?
+     order by Notes.createdAt desc
      limit ?`,
-    [lim]
+    [userId, lim]
   );
 
   const mapped = rows.map((row) => ({
@@ -78,8 +83,52 @@ async function list(userId, query = {}) {
     titolo: row.titolo,
     materia: row.materia,
     tipoFile: row.tipoFile,
+    autoreNome: row.autoreNome,
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
+    isSaved: !!row.isSaved,
+  }));
+
+  if (!q) return mapped;
+
+  return mapped.filter(
+    (row) =>
+      row.titolo.toLowerCase().includes(q) ||
+      row.materia.toLowerCase().includes(q)
+  );
+}
+
+async function listSaved(userId, query = {}) {
+  const q = String(query.cerca || '').trim().toLowerCase();
+  const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
+
+  const rows = await all(
+    `select
+       Notes.id as id,
+       Notes.userId as userId,
+       Notes.title as titolo,
+       Notes.subject as materia,
+       Notes.fileType as tipoFile,
+       Notes.createdAt as createdAt,
+       coalesce(Users.nickname, Users.name, 'Studente') as autoreNome
+     from NoteBookmarks
+     inner join Notes on Notes.id = NoteBookmarks.noteId
+     left join Users on Users.id = Notes.userId
+     where NoteBookmarks.userId = ?
+     order by NoteBookmarks.createdAt desc
+     limit ?`,
+    [userId, lim]
+  );
+
+  const mapped = rows.map((row) => ({
+    id: row.id,
+    titolo: row.titolo,
+    materia: row.materia,
+    tipoFile: row.tipoFile,
+    autoreNome: row.autoreNome,
+    tempoUpload: formatRelativeTime(row.createdAt),
+    canDelete: Number(row.userId) === Number(userId),
+    isSaved: true,
   }));
 
   if (!q) return mapped;
@@ -191,4 +240,39 @@ async function remove(userId, noteId) {
   return { removed: true };
 }
 
-module.exports = { list, create, getDownload, remove };
+async function addBookmark(userId, noteId) {
+  const note = await get(
+    `select id, userId
+     from Notes
+     where id = ?`,
+    [noteId]
+  );
+
+  if (!note) return { added: false, reason: 'NOT_FOUND' };
+  if (Number(note.userId) === Number(userId)) {
+    throw badRequest('non puoi salvare i tuoi appunti');
+  }
+
+  const now = nowIso();
+  await run(
+    `insert or ignore into NoteBookmarks
+      (noteId, userId, createdAt)
+     values
+      (?, ?, ?)`,
+    [noteId, userId, now]
+  );
+
+  return { added: true };
+}
+
+async function removeBookmark(userId, noteId) {
+  await run(
+    `delete from NoteBookmarks
+     where noteId = ? and userId = ?`,
+    [noteId, userId]
+  );
+
+  return { removed: true };
+}
+
+module.exports = { list, listSaved, create, getDownload, remove, addBookmark, removeBookmark };
