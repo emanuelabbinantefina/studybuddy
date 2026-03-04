@@ -12,6 +12,7 @@ interface UpcomingExam {
   id: number;
   title: string;
   dateLabel: string;
+  longDateLabel: string;
   daysLeft: number;
   accentClass: string;
 }
@@ -25,6 +26,7 @@ interface UpcomingExam {
 })
 export class HomePage implements OnInit, OnDestroy {
   displayName = 'Studente';
+  nextExam: UpcomingExam | null = null;
   upcomingExams: UpcomingExam[] = [];
   recentNotes: Appunto[] = [];
   myGroups: Gruppo[] = [];
@@ -67,6 +69,13 @@ export class HomePage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/groups']);
   }
 
+  getHeroSubtitle(): string {
+    if (!this.nextExam) {
+      return 'Apri Planner e inserisci materia e data del tuo esame.';
+    }
+    return `${this.nextExam.title} - ${this.nextExam.longDateLabel}`;
+  }
+
   getGroupColorClass(group: Gruppo): string {
     return group.colorClass || this.resolveGroupColor(group.materia);
   }
@@ -98,11 +107,13 @@ export class HomePage implements OnInit, OnDestroy {
       .subscribe({
         next: (events) => {
           this.upcomingExams = this.toUpcomingExams(events);
+          this.nextExam = this.upcomingExams[0] || null;
           this.loadingExams = false;
         },
         error: (err) => {
           console.error('Errore caricamento esami home', err);
           this.upcomingExams = [];
+          this.nextExam = null;
           this.loadingExams = false;
         },
       });
@@ -180,6 +191,7 @@ export class HomePage implements OnInit, OnDestroy {
           id: event.id,
           title: event.title || 'Esame',
           dateLabel: this.formatExamDate(examDate),
+          longDateLabel: this.formatExamDateLong(examDate),
           daysLeft,
           accentClass: this.getExamAccent(index),
         } satisfies UpcomingExam;
@@ -191,7 +203,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private parseDate(raw: string): Date | null {
-    const parsed = new Date(raw);
+    const source = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00` : raw;
+    const parsed = new Date(source);
     if (Number.isNaN(parsed.getTime())) return null;
     return this.startOfDay(parsed);
   }
@@ -204,6 +217,13 @@ export class HomePage implements OnInit, OnDestroy {
     const day = date.getDate().toString().padStart(2, '0');
     const month = date.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '');
     return `${day} ${month}`;
+  }
+
+  private formatExamDateLong(date: Date): string {
+    const formatted = date
+      .toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+      .replace('.', '');
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }
 
   private getExamAccent(index: number): string {
