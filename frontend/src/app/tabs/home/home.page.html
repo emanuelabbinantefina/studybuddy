@@ -3,8 +3,16 @@
     <section class="hero-card">
       <div class="hero-text">
         <p class="hero-kicker">BENTORNATA/O, {{ displayName }}</p>
-        <h2>Gestisci studio, appunti e gruppi da qui.</h2>
-        <p>La home ora usa dati reali: se il backend e vuoto vedrai sezioni vuote.</p>
+        <h2 *ngIf="nextExam as exam; else noExamTitle">
+          Il tuo prossimo esame
+          <span *ngIf="exam.daysLeft > 1">e tra {{ exam.daysLeft }} giorni.</span>
+          <span *ngIf="exam.daysLeft === 1">e domani.</span>
+          <span *ngIf="exam.daysLeft === 0">e oggi.</span>
+        </h2>
+        <ng-template #noExamTitle>
+          <h2>Aggiungi il tuo primo esame.</h2>
+        </ng-template>
+        <p>{{ getHeroSubtitle() }}</p>
         <button type="button" class="btn-primary small" (click)="openPlanner()">
           Vai al Planner
           <ion-icon name="arrow-forward-outline"></ion-icon>

@@ -29,6 +29,15 @@ async function list(req, res) {
   }
 }
 
+async function subjectsMine(req, res) {
+  try {
+    const out = await eventsService.listMyExamSubjects(req.userData.userId);
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
 async function update(req, res) {
   try {
     const eventId = Number(req.params.id);
@@ -54,4 +63,4 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { create, upcoming, list, update, remove };
+module.exports = { create, upcoming, list, subjectsMine, update, remove };

@@ -34,17 +34,23 @@
   padding-right: 8px;
 
   h2 {
-    font-size: 1.38rem;
-    line-height: 1.2;
+    font-size: 1.85rem;
+    line-height: 1.08;
     font-weight: 800;
     color: var(--text-dark);
-    margin: 4px 0 8px;
+    margin: 8px 0 10px;
+
+    span {
+      display: block;
+      color: var(--primary-blue);
+      margin-top: 4px;
+    }
   }
 
   p {
     color: var(--text-grey);
     margin: 0 0 16px;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -90,7 +96,7 @@
 
 .exam-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 
@@ -111,6 +117,7 @@
     font-size: 0.98rem;
     font-weight: 700;
     line-height: 1.2;
+    word-break: break-word;
   }
 
   p {
@@ -136,16 +143,25 @@
 
 .exam-accent-blue {
   color: #4f46e5 !important;
-  background: #4f46e5 !important;
 }
 
 .exam-accent-pink {
   color: #ec4899 !important;
-  background: #ec4899 !important;
 }
 
 .exam-accent-green {
   color: #10b981 !important;
+}
+
+.exam-dot.exam-accent-blue {
+  background: #4f46e5 !important;
+}
+
+.exam-dot.exam-accent-pink {
+  background: #ec4899 !important;
+}
+
+.exam-dot.exam-accent-green {
   background: #10b981 !important;
 }
 
@@ -295,6 +311,10 @@ button {
 @media (max-width: 380px) {
   .exam-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-text h2 {
+    font-size: 1.45rem;
   }
 
   .hero-img {

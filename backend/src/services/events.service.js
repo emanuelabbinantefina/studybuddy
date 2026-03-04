@@ -7,12 +7,37 @@ function badRequest(msg) {
   return err;
 }
 
+function toStartOfDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function parseDateOnly(raw) {
+  if (!raw) return null;
+  const source = /^\d{4}-\d{2}-\d{2}$/.test(String(raw)) ? `${raw}T00:00:00` : String(raw);
+  const parsed = new Date(source);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return toStartOfDay(parsed);
+}
+
+function validateExamDate(type, startAt) {
+  if (String(type || '').trim().toLowerCase() !== 'exam') return;
+  const examDate = parseDateOnly(startAt);
+  if (!examDate) throw badRequest('data esame non valida');
+
+  const today = toStartOfDay(new Date());
+  if (examDate.getTime() < today.getTime()) {
+    throw badRequest('non puoi inserire una data esame nel passato');
+  }
+}
+
 async function createEvent(userId, body) {
   const { title, type, subject, startAt, endAt, location, notes } = body;
 
   if (!title || !type || !startAt) {
     throw badRequest('title, type e startAt sono obbligatori');
   }
+
+  validateExamDate(type, startAt);
 
   const now = nowIso();
 
@@ -105,6 +130,33 @@ async function list(userId, query) {
   );
 }
 
+async function listMyExamSubjects(userId) {
+  const user = await get(
+    `select facolta
+     from Users
+     where id = ?`,
+    [userId]
+  );
+
+  if (!user) return { faculty: null, subjects: [] };
+
+  const faculty = String(user.facolta || '').trim();
+  if (!faculty) return { faculty: null, subjects: [] };
+
+  const rows = await all(
+    `select subjectName
+     from ExamSubjects
+     where lower(trim(facultyName)) = lower(trim(?))
+     order by subjectName asc`,
+    [faculty]
+  );
+
+  return {
+    faculty,
+    subjects: rows.map((row) => row.subjectName)
+  };
+}
+
 async function update(userId, eventId, patch) {
   const current = await getByIdForUser(userId, eventId);
   if (!current) return null;
@@ -122,6 +174,8 @@ async function update(userId, eventId, patch) {
   if (!next.title || !next.type || !next.startAt) {
     throw badRequest('title, type e startAt non possono essere vuoti');
   }
+
+  validateExamDate(next.type, next.startAt);
 
   const now = nowIso();
 
@@ -154,4 +208,4 @@ async function remove(userId, eventId) {
   return true;
 }
 
-module.exports = { createEvent, upcoming, list, update, remove };
+module.exports = { createEvent, upcoming, list, listMyExamSubjects, update, remove };

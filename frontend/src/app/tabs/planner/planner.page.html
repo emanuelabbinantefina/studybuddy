@@ -1,95 +1,103 @@
-<ion-content fullscreen>
-  <div class="planner-page">
-
-    <!-- STRISCIA GIORNI (più grossa, con numeri grandi) -->
-    <div class="week-strip">
-      <div
-        *ngFor="let d of weekDays"
-        class="day-pill"
-        [class.day-pill--active]="d.iso === selectedDateIso"
-        (click)="selectDay(d.iso)">
-        <span class="day-pill__dow">{{ d.shortLabel | slice:0:2 | uppercase }}</span>
-        <span class="day-pill__num">{{ d.dayNum }}</span>
+<ion-content [fullscreen]="true" class="planner-content">
+  <div class="planner-shell">
+    <header class="planner-header">
+      <div class="planner-title">
+        <h1>Planner</h1>
+        <p>Solo esami</p>
       </div>
-    </div>
 
-    <!-- DATA -->
-    <div class="date-header">
-      <h2>
-        {{ (selectedDateIso + 'T00:00:00') | date:'EEEE, d MMM' : '' : 'it' }}
-      </h2>
-    </div>
-
-    <!-- LISTA EVENTI OGGI (card piene) -->
-    <section class="day-section">
-      <ion-list lines="none">
-        <ion-item
-          *ngFor="let e of eventsToday"
-          class="event-card"
-          button
-          detail
-          (click)="onEventClick(e)">
-
-          <div slot="start" class="event-timeline">
-            <span class="time-main">{{ e.startTime }}</span>
-            <span class="time-sub">{{ e.endTime }}</span>
-          </div>
-
-          <ion-label>
-            <div class="event-main-row">
-              <h3>{{ e.title }}</h3>
-              <ion-icon
-                *ngIf="e.type === 'exam'"
-                name="school-outline"
-                class="event-type exam">
-              </ion-icon>
-              <ion-icon
-                *ngIf="e.type === 'group'"
-                name="people-outline"
-                class="event-type group">
-              </ion-icon>
-            </div>
-            <p class="event-subject">
-              <ion-icon name="bookmark-outline"></ion-icon>
-              {{ e.subject }}
-            </p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </section>
-
-    <!-- SEZIONE GIORNO SUCCESSIVO (es. “Giovedì 25 Apr”) -->
-    <section class="day-section next-day" *ngIf="eventsNextDay.length">
-      <h3 class="day-title">
-        {{
-          (eventsNextDay[0].date + 'T00:00:00')
-          | date:'EEEE, d MMM' : '' : 'it'
-        }}
-      </h3>
-
-      <ion-list lines="none">
-        <ion-item *ngFor="let e of eventsNextDay" class="event-card small">
-          <div slot="start" class="event-timeline">
-            <span class="time-main">{{ e.startTime }}</span>
-          </div>
-          <ion-label>
-            <h3>{{ e.title }}</h3>
-            <p class="event-subject">
-              <ion-icon name="bookmark-outline"></ion-icon>
-              {{ e.subject }}
-            </p>
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </section>
-
-    <!-- BOTTONE FINALE TONDO -->
-    <div class="add-wrapper">
-      <ion-button expand="block" shape="round" class="add-btn" (click)="onAddActivity()">
+      <ion-button fill="outline" class="add-trigger" (click)="openAddModal()">
         <ion-icon name="add-outline" slot="start"></ion-icon>
-        Aggiungi attività
+        Aggiungi
       </ion-button>
+    </header>
+
+    <div class="faculty-chip" *ngIf="myFacultyLabel">
+      <ion-icon name="school-outline"></ion-icon>
+      <span>{{ myFacultyLabel }}</span>
     </div>
 
+    <div class="status-row" *ngIf="loading">Caricamento esami...</div>
+    <div class="status-row error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
+
+    <ng-container *ngIf="!loading && groupedExams.length > 0">
+      <section class="exam-group" *ngFor="let group of groupedExams">
+        <h3>{{ group.dateLabel }}</h3>
+
+        <article class="exam-card" *ngFor="let exam of group.exams" [ngClass]="exam.accentClass">
+          <div class="day-box">{{ exam.dayNumber }}</div>
+
+          <div class="exam-content">
+            <span class="exam-badge">ESAME</span>
+            <h4>{{ exam.title }}</h4>
+            <p>{{ exam.daysLabel }}</p>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+
+    <section class="empty-state" *ngIf="!loading && groupedExams.length === 0">
+      <h3>Nessun esame pianificato</h3>
+      <p>Aggiungi il primo esame per vedere il countdown nel planner e in home.</p>
+      <ion-button class="empty-btn" (click)="openAddModal()">Aggiungi esame</ion-button>
+    </section>
   </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="planner-fab">
+    <ion-fab-button (click)="openAddModal()" aria-label="Aggiungi esame">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
+
+<ion-modal [isOpen]="isAddModalOpen" (didDismiss)="closeAddModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Nuovo esame</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeAddModal()">Chiudi</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="add-modal-content">
+      <div class="form-wrap">
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked">Materia</ion-label>
+          <ion-select
+            interface="popover"
+            placeholder="Seleziona materia"
+            [(ngModel)]="newExamSubject"
+            [disabled]="subjectOptions.length === 0">
+            <ion-select-option *ngFor="let subject of subjectOptions" [value]="subject">
+              {{ subject }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked">Data esame</ion-label>
+          <ion-input type="date" [min]="minExamDate" [(ngModel)]="newExamDate"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none" class="form-item">
+          <ion-label position="stacked">Note (opzionale)</ion-label>
+          <ion-textarea rows="3" [autoGrow]="true" [(ngModel)]="newExamNotes"></ion-textarea>
+        </ion-item>
+
+        <p class="form-help" *ngIf="subjectOptions.length === 0">
+          Nessuna materia trovata per la tua facolta.
+        </p>
+
+        <ion-button
+          expand="block"
+          class="save-btn"
+          [disabled]="!canSaveExam()"
+          (click)="saveExam()">
+          {{ savingExam ? 'Salvataggio...' : 'Salva esame' }}
+        </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

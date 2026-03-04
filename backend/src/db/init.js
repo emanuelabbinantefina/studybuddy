@@ -4,6 +4,29 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+const GIURISPRUDENZA_EXAM_SUBJECTS = [
+  'Diritto Privato',
+  'Diritto Costituzionale',
+  'Diritto Penale',
+  'Diritto Commerciale',
+  'Diritto Amministrativo',
+  'Diritto Processuale Civile',
+  'Diritto Processuale Penale',
+  'Filosofia del Diritto'
+];
+
+async function seedExamSubjects() {
+  const now = nowIso();
+
+  for (const subjectName of GIURISPRUDENZA_EXAM_SUBJECTS) {
+    await run(
+      `insert or ignore into ExamSubjects (facultyName, subjectName, createdAt, updatedAt)
+       values (?, ?, ?, ?)`,
+      ['Giurisprudenza', subjectName, now, now]
+    );
+  }
+}
+
 async function initDb() {
   await run(`pragma foreign_keys = on`);
 
@@ -69,6 +92,22 @@ async function initDb() {
       foreign key (facultyId) references Faculties(id) on delete cascade
     )
   `);
+
+  // exam subjects mapped by faculty
+  await run(`
+    create table if not exists ExamSubjects (
+      id integer primary key autoincrement,
+      facultyName text not null,
+      subjectName text not null,
+      createdAt text not null,
+      updatedAt text not null
+    )
+  `);
+
+  await run(`create unique index if not exists uq_examsubjects_faculty_subject on ExamSubjects(facultyName, subjectName)`);
+  await run(`create index if not exists idx_examsubjects_faculty on ExamSubjects(facultyName)`);
+
+  await seedExamSubjects();
 
   // events
   await run(`
