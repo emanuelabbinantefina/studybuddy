@@ -1,95 +1,187 @@
-<ion-content [fullscreen]="true" class="bg-light">
-  <div class="header-background">
-    <div class="header-top">
-      <div class="brand">
-        <ion-icon name="school" style="font-size: 24px; color: #312E81;"></ion-icon>
-        <span style="margin-left: 8px;">Profilo</span>
-      </div>
-      <div class="notification-box" (click)="onReminders()">
-        <ion-icon name="notifications-outline"></ion-icon>
-        <div class="dot"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-container">
-    <div class="profile-section">
-      <div class="avatar-wrapper" (click)="onEditProfile()">
-        <img [src]="user?.avatar || fallbackAvatar" (error)="onAvatarError($event)" alt="avatar">
-      </div>
-      <h2>{{ user?.nome || 'Emanuela' }}</h2>
-      <p class="profile-bio" *ngIf="user?.bio">{{ (user?.bio || '') | slice:0:120 }}</p>
-      <p class="profile-facolta" *ngIf="user?.facolta">{{ user?.facolta }}</p>
-    </div>
-
-    <div class="stats-card" (click)="onStats()">
-      <div class="stat-col">
-        <span class="value">{{ savedNotesCount }}</span>
-        <span class="label">Appunti</span>
-      </div>
-      <div class="vertical-divider"></div>
-      <div class="stat-col">
-        <span class="value">{{ groupsCount }}</span>
-        <span class="label">Gruppi</span>
-      </div>
-    </div>
-
-    <div class="quick-actions">
-      <div class="action-btn" (click)="onSavedNotes()">
-        <ion-icon name="bookmark-outline"></ion-icon>
-        <span>Appunti salvati</span>
-      </div>
-      <div class="action-btn" (click)="onMyGroups()">
-        <ion-icon name="people-outline"></ion-icon>
-        <span>I tuoi gruppi</span>
-      </div>
-    </div>
-
-    <div class="section-title" (click)="onSavedNotes()">
-      <h3>Appunti salvati</h3>
-      <ion-icon name="chevron-forward"></ion-icon>
-    </div>
-
-    <div class="notes-list" *ngIf="savedNotes.length > 0; else emptySavedNotes">
-      <div class="note-item" *ngFor="let note of savedNotes" (click)="onViewNote(note)">
-        <div class="icon-box" [class.orange]="note.tipoFile === 'pdf'" [class.yellow]="note.tipoFile !== 'pdf'">
-          <ion-icon name="bookmark"></ion-icon>
+<ion-content [fullscreen]="true" class="profile-page">
+  <div class="profile-shell">
+    <section class="hero-card">
+      <div class="hero-top">
+        <div class="avatar-frame" (click)="openEditProfile()">
+          <img [src]="user?.avatar || fallbackAvatar" (error)="onAvatarError($event)" alt="Avatar profilo">
         </div>
-        <div class="text-info">
-          <h4>{{ note.titolo }}</h4>
-          <p>{{ note.materia }} <span class="dot">&middot;</span> {{ note.tempoUpload }}</p>
-        </div>
-        <button
-          type="button"
-          class="mini-download"
-          [disabled]="downloadingSavedNoteId === note.id"
-          (click)="onViewNote(note, $event)">
-          {{ downloadingSavedNoteId === note.id ? '...' : 'Scarica' }}
+
+        <button type="button" class="edit-btn" (click)="openEditProfile()">
+          Modifica
         </button>
       </div>
-    </div>
 
-    <ng-template #emptySavedNotes>
-      <div class="empty-notes">
-        <p>Non hai ancora appunti salvati.</p>
-        <button type="button" (click)="goToSearch()">Sfoglia appunti</button>
+      <div class="hero-copy">
+        <h1>{{ displayName }}</h1>
+        <p class="username" *ngIf="displayUsername">{{ displayUsername }}</p>
+
+        <div class="chips-row">
+          <span class="info-chip" *ngIf="user?.corso">{{ user?.corso }}</span>
+          <span class="info-chip info-chip--secondary" *ngIf="user?.courseYear">{{ user?.courseYear }}</span>
+        </div>
+
+        <p class="bio" *ngIf="user?.bio">{{ user?.bio }}</p>
       </div>
+    </section>
+
+    <section class="stats-grid">
+      <button type="button" class="stat-card" (click)="setActiveSection('notes')">
+        <strong>{{ uploadedNotesCount }}</strong>
+        <span>Caricati</span>
+      </button>
+
+      <button type="button" class="stat-card" (click)="setActiveSection('notes')">
+        <strong>{{ savedNotesCount }}</strong>
+        <span>Salvati</span>
+      </button>
+
+      <button type="button" class="stat-card" (click)="setActiveSection('groups')">
+        <strong>{{ groupsCount }}</strong>
+        <span>Gruppi</span>
+      </button>
+    </section>
+
+    <section class="switcher">
+      <button
+        type="button"
+        class="switcher-btn"
+        [class.switcher-btn--active]="activeSection === 'notes'"
+        (click)="setActiveSection('notes')">
+        <span>Appunti</span>
+        <small>{{ totalNotesCount }}</small>
+      </button>
+
+      <button
+        type="button"
+        class="switcher-btn"
+        [class.switcher-btn--active]="activeSection === 'groups'"
+        (click)="setActiveSection('groups')">
+        <span>Gruppi</span>
+        <small>{{ groupsCount }}</small>
+      </button>
+    </section>
+
+    <ng-container *ngIf="activeSection === 'notes'; else groupsView">
+      <section class="content-section">
+        <div class="section-head">
+          <h2>I miei appunti</h2>
+          <button type="button" class="ghost-link" (click)="openUploadsSearch()">Sfoglia</button>
+        </div>
+
+        <ng-container *ngIf="myNotes.length > 0; else emptyUploads">
+          <article class="note-card" *ngFor="let note of myNotes; trackBy: trackById" (click)="onViewNote(note)">
+            <div class="note-icon">{{ noteFileLabel(note) }}</div>
+
+            <div class="note-copy">
+              <h3>{{ note.titolo }}</h3>
+              <p>{{ note.materia }} <span class="dot"></span> {{ note.tempoUpload }}</p>
+            </div>
+
+            <div class="note-actions">
+              <span class="file-badge">{{ noteFileLabel(note) }}</span>
+              <button type="button" class="download-btn" (click)="onViewNote(note, $event)">
+                {{ downloadingNoteId === note.id ? '...' : 'Scarica' }}
+              </button>
+            </div>
+          </article>
+        </ng-container>
+
+        <ng-template #emptyUploads>
+          <div class="empty-card">
+            <h3>Nessun appunto caricato</h3>
+            <p>Appena carichi i tuoi file li vedrai qui.</p>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="content-section">
+        <div class="section-head">
+          <h2>Appunti salvati</h2>
+          <button type="button" class="ghost-link" (click)="openSavedSearch()">Apri ricerca</button>
+        </div>
+
+        <ng-container *ngIf="savedNotes.length > 0; else emptySaved">
+          <article class="note-card" *ngFor="let note of savedNotes; trackBy: trackById" (click)="onViewNote(note)">
+            <div class="note-icon note-icon--saved">{{ noteFileLabel(note) }}</div>
+
+            <div class="note-copy">
+              <h3>{{ note.titolo }}</h3>
+              <p>{{ note.autoreNome || 'Studente' }} <span class="dot"></span> {{ note.tempoUpload }}</p>
+            </div>
+
+            <div class="note-actions">
+              <span class="file-badge">{{ noteFileLabel(note) }}</span>
+              <button type="button" class="download-btn" (click)="onViewNote(note, $event)">
+                {{ downloadingNoteId === note.id ? '...' : 'Scarica' }}
+              </button>
+            </div>
+          </article>
+        </ng-container>
+
+        <ng-template #emptySaved>
+          <div class="empty-card">
+            <h3>Nessun appunto salvato</h3>
+            <p>Salva gli appunti interessanti dalla ricerca per ritrovarli qui.</p>
+            <button type="button" class="empty-link" (click)="goToSearch()">Vai alla ricerca</button>
+          </div>
+        </ng-template>
+      </section>
+    </ng-container>
+
+    <ng-template #groupsView>
+      <section class="content-section">
+        <div class="section-head">
+          <h2>I tuoi gruppi</h2>
+          <button type="button" class="ghost-link" (click)="openGroupsTab()">Apri gruppi</button>
+        </div>
+
+        <ng-container *ngIf="myGroups.length > 0; else emptyGroups">
+          <article class="group-card" *ngFor="let group of myGroups; trackBy: trackById" (click)="openGroupsTab()">
+            <div class="group-mark" [ngClass]="group.colorClass || 'bg-blue'"></div>
+
+            <div class="group-copy">
+              <h3>{{ group.nome }}</h3>
+              <p>{{ groupMeta(group) }}</p>
+            </div>
+
+            <div class="group-side">
+              <strong>{{ group.membersCount || 0 }}</strong>
+              <span>membri</span>
+            </div>
+          </article>
+        </ng-container>
+
+        <ng-template #emptyGroups>
+          <div class="empty-card">
+            <h3>Nessun gruppo attivo</h3>
+            <p>Quando entri in un gruppo o ne crei uno, lo vedrai in questa sezione.</p>
+            <button type="button" class="empty-link" (click)="openGroupsTab()">Vai ai gruppi</button>
+          </div>
+        </ng-template>
+      </section>
     </ng-template>
 
-    <div class="menu-list">
-      <div class="menu-item" (click)="onEditProfile()">
-        <div class="left">
-          <ion-icon name="settings-outline"></ion-icon>
-          <span>Modifica profilo</span>
-        </div>
-        <ion-icon name="chevron-forward"></ion-icon>
-      </div>
-      <div class="menu-item danger" (click)="onLogout()">
-        <div class="left">
-          <ion-icon name="log-out-outline"></ion-icon>
-          <span>Esci</span>
-        </div>
-      </div>
-    </div>
+    <button type="button" class="logout-btn" (click)="onLogout()">
+      Esci dall account
+    </button>
   </div>
+
+  <ion-modal
+    class="profile-editor-modal"
+    [isOpen]="isEditModalOpen"
+    [breakpoints]="[0, 0.92]"
+    [initialBreakpoint]="0.92"
+    (didDismiss)="closeEditProfile()">
+    <ng-template>
+      <ion-content class="profile-editor-content">
+        <app-profile-editor
+          variant="sheet"
+          title="Modifica profilo"
+          submitLabel="Salva"
+          (saved)="onProfileSaved($event)"
+          (closed)="closeEditProfile()">
+        </app-profile-editor>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

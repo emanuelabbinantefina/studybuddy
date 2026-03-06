@@ -35,10 +35,14 @@ async function initDb() {
     create table if not exists Users (
       id integer primary key autoincrement,
       name text not null,
+      firstName text,
+      lastName text,
       email text not null unique,
       password text not null,
+      username text,
       facolta text,
       corso text,
+      courseYear text,
       nickname text,
       bio text,
       avatarUrl text,
@@ -46,6 +50,38 @@ async function initDb() {
       updatedAt text not null
     )
   `);
+
+  try {
+    await run(`alter table Users add column firstName text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Users add column lastName text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Users add column username text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Users add column courseYear text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
 
   try {
     await run(`alter table Users add column nickname text`);

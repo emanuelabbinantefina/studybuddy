@@ -12,6 +12,37 @@ function badRequest(msg) {
   return err;
 }
 
+function splitLegacyName(name) {
+  const clean = String(name || '').trim();
+  if (!clean) {
+    return { firstName: '', lastName: '' };
+  }
+
+  const [firstName = '', ...rest] = clean.split(/\s+/);
+  return {
+    firstName,
+    lastName: rest.join(' ')
+  };
+}
+
+function normalizeUserRow(row) {
+  if (!row) return null;
+
+  const legacy = splitLegacyName(row.name);
+  const firstName = String(row.firstName || '').trim() || legacy.firstName;
+  const lastName = String(row.lastName || '').trim() || legacy.lastName;
+  const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || String(row.name || '').trim();
+
+  return {
+    ...row,
+    name: displayName,
+    firstName,
+    lastName,
+    username: row.username || null,
+    courseYear: row.courseYear || null
+  };
+}
+
 async function facultiesWithCourses() {
   const faculties = await all(
     `select id, name, createdAt, updatedAt
@@ -26,11 +57,11 @@ async function facultiesWithCourses() {
   );
 
   const map = new Map();
-  faculties.forEach(f => map.set(f.id, { ...f, Courses: [] }));
+  faculties.forEach((faculty) => map.set(faculty.id, { ...faculty, Courses: [] }));
 
-  courses.forEach(c => {
-    const f = map.get(c.facultyId);
-    if (f) f.Courses.push(c);
+  courses.forEach((course) => {
+    const faculty = map.get(course.facultyId);
+    if (faculty) faculty.Courses.push(course);
   });
 
   return Array.from(map.values());
@@ -38,12 +69,16 @@ async function facultiesWithCourses() {
 
 async function register(body) {
   const { name, email, password, facolta, corso } = body;
+  const cleanName = String(name || '').trim();
+  const cleanEmail = String(email || '').trim();
 
-  if (!name || !email || !password) throw badRequest('name, email e password sono obbligatori');
+  if (!cleanName || !cleanEmail || !password) {
+    throw badRequest('name, email e password sono obbligatori');
+  }
 
-  const existing = await get(`select id from Users where email = ?`, [email]);
+  const existing = await get(`select id from Users where email = ?`, [cleanEmail]);
   if (existing) {
-    const err = new Error('email già esistente');
+    const err = new Error('email gia esistente');
     err.code = 'EMAIL_EXISTS';
     throw err;
   }
@@ -52,13 +87,15 @@ async function register(body) {
   const now = nowIso();
 
   const out = await run(
-    `insert into Users (name, email, password, facolta, corso, nickname, bio, avatarUrl, createdAt, updatedAt)
-     values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name.trim(), email.trim(), hashed, facolta || null, corso || null, null, null, null, now, now]
+    `insert into Users
+      (name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, createdAt, updatedAt)
+     values
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [cleanName, cleanName, '', cleanEmail, hashed, null, facolta || null, corso || null, null, null, null, null, now, now]
   );
 
   const token = jwt.sign(
-    { id: out.lastID, userId: out.lastID, email: email.trim() },
+    { id: out.lastID, userId: out.lastID, email: cleanEmail },
     SECRET_KEY,
     { expiresIn: '24h' }
   );
@@ -68,10 +105,14 @@ async function register(body) {
     token,
     user: {
       id: out.lastID,
-      name: name.trim(),
-      email: email.trim(),
+      name: cleanName,
+      firstName: cleanName,
+      lastName: '',
+      email: cleanEmail,
+      username: null,
       facolta: facolta || null,
       corso: corso || null,
+      courseYear: null,
       nickname: null,
       bio: null,
       avatarUrl: null
@@ -81,14 +122,15 @@ async function register(body) {
 
 async function login(body) {
   const { email, password } = body;
+  const cleanEmail = String(email || '').trim();
 
-  if (!email || !password) throw badRequest('email e password sono obbligatori');
+  if (!cleanEmail || !password) throw badRequest('email e password sono obbligatori');
 
   const user = await get(
-    `select id, name, email, password, facolta, corso, nickname, bio, avatarUrl
+    `select id, name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl
      from Users
      where email = ?`,
-    [email.trim()]
+    [cleanEmail]
   );
 
   if (!user) {
@@ -104,9 +146,9 @@ async function login(body) {
     throw err;
   }
 
-  // qui metto sia id che userId così il middleware non impazzisce
+  const normalizedUser = normalizeUserRow(user);
   const token = jwt.sign(
-    { id: user.id, userId: user.id, email: user.email },
+    { id: normalizedUser.id, userId: normalizedUser.id, email: normalizedUser.email },
     SECRET_KEY,
     { expiresIn: '24h' }
   );
@@ -114,39 +156,67 @@ async function login(body) {
   return {
     token,
     user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      facolta: user.facolta,
-      corso: user.corso,
-      nickname: user.nickname,
-      bio: user.bio,
-      avatarUrl: user.avatarUrl
+      id: normalizedUser.id,
+      name: normalizedUser.name,
+      firstName: normalizedUser.firstName,
+      lastName: normalizedUser.lastName,
+      email: normalizedUser.email,
+      username: normalizedUser.username,
+      facolta: normalizedUser.facolta,
+      corso: normalizedUser.corso,
+      courseYear: normalizedUser.courseYear,
+      nickname: normalizedUser.nickname,
+      bio: normalizedUser.bio,
+      avatarUrl: normalizedUser.avatarUrl
     }
   };
 }
 
 async function me(userId) {
-  return get(
-    `select id, name, email, facolta, corso, nickname, bio, avatarUrl, createdAt, updatedAt
+  const user = await get(
+    `select id, name, firstName, lastName, email, username, facolta, corso, courseYear, nickname, bio, avatarUrl, createdAt, updatedAt
      from Users
      where id = ?`,
     [userId]
   );
+
+  return normalizeUserRow(user);
 }
 
 async function updateProfile(userId, body) {
-  const nicknameIn = body && typeof body.nickname === 'string' ? body.nickname.trim() : undefined;
+  const current = await me(userId);
+  if (!current) {
+    const err = new Error('utente non trovato');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  const firstNameIn = body && typeof body.firstName === 'string' ? body.firstName.trim() : undefined;
+  const lastNameIn = body && typeof body.lastName === 'string' ? body.lastName.trim() : undefined;
+  const usernameIn = body && typeof body.username === 'string' ? body.username.trim() : undefined;
   const bioIn = body && typeof body.bio === 'string' ? body.bio.trim() : undefined;
+  const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() : undefined;
+  const courseYearIn = body && typeof body.courseYear === 'string' ? body.courseYear.trim() : undefined;
   const avatarUrlIn = body && typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
 
   const updates = [];
   const params = [];
 
-  if (nicknameIn !== undefined) {
-    if (!nicknameIn) throw badRequest('nickname obbligatorio');
-    updates.push('nickname = ?');
-    params.push(nicknameIn);
+  if (firstNameIn !== undefined) {
+    if (!firstNameIn) throw badRequest('nome obbligatorio');
+    updates.push('firstName = ?');
+    params.push(firstNameIn);
+  }
+
+  if (lastNameIn !== undefined) {
+    if (!lastNameIn) throw badRequest('cognome obbligatorio');
+    updates.push('lastName = ?');
+    params.push(lastNameIn);
+  }
+
+  if (usernameIn !== undefined) {
+    updates.push('username = ?');
+    params.push(usernameIn || null);
   }
 
   if (bioIn !== undefined) {
@@ -155,12 +225,32 @@ async function updateProfile(userId, body) {
     params.push(bioIn || null);
   }
 
+  if (corsoIn !== undefined) {
+    if (!corsoIn) throw badRequest('corso obbligatorio');
+    updates.push('corso = ?');
+    params.push(corsoIn);
+  }
+
+  if (courseYearIn !== undefined) {
+    if (!courseYearIn) throw badRequest('anno obbligatorio');
+    updates.push('courseYear = ?');
+    params.push(courseYearIn);
+  }
+
   if (avatarUrlIn !== undefined) {
     updates.push('avatarUrl = ?');
     params.push(avatarUrlIn || null);
   }
 
   if (!updates.length) throw badRequest('nessun campo da aggiornare');
+
+  const nextFirstName = firstNameIn !== undefined ? firstNameIn : current.firstName;
+  const nextLastName = lastNameIn !== undefined ? lastNameIn : current.lastName;
+  if (!nextFirstName) throw badRequest('nome obbligatorio');
+  if (!nextLastName) throw badRequest('cognome obbligatorio');
+
+  updates.push('name = ?');
+  params.push([nextFirstName, nextLastName].filter(Boolean).join(' ').trim());
 
   const now = nowIso();
   updates.push('updatedAt = ?');

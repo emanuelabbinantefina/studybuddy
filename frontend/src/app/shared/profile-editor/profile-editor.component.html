@@ -1,0 +1,78 @@
+<section class="editor-shell" [class.editor-shell--sheet]="variant === 'sheet'" [class.editor-shell--page]="variant === 'page'">
+  <div class="sheet-handle" *ngIf="variant === 'sheet'"></div>
+
+  <header class="editor-header">
+    <div>
+      <h2>{{ title }}</h2>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+
+    <button *ngIf="showClose" type="button" class="close-btn" (click)="close()">
+      Chiudi
+    </button>
+  </header>
+
+  <div class="editor-body">
+    <section class="block">
+      <div class="block-label">Foto profilo</div>
+      <div class="photo-row">
+        <div class="avatar-preview">
+          <img [src]="profileData.avatarUrl || fallbackAvatar" (error)="onAvatarError($event)" alt="Foto profilo">
+        </div>
+
+        <button type="button" class="upload-area" (click)="uploadPhoto()">
+          <strong>Trascina un immagine</strong>
+          <span>oppure clicca per scegliere</span>
+          <small>JPG, PNG, WEBP - max 5 MB</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="form-grid">
+      <label class="field">
+        <span>Nome</span>
+        <input type="text" maxlength="60" [(ngModel)]="profileData.firstName" placeholder="Marco">
+      </label>
+
+      <label class="field">
+        <span>Cognome</span>
+        <input type="text" maxlength="60" [(ngModel)]="profileData.lastName" placeholder="Rossi">
+      </label>
+
+      <label class="field field--full">
+        <span>Username <em>(opzionale)</em></span>
+        <input type="text" maxlength="40" [(ngModel)]="profileData.username" placeholder="@marco.r">
+      </label>
+
+      <label class="field">
+        <span>Corso di laurea</span>
+        <select [(ngModel)]="profileData.corso">
+          <option value="" disabled>Seleziona corso</option>
+          <option *ngFor="let course of courseOptions" [value]="course">{{ course }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Anno</span>
+        <select [(ngModel)]="profileData.courseYear">
+          <option value="" disabled>Seleziona anno</option>
+          <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
+        </select>
+      </label>
+
+      <label class="field field--full">
+        <span>Bio <em>(opzionale)</em></span>
+        <textarea maxlength="120" rows="4" [(ngModel)]="profileData.bio" placeholder="Scrivi una breve bio..."></textarea>
+        <small class="counter">{{ bioCount }}/120</small>
+      </label>
+    </section>
+  </div>
+
+  <footer class="editor-footer">
+    <button type="button" class="save-btn" [disabled]="!canSave()" (click)="saveProfile()">
+      {{ saving ? 'Salvataggio...' : submitLabel }}
+    </button>
+  </footer>
+
+  <input type="file" accept="image/jpeg,image/png,image/webp" #fileInput (change)="onFileSelected($event)" hidden>
+</section>

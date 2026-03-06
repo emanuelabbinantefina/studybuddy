@@ -1,98 +1,109 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { IonicModule, NavController, ToastController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
-import { Appunto } from '../../core/interfaces/models';
+import { Subject, firstValueFrom, takeUntil } from 'rxjs';
+import { Appunto, Gruppo, UserProfile } from '../../core/interfaces/models';
 import { ApiService } from '../../core/services/api.service';
 import { UserService } from '../../core/services/user.service';
+import { ProfileEditorComponent } from '../../shared/profile-editor/profile-editor.component';
 
-export interface UserProfile {
-  id: number;
-  nome: string;
-  bio?: string;
-  email: string;
-  avatar: string;
-  facolta: string;
-  media: number;
-  cfu: number;
-  esamiTotali: number;
-}
+type ProfileSection = 'notes' | 'groups';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [IonicModule, CommonModule], 
+  imports: [IonicModule, CommonModule, ProfileEditorComponent],
 })
-export class ProfilePage implements OnInit {
+export class ProfilePage implements OnInit, OnDestroy {
+  readonly fallbackAvatar = 'assets/images/logo-uni.png';
+
   user: UserProfile | null = null;
-  fallbackAvatar = 'assets/images/logo-uni.png';
+  activeSection: ProfileSection = 'notes';
+  myNotes: Appunto[] = [];
   savedNotes: Appunto[] = [];
-  savedNotesCount = 0;
-  groupsCount = 0;
-  downloadingSavedNoteId: number | null = null;
+  myGroups: Gruppo[] = [];
+  isEditModalOpen = false;
+  downloadingNoteId: number | null = null;
+
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private userService: UserService,
-    private apiService: ApiService,
-    private navCtrl: NavController,
-    private toastCtrl: ToastController
+    private readonly userService: UserService,
+    private readonly apiService: ApiService,
+    private readonly navCtrl: NavController,
+    private readonly toastCtrl: ToastController
   ) {}
 
-  ngOnInit() {
-    this.userService.getProfile().subscribe({
-      next: (data) => { this.user = data; },
-      error: (err) => { console.error('Errore caricamento:', err); }
-    });
+  ngOnInit(): void {
+    this.userService
+      .getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((profile) => {
+        this.user = profile;
+      });
+
     this.refreshScreenData();
   }
 
-  ionViewWillEnter() {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get uploadedNotesCount(): number {
+    return this.myNotes.length;
+  }
+
+  get savedNotesCount(): number {
+    return this.savedNotes.length;
+  }
+
+  get groupsCount(): number {
+    return this.myGroups.length;
+  }
+
+  get totalNotesCount(): number {
+    return this.uploadedNotesCount + this.savedNotesCount;
+  }
+
+  get displayName(): string {
+    return this.user?.displayName || this.user?.nome || 'Studente';
+  }
+
+  get displayUsername(): string {
+    return this.user?.username ? `@${this.user.username}` : '';
+  }
+
+  ionViewWillEnter(): void {
     this.userService.reloadProfile();
     this.refreshScreenData();
   }
 
-  // Navigazione Reale
-  onEditProfile() {
-    this.navCtrl.navigateForward('/complete-profile');
+  setActiveSection(section: ProfileSection): void {
+    this.activeSection = section;
   }
 
-  async onLogout() {
+  openEditProfile(): void {
+    this.isEditModalOpen = true;
+  }
+
+  closeEditProfile(): void {
+    this.isEditModalOpen = false;
+  }
+
+  onProfileSaved(profile: UserProfile): void {
+    this.user = profile;
+    this.closeEditProfile();
+  }
+
+  async onLogout(): Promise<void> {
     this.userService.logout();
     this.navCtrl.navigateRoot('/login');
   }
 
-  onSavedNotes() {
-    this.refreshSavedNotes();
-    this.presentToast('Lista appunti salvati aggiornata');
-  }
-
-  onMyGroups() {
-    this.navCtrl.navigateForward('/tabs/groups');
-  }
-
-  goToSearch() {
-    this.navCtrl.navigateForward('/tabs/search');
-  }
-
-  onReminders() { this.presentToast('Sezione Promemoria...'); }
-  onStats() { this.presentToast('Caricamento Statistiche...'); }
-
-  onViewNote(note: Appunto, event?: Event) {
-    this.downloadSavedNote(note, event);
-  }
-
-  async presentToast(message: string) {
-    const toast = await this.toastCtrl.create({
-      message: message,
-      duration: 1500,
-      position: 'bottom'
-    });
-    await toast.present();
-  }
-
-  onAvatarError(event: Event) {
+  onAvatarError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
     if (!img.src.includes(this.fallbackAvatar)) {
@@ -100,44 +111,30 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  private refreshScreenData() {
-    this.refreshSavedNotes();
-    this.refreshGroupsCount();
+  openGroupsTab(): void {
+    this.navCtrl.navigateForward('/tabs/groups');
   }
 
-  private refreshSavedNotes() {
-    this.apiService.getSavedAppunti('').subscribe({
-      next: (notes) => {
-        const safeNotes = Array.isArray(notes) ? notes : [];
-        this.savedNotesCount = safeNotes.length;
-        this.savedNotes = safeNotes;
-      },
-      error: (err) => {
-        console.error('Errore caricamento appunti salvati:', err);
-        this.savedNotes = [];
-        this.savedNotesCount = 0;
-      }
-    });
+  goToSearch(): void {
+    this.navCtrl.navigateForward('/tabs/search');
   }
 
-  private refreshGroupsCount() {
-    this.apiService.getGruppi().subscribe({
-      next: (groups) => {
-        this.groupsCount = Array.isArray(groups) ? groups.length : 0;
-      },
-      error: (err) => {
-        console.error('Errore caricamento gruppi:', err);
-        this.groupsCount = 0;
-      }
-    });
+  openUploadsSearch(): void {
+    this.activeSection = 'notes';
+    this.goToSearch();
   }
 
-  async downloadSavedNote(note: Appunto, event?: Event): Promise<void> {
+  openSavedSearch(): void {
+    this.activeSection = 'notes';
+    this.goToSearch();
+  }
+
+  async onViewNote(note: Appunto, event?: Event): Promise<void> {
     event?.stopPropagation();
-    if (this.downloadingSavedNoteId) return;
+    if (this.downloadingNoteId) return;
 
     try {
-      this.downloadingSavedNoteId = note.id;
+      this.downloadingNoteId = note.id;
       const response = await firstValueFrom(this.apiService.downloadAppunto(note.id));
       const blob = response.body;
       if (!blob) throw new Error('contenuto vuoto');
@@ -154,11 +151,77 @@ export class ProfilePage implements OnInit {
 
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      const message = err?.error?.message || 'Impossibile scaricare il file';
-      await this.presentToast(message);
+      await this.presentToast(err?.error?.message || 'Impossibile scaricare il file');
     } finally {
-      this.downloadingSavedNoteId = null;
+      this.downloadingNoteId = null;
     }
+  }
+
+  trackById(_: number, item: Appunto | Gruppo): number {
+    return item.id;
+  }
+
+  noteFileLabel(note: Appunto): string {
+    if (note.tipoFile === 'pdf') return 'PDF';
+    if (note.tipoFile === 'doc') return 'DOC';
+    return 'IMG';
+  }
+
+  groupMeta(group: Gruppo): string {
+    const parts = [group.materia, group.facolta].filter(Boolean);
+    return parts.join(' - ');
+  }
+
+  private refreshScreenData(): void {
+    this.refreshUploadedNotes();
+    this.refreshSavedNotes();
+    this.refreshGroups();
+  }
+
+  private refreshUploadedNotes(): void {
+    this.apiService.getAppunti('').subscribe({
+      next: (notes) => {
+        const rows = Array.isArray(notes) ? notes : [];
+        this.myNotes = rows.filter((note) => !!note.canDelete);
+      },
+      error: (err) => {
+        console.error('Errore caricamento appunti caricati:', err);
+        this.myNotes = [];
+      }
+    });
+  }
+
+  private refreshSavedNotes(): void {
+    this.apiService.getSavedAppunti('').subscribe({
+      next: (notes) => {
+        this.savedNotes = Array.isArray(notes) ? notes : [];
+      },
+      error: (err) => {
+        console.error('Errore caricamento appunti salvati:', err);
+        this.savedNotes = [];
+      }
+    });
+  }
+
+  private refreshGroups(): void {
+    this.apiService.getGruppi('my').subscribe({
+      next: (groups) => {
+        this.myGroups = Array.isArray(groups) ? groups : [];
+      },
+      error: (err) => {
+        console.error('Errore caricamento gruppi:', err);
+        this.myGroups = [];
+      }
+    });
+  }
+
+  private async presentToast(message: string): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 1700,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 
   private extractFileName(contentDisposition: string | null): string | null {

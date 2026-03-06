@@ -5,6 +5,25 @@ export interface User {
   facolta: string;
 }
 
+export interface UserProfile {
+  id: number | null;
+  nome: string;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  nickname: string;
+  email: string;
+  avatar: string;
+  facolta: string;
+  corso: string;
+  courseYear: string;
+  bio: string;
+  media: number;
+  cfu: number;
+  esamiTotali: number;
+}
+
 export interface Evento {
   id: number;
   titolo: string;
