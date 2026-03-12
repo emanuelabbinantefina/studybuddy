@@ -25,7 +25,7 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
   filteredGroups: Gruppo[] = [];
   filteredExams: Evento[] = [];
 
-  readonly suggestedSubjects = ['Analisi II', 'Diritto', 'Informatica', 'Economia', 'Fisica'];
+  suggestedSubjects: string[] = [];
 
   private readonly destroy$ = new Subject<void>();
 
@@ -35,6 +35,7 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
   ) {}
 
   ngOnInit(): void {
+    this.loadSuggestedSubjects();
     this.runSearch();
   }
 
@@ -109,6 +110,20 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
   getIconColor(type: string): string {
     if (type === 'pdf') return 'red-pdf';
     return 'bg-blue';
+  }
+
+  private loadSuggestedSubjects(): void {
+    this.apiService
+      .getNoteSubjects()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          this.suggestedSubjects = Array.isArray(result?.subjects) ? result.subjects.slice(0, 8) : [];
+        },
+        error: () => {
+          this.suggestedSubjects = [];
+        }
+      });
   }
 
   private runSearch(): void {

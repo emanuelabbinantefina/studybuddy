@@ -1,7 +1,12 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 
-const MAX_FILE_DATA_LEN = 8_000_000; // base64/data-url in json body
+const FILE_SIZE_LIMITS = {
+  pdf: 10 * 1024 * 1024,
+  doc: 8 * 1024 * 1024,
+  img: 4 * 1024 * 1024,
+};
+const MAX_FILE_DATA_LEN = 20_000_000; // base64/data-url in json body
 
 function badRequest(message) {
   const err = new Error(message);
@@ -13,6 +18,20 @@ function forbidden(message) {
   const err = new Error(message);
   err.code = 'FORBIDDEN';
   return err;
+}
+
+function formatMegabytes(bytes) {
+  return `${Math.round(bytes / (1024 * 1024))} MB`;
+}
+
+function getFileTypeLabel(tipoFile) {
+  if (tipoFile === 'pdf') return 'PDF';
+  if (tipoFile === 'doc') return 'DOC/DOCX';
+  return 'JPG/PNG';
+}
+
+function getFileSizeLimit(tipoFile) {
+  return FILE_SIZE_LIMITS[tipoFile] || FILE_SIZE_LIMITS.img;
 }
 
 function inferFileType({ tipoFile, fileName = '', mimeType = '' }) {
@@ -57,7 +76,23 @@ function formatRelativeTime(isoDate) {
 
 async function list(userId, query = {}) {
   const q = String(query.cerca || '').trim().toLowerCase();
+  const materia = String(query.materia || '').trim();
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
+
+  const where = [];
+  const params = [userId];
+
+  if (q) {
+    where.push(`(lower(Notes.title) like ? or lower(Notes.subject) like ?)`);
+    params.push(`%${q}%`, `%${q}%`);
+  }
+
+  if (materia) {
+    where.push(`lower(trim(Notes.subject)) = lower(trim(?))`);
+    params.push(materia);
+  }
+
+  params.push(lim);
 
   const rows = await all(
     `select
@@ -73,9 +108,10 @@ async function list(userId, query = {}) {
      left join Users on Users.id = Notes.userId
      left join NoteBookmarks saved
        on saved.noteId = Notes.id and saved.userId = ?
+     ${where.length ? `where ${where.join(' and ')}` : ''}
      order by Notes.createdAt desc
      limit ?`,
-    [userId, lim]
+    params
   );
 
   const mapped = rows.map((row) => ({
@@ -89,18 +125,28 @@ async function list(userId, query = {}) {
     isSaved: !!row.isSaved,
   }));
 
-  if (!q) return mapped;
-
-  return mapped.filter(
-    (row) =>
-      row.titolo.toLowerCase().includes(q) ||
-      row.materia.toLowerCase().includes(q)
-  );
+  return mapped;
 }
 
 async function listSaved(userId, query = {}) {
   const q = String(query.cerca || '').trim().toLowerCase();
+  const materia = String(query.materia || '').trim();
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
+
+  const where = [`NoteBookmarks.userId = ?`];
+  const params = [userId];
+
+  if (q) {
+    where.push(`(lower(Notes.title) like ? or lower(Notes.subject) like ?)`);
+    params.push(`%${q}%`, `%${q}%`);
+  }
+
+  if (materia) {
+    where.push(`lower(trim(Notes.subject)) = lower(trim(?))`);
+    params.push(materia);
+  }
+
+  params.push(lim);
 
   const rows = await all(
     `select
@@ -114,10 +160,10 @@ async function listSaved(userId, query = {}) {
      from NoteBookmarks
      inner join Notes on Notes.id = NoteBookmarks.noteId
      left join Users on Users.id = Notes.userId
-     where NoteBookmarks.userId = ?
+     where ${where.join(' and ')}
      order by NoteBookmarks.createdAt desc
      limit ?`,
-    [userId, lim]
+    params
   );
 
   const mapped = rows.map((row) => ({
@@ -131,13 +177,50 @@ async function listSaved(userId, query = {}) {
     isSaved: true,
   }));
 
-  if (!q) return mapped;
+  return mapped;
+}
 
-  return mapped.filter(
-    (row) =>
-      row.titolo.toLowerCase().includes(q) ||
-      row.materia.toLowerCase().includes(q)
+async function listSubjects(userId) {
+  const user = await get(
+    `select facolta, corso
+     from Users
+     where id = ?`,
+    [userId]
   );
+
+  const faculty = String(user?.facolta || '').trim() || null;
+  const course = String(user?.corso || '').trim() || null;
+
+  if (!faculty) return { faculty: null, course, subjects: [] };
+
+  let rows = [];
+  if (course) {
+    rows = await all(
+      `select subjectName as subject
+       from ExamSubjects
+       where lower(trim(facultyName)) = lower(trim(?))
+         and lower(trim(courseName)) = lower(trim(?))
+       order by lower(trim(subjectName)) asc`,
+      [faculty, course]
+    );
+  }
+
+  if (!rows.length) {
+    rows = await all(
+      `select subjectName as subject
+       from ExamSubjects
+       where lower(trim(facultyName)) = lower(trim(?))
+         and trim(coalesce(courseName, '')) = ''
+       order by lower(trim(subjectName)) asc`,
+      [faculty]
+    );
+  }
+
+  return {
+    faculty,
+    course,
+    subjects: rows.map((row) => String(row?.subject || '').trim()).filter(Boolean)
+  };
 }
 
 async function create(userId, body = {}) {
@@ -164,6 +247,15 @@ async function create(userId, body = {}) {
     throw badRequest('file troppo grande');
   }
 
+  const parsedFile = parseDataUrl(fileData, mimeType);
+  const actualSizeBytes = parsedFile.buffer.length || sizeBytes;
+  const maxSizeBytes = getFileSizeLimit(tipoFile);
+  if (actualSizeBytes > maxSizeBytes) {
+    throw badRequest(
+      `${getFileTypeLabel(tipoFile)} troppo grande. Massimo ${formatMegabytes(maxSizeBytes)}`
+    );
+  }
+
   const now = nowIso();
 
   const out = await run(
@@ -171,7 +263,7 @@ async function create(userId, body = {}) {
       (userId, title, subject, fileName, fileType, mimeType, sizeBytes, fileData, createdAt, updatedAt)
      values
       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, titolo, materia, fileName, tipoFile, mimeType, sizeBytes, fileData, now, now]
+    [userId, titolo, materia, fileName, tipoFile, mimeType, actualSizeBytes, fileData, now, now]
   );
 
   return { id: out.lastID };
@@ -275,4 +367,13 @@ async function removeBookmark(userId, noteId) {
   return { removed: true };
 }
 
-module.exports = { list, listSaved, create, getDownload, remove, addBookmark, removeBookmark };
+module.exports = {
+  list,
+  listSaved,
+  listSubjects,
+  create,
+  getDownload,
+  remove,
+  addBookmark,
+  removeBookmark,
+};

@@ -132,27 +132,44 @@ async function list(userId, query) {
 
 async function listMyExamSubjects(userId) {
   const user = await get(
-    `select facolta
+    `select facolta, corso
      from Users
      where id = ?`,
     [userId]
   );
 
-  if (!user) return { faculty: null, subjects: [] };
+  if (!user) return { faculty: null, course: null, subjects: [] };
 
   const faculty = String(user.facolta || '').trim();
-  if (!faculty) return { faculty: null, subjects: [] };
+  const course = String(user.corso || '').trim();
+  if (!faculty) return { faculty: null, course: course || null, subjects: [] };
 
-  const rows = await all(
-    `select subjectName
-     from ExamSubjects
-     where lower(trim(facultyName)) = lower(trim(?))
-     order by subjectName asc`,
-    [faculty]
-  );
+  let rows = [];
+  if (course) {
+    rows = await all(
+      `select subjectName
+       from ExamSubjects
+       where lower(trim(facultyName)) = lower(trim(?))
+         and lower(trim(courseName)) = lower(trim(?))
+       order by subjectName asc`,
+      [faculty, course]
+    );
+  }
+
+  if (!rows.length) {
+    rows = await all(
+      `select subjectName
+       from ExamSubjects
+       where lower(trim(facultyName)) = lower(trim(?))
+         and trim(coalesce(courseName, '')) = ''
+       order by subjectName asc`,
+      [faculty]
+    );
+  }
 
   return {
     faculty,
+    course: course || null,
     subjects: rows.map((row) => row.subjectName)
   };
 }

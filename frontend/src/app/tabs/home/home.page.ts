@@ -80,6 +80,18 @@ export class HomePage implements OnInit, OnDestroy {
     return group.colorClass || this.resolveGroupColor(group.materia);
   }
 
+  getNoteFileLabel(note: Appunto): string {
+    if (note.tipoFile === 'pdf') return 'PDF';
+    if (note.tipoFile === 'doc') return 'DOC';
+    return 'IMG';
+  }
+
+  getNoteAccentClass(note: Appunto): string {
+    if (note.tipoFile === 'pdf') return 'note-icon-box--pdf';
+    if (note.tipoFile === 'doc') return 'note-icon-box--doc';
+    return 'note-icon-box--img';
+  }
+
   private loadProfile(): void {
     this.displayName = this.getSessionName();
 
@@ -232,4 +244,3 @@ export class HomePage implements OnInit, OnDestroy {
     return 'exam-accent-green';
   }
 }
-

@@ -18,6 +18,15 @@ async function listSaved(req, res) {
   }
 }
 
+async function listSubjects(req, res) {
+  try {
+    const out = await notesService.listSubjects(req.userData.userId);
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
 async function create(req, res) {
   try {
     const out = await notesService.create(req.userData.userId, req.body);
@@ -109,4 +118,4 @@ async function removeBookmark(req, res) {
   }
 }
 
-module.exports = { list, listSaved, create, download, remove, addBookmark, removeBookmark };
+module.exports = { list, listSaved, listSubjects, create, download, remove, addBookmark, removeBookmark };

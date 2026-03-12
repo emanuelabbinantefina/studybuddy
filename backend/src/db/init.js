@@ -14,15 +14,26 @@ const GIURISPRUDENZA_EXAM_SUBJECTS = [
   'Diritto Processuale Penale',
   'Filosofia del Diritto'
 ];
+const GIURISPRUDENZA_FACULTY_NAME = 'Giurisprudenza';
+const GIURISPRUDENZA_COURSE_NAME = 'Giurisprudenza';
 
 async function seedExamSubjects() {
   const now = nowIso();
 
   for (const subjectName of GIURISPRUDENZA_EXAM_SUBJECTS) {
     await run(
-      `insert or ignore into ExamSubjects (facultyName, subjectName, createdAt, updatedAt)
-       values (?, ?, ?, ?)`,
-      ['Giurisprudenza', subjectName, now, now]
+      `update ExamSubjects
+       set courseName = ?, updatedAt = ?
+       where lower(trim(facultyName)) = lower(trim(?))
+         and lower(trim(subjectName)) = lower(trim(?))
+         and trim(coalesce(courseName, '')) = ''`,
+      [GIURISPRUDENZA_COURSE_NAME, now, GIURISPRUDENZA_FACULTY_NAME, subjectName]
+    );
+
+    await run(
+      `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
+       values (?, ?, ?, ?, ?)`,
+      [GIURISPRUDENZA_FACULTY_NAME, GIURISPRUDENZA_COURSE_NAME, subjectName, now, now]
     );
   }
 }
@@ -134,14 +145,26 @@ async function initDb() {
     create table if not exists ExamSubjects (
       id integer primary key autoincrement,
       facultyName text not null,
+      courseName text not null default '',
       subjectName text not null,
       createdAt text not null,
       updatedAt text not null
     )
   `);
 
-  await run(`create unique index if not exists uq_examsubjects_faculty_subject on ExamSubjects(facultyName, subjectName)`);
-  await run(`create index if not exists idx_examsubjects_faculty on ExamSubjects(facultyName)`);
+  try {
+    await run(`alter table ExamSubjects add column courseName text not null default ''`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  await run(`update ExamSubjects set courseName = '' where courseName is null`);
+  await run(`drop index if exists uq_examsubjects_faculty_subject`);
+  await run(`drop index if exists idx_examsubjects_faculty`);
+  await run(`create unique index if not exists uq_examsubjects_faculty_course_subject on ExamSubjects(facultyName, courseName, subjectName)`);
+  await run(`create index if not exists idx_examsubjects_faculty_course on ExamSubjects(facultyName, courseName)`);
 
   await seedExamSubjects();
 

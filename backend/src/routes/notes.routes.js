@@ -9,6 +9,7 @@ router.use(auth);
 
 router.get('/', notesController.list);
 router.get('/saved', notesController.listSaved);
+router.get('/subjects', notesController.listSubjects);
 router.post('/', notesController.create);
 router.post('/:id/bookmark', notesController.addBookmark);
 router.delete('/:id/bookmark', notesController.removeBookmark);

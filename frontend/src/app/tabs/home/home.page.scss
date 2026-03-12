@@ -197,10 +197,25 @@
 .note-icon-box {
   background: var(--soft-blue);
   color: var(--primary-blue);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
-  ion-icon {
-    font-size: 1.2rem;
-  }
+.note-icon-box--pdf {
+  background: #efe9ff;
+  color: #7c3aed;
+}
+
+.note-icon-box--doc {
+  background: #ffe9f4;
+  color: #be185d;
+}
+
+.note-icon-box--img {
+  background: #fff1dd;
+  color: #b45309;
 }
 
 .group-icon {
@@ -322,4 +337,3 @@ button {
     opacity: 0.25;
   }
 }
-

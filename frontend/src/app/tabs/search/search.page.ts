@@ -16,9 +16,16 @@ import { Appunto } from '../../core/interfaces/models'; // Rimosso Gruppo e Even
 export class SearchPage implements OnInit {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
+  private readonly allSubjectsLabel = 'Tutti';
+  private readonly fileSizeLimits = {
+    pdf: 10 * 1024 * 1024,
+    doc: 8 * 1024 * 1024,
+    img: 4 * 1024 * 1024,
+  } as const;
+
   query = '';
   sessionUserName = 'Utente';
-  activeCategory = 'Tutti';
+  activeCategory = this.allSubjectsLabel;
   
   downloadingNoteId: number | null = null;
   deletingNoteId: number | null = null;
@@ -35,10 +42,10 @@ export class SearchPage implements OnInit {
   filteredNotes: Appunto[] = [];
   selectedNote: Appunto | null = null;
 
-  readonly categoryChips = ['Tutti', 'Analisi', 'Diritto', 'Informatica', 'Economia'];
+  categoryChips: string[] = [this.allSubjectsLabel];
+  subjectOptions: string[] = [];
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-  readonly uploadExtensions = ['PDF', 'DOC', 'DOCX', 'JPG', 'PNG'];
-  private readonly maxFileBytes = 5 * 1024 * 1024;
+  readonly uploadExtensions = ['PDF 10MB', 'DOC 8MB', 'DOCX 8MB', 'JPG 4MB', 'PNG 4MB'];
 
   constructor(
     private apiService: ApiService,
@@ -47,10 +54,12 @@ export class SearchPage implements OnInit {
 
   ngOnInit() {
     this.sessionUserName = this.readSessionUserName();
+    this.loadSubjects();
     this.eseguiRicerca();
   }
 
   ionViewWillEnter() {
+    this.loadSubjects();
     this.eseguiRicerca();
   }
 
@@ -61,15 +70,22 @@ export class SearchPage implements OnInit {
   }
 
   eseguiRicerca() {
-    this.apiService.getAppunti(this.query).subscribe(res => {
+    const materia = this.activeCategory === this.allSubjectsLabel ? '' : this.activeCategory;
+
+    this.apiService.getAppunti(this.query, materia).subscribe(res => {
       this.allNotes = Array.isArray(res) ? res : [];
       this.applyNoteFilters();
     });
   }
 
   setCategory(category: string) {
+    if (this.activeCategory === category) return;
+
     this.activeCategory = category;
-    this.applyNoteFilters();
+    if (!this.uploadSubject && category !== this.allSubjectsLabel) {
+      this.uploadSubject = category;
+    }
+    this.eseguiRicerca();
   }
 
   openNoteDetail(note: Appunto) {
@@ -106,7 +122,16 @@ export class SearchPage implements OnInit {
   }
 
   toggleUploadPanel(): void {
-    this.showUploadPanel = !this.showUploadPanel;
+    const nextValue = !this.showUploadPanel;
+    this.showUploadPanel = nextValue;
+
+    if (nextValue && !this.uploadSubject) {
+      if (this.activeCategory !== this.allSubjectsLabel) {
+        this.uploadSubject = this.activeCategory;
+      } else if (this.subjectOptions.length === 1) {
+        this.uploadSubject = this.subjectOptions[0];
+      }
+    }
   }
 
   openFilePicker(): void {
@@ -141,7 +166,7 @@ export class SearchPage implements OnInit {
   resetUploadForm(): void {
     this.selectedFile = null;
     this.uploadTitle = '';
-    this.uploadSubject = '';
+    this.uploadSubject = this.activeCategory !== this.allSubjectsLabel ? this.activeCategory : '';
     this.dragActive = false;
     if (this.fileInput?.nativeElement) {
       this.fileInput.nativeElement.value = '';
@@ -181,6 +206,7 @@ export class SearchPage implements OnInit {
 
       await this.showToast('Appunto caricato con successo', 'success');
       this.resetUploadForm();
+      this.loadSubjects();
       this.query = '';
       this.eseguiRicerca();
     } catch (err: any) {
@@ -277,8 +303,14 @@ export class SearchPage implements OnInit {
       void this.showToast('Formato non supportato. Usa PDF, DOC, DOCX, JPG o PNG', 'warning');
       return;
     }
-    if (file.size > this.maxFileBytes) {
-      void this.showToast('File troppo grande. Massimo 5MB', 'warning');
+
+    const tipoFile = this.resolveTipoFile(file);
+    const maxFileBytes = this.getMaxFileBytes(tipoFile);
+    if (file.size > maxFileBytes) {
+      void this.showToast(
+        `${this.getUploadTypeLabel(tipoFile)} troppo grande. Massimo ${this.formatLimit(maxFileBytes)}`,
+        'warning'
+      );
       return;
     }
 
@@ -301,6 +333,20 @@ export class SearchPage implements OnInit {
     if (ext === 'pdf') return 'pdf';
     if (ext === 'doc' || ext === 'docx') return 'doc';
     return 'img';
+  }
+
+  private getMaxFileBytes(tipoFile: 'pdf' | 'doc' | 'img'): number {
+    return this.fileSizeLimits[tipoFile];
+  }
+
+  private getUploadTypeLabel(tipoFile: 'pdf' | 'doc' | 'img'): string {
+    if (tipoFile === 'pdf') return 'PDF';
+    if (tipoFile === 'doc') return 'DOC/DOCX';
+    return 'JPG/PNG';
+  }
+
+  private formatLimit(sizeBytes: number): string {
+    return `${Math.round(sizeBytes / (1024 * 1024))} MB`;
   }
 
   private getFileExtension(fileName: string): string {
@@ -372,17 +418,41 @@ export class SearchPage implements OnInit {
     return 'Utente';
   }
 
+  private loadSubjects(): void {
+    this.apiService.getNoteSubjects().subscribe({
+      next: (result) => {
+        const subjects = Array.isArray(result?.subjects) ? result.subjects : [];
+        const hadActiveFilter =
+          this.activeCategory !== this.allSubjectsLabel &&
+          !subjects.includes(this.activeCategory);
+
+        this.subjectOptions = subjects;
+        this.categoryChips = [this.allSubjectsLabel, ...subjects];
+
+        if (hadActiveFilter) {
+          this.activeCategory = this.allSubjectsLabel;
+          this.eseguiRicerca();
+        }
+      },
+      error: () => {
+        this.subjectOptions = [];
+        this.categoryChips = [this.allSubjectsLabel];
+
+        if (this.activeCategory !== this.allSubjectsLabel) {
+          this.activeCategory = this.allSubjectsLabel;
+          this.eseguiRicerca();
+        }
+      }
+    });
+  }
+
   private applyNoteFilters(): void {
-    const category = this.activeCategory.toLowerCase();
     const source = Array.isArray(this.allNotes) ? this.allNotes : [];
+    this.filteredNotes = source;
 
-    if (this.activeCategory === 'Tutti') {
-      this.filteredNotes = source;
-      return;
-    }
+    if (!this.selectedNote) return;
 
-    this.filteredNotes = source.filter((note) =>
-      String(note.materia || '').toLowerCase().includes(category)
-    );
+    const nextSelectedNote = source.find((note) => note.id === this.selectedNote?.id) || null;
+    this.selectedNote = nextSelectedNote;
   }
 }

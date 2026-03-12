@@ -32,6 +32,9 @@
           {{ chip }}
         </button>
       </div>
+      <p class="subjects-empty" *ngIf="categoryChips.length === 1">
+        Nessuna materia ufficiale configurata per il tuo corso di laurea.
+      </p>
 
       <section *ngIf="showUploadPanel" class="upload-panel fade-in">
         <div class="upload-panel-header">
@@ -69,7 +72,17 @@
 
         <div class="upload-fields">
           <input type="text" class="upload-input" placeholder="Titolo appunto" [(ngModel)]="uploadTitle">
-          <input type="text" class="upload-input" placeholder="Materia" [(ngModel)]="uploadSubject">
+          <select
+            class="upload-input upload-select"
+            [(ngModel)]="uploadSubject"
+            [disabled]="subjectOptions.length === 0">
+            <option value="" disabled>
+              {{ subjectOptions.length ? 'Seleziona materia' : 'Nessuna materia configurata per il tuo corso' }}
+            </option>
+            <option *ngFor="let subject of subjectOptions" [value]="subject">
+              {{ subject }}
+            </option>
+          </select>
         </div>
 
         <div class="upload-actions">

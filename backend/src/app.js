@@ -9,7 +9,7 @@ const { groupsRouter, gruppiRouter } = require('./routes/groups.routes');
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '20mb' }));
 
 app.get('/', (req, res) => {
   res.send('StudyBuddy API is running :)');

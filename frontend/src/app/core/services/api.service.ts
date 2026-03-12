@@ -24,6 +24,11 @@ interface CreateGroupPayload {
   topics?: string[];
 }
 
+interface NoteSubjectsResponse {
+  faculty: string | null;
+  subjects: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private baseUrl = 'http://localhost:3000/api'; 
@@ -216,26 +221,54 @@ export class ApiService {
     );
   }
 
-  getAppunti(query: string): Observable<Appunto[]> {
+  getAppunti(query: string, materia = ''): Observable<Appunto[]> {
     const token = localStorage.getItem('auth_token') || '';
     if (!token) return of([]);
 
     const q = (query || '').trim();
+    const subject = (materia || '').trim();
+    const params: Record<string, string> = {};
+    if (q) params['cerca'] = q;
+    if (subject) params['materia'] = subject;
+
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
       headers: this.authHeaders(),
-      params: q ? { cerca: q } : undefined
+      params: Object.keys(params).length ? params : undefined
     });
   }
 
-  getSavedAppunti(query: string): Observable<Appunto[]> {
+  getSavedAppunti(query: string, materia = ''): Observable<Appunto[]> {
     const token = localStorage.getItem('auth_token') || '';
     if (!token) return of([]);
 
     const q = (query || '').trim();
+    const subject = (materia || '').trim();
+    const params: Record<string, string> = {};
+    if (q) params['cerca'] = q;
+    if (subject) params['materia'] = subject;
+
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti/saved`, {
       headers: this.authHeaders(),
-      params: q ? { cerca: q } : undefined
+      params: Object.keys(params).length ? params : undefined
     });
+  }
+
+  getNoteSubjects(): Observable<NoteSubjectsResponse> {
+    const token = localStorage.getItem('auth_token') || '';
+    if (!token) return of({ faculty: null, subjects: [] });
+
+    return this.http.get<any>(`${this.baseUrl}/appunti/subjects`, {
+      headers: this.authHeaders()
+    }).pipe(
+      map((raw) => ({
+        faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
+        subjects: Array.isArray(raw?.subjects)
+          ? raw.subjects
+              .map((value: unknown) => String(value || '').trim())
+              .filter((value: string) => !!value)
+          : []
+      }))
+    );
   }
 
   uploadAppunto(payload: UploadAppuntoPayload): Observable<{ id: number }> {

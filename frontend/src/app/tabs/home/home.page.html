@@ -59,8 +59,8 @@
 
       <div class="cards-list" *ngIf="recentNotes.length > 0; else emptyNotes">
         <article class="note-card" *ngFor="let note of recentNotes" (click)="openAppunti()">
-          <div class="note-icon-box">
-            <ion-icon name="document-text-outline"></ion-icon>
+          <div class="note-icon-box" [ngClass]="getNoteAccentClass(note)">
+            {{ getNoteFileLabel(note) }}
           </div>
           <div class="note-info">
             <h4>{{ note.titolo }}</h4>
@@ -109,4 +109,3 @@
     <div class="spacer-bottom"></div>
   </div>
 </ion-content>
-
