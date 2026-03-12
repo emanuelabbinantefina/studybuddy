@@ -68,3 +68,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Backend
+backend/node_modules/
+backend/src/db/database.db
+.env
