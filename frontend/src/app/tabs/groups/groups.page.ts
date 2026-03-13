@@ -371,10 +371,10 @@ export class GroupsPage implements OnInit {
   }
 
   questionSessionLabel(question: GroupQuestion): string {
-    const meta = this.parseQuestionMeta(question.answer);
+    const meta = this.resolveQuestionMeta(question);
     if (meta.session && meta.year) return `${meta.session} ${meta.year}`;
     if (meta.session) return meta.session;
-    if (meta.year) return `Anno ${meta.year}`;
+    if (meta.year) return meta.year;
     return '';
   }
 
@@ -702,6 +702,16 @@ export class GroupsPage implements OnInit {
     const maxYear = new Date().getFullYear();
     if (!Number.isFinite(year) || year < 2000 || year > maxYear) return '';
     return String(year);
+  }
+
+  private resolveQuestionMeta(question: Pick<GroupQuestion, 'answer' | 'session' | 'year'>): { session: string; year: string } {
+    const session = this.normalizeQuestionSession(question.session);
+    const year = this.normalizeQuestionYear(question.year);
+    if (session || year) {
+      return { session, year };
+    }
+
+    return this.parseQuestionMeta(question.answer);
   }
 
   private parseQuestionMeta(value: string | null | undefined): { session: string; year: string } {

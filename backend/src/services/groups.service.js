@@ -237,6 +237,23 @@ function mapGroupRow(row) {
   };
 }
 
+function mapQuestionRow(row) {
+  const meta = resolveQuestionMeta(row);
+
+  return {
+    id: row.id,
+    groupId: row.groupId,
+    question: row.question,
+    answer: row.answer || null,
+    session: meta.session || null,
+    year: meta.year || null,
+    createdByUserId: row.createdByUserId,
+    createdByName: row.createdByName || 'Studente',
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
 async function listGroups(userId, opts = {}) {
   const q = sanitizeText(opts.q, 80);
   const scope = String(opts.scope || 'all').toLowerCase();
@@ -662,7 +679,7 @@ async function createSession(userId, groupId, body = {}) {
 async function listQuestions(_userId, groupId) {
   await ensureGroupExists(groupId);
 
-  return all(
+  const rows = await all(
     `
     select
       q.id, q.groupId, q.question, q.answer, q.createdByUserId, q.createdAt, q.updatedAt,
@@ -674,6 +691,8 @@ async function listQuestions(_userId, groupId) {
     `,
     [groupId]
   );
+
+  return rows.map(mapQuestionRow);
 }
 
 async function createQuestion(userId, groupId, body = {}) {
@@ -705,7 +724,7 @@ async function createQuestion(userId, groupId, body = {}) {
 
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
 
-  return get(
+  const row = await get(
     `
     select
       q.id, q.groupId, q.question, q.answer, q.createdByUserId, q.createdAt, q.updatedAt,
@@ -716,6 +735,8 @@ async function createQuestion(userId, groupId, body = {}) {
     `,
     [out.lastID]
   );
+
+  return mapQuestionRow(row);
 }
 
 async function listMessages(userId, groupId, query = {}) {

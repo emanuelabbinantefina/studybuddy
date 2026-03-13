@@ -91,6 +91,8 @@ export interface GroupQuestion {
   groupId: number;
   question: string;
   answer?: string | null;
+  session?: string | null;
+  year?: string | null;
   createdByUserId: number;
   createdByName?: string | null;
   createdAt: string;
