@@ -1,5 +1,6 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
+const { isMeaningfulSubjectValue } = require('../utils/academic-values');
 
 function badRequest(message) {
   const err = new Error(message);
@@ -153,6 +154,20 @@ async function ensureGroupExists(groupId) {
   if (!group) throw notFound('gruppo non trovato');
 }
 
+async function isValidFacultyCourseSelection(faculty, course) {
+  const row = await get(
+    `select Courses.id
+     from Courses
+     join Faculties on Faculties.id = Courses.facultyId
+     where lower(trim(Faculties.name)) = lower(trim(?))
+       and lower(trim(Courses.name)) = lower(trim(?))
+     limit 1`,
+    [faculty, course]
+  );
+
+  return !!row;
+}
+
 async function getMemberRole(groupId, userId) {
   const row = await get(
     `select role
@@ -270,8 +285,9 @@ async function listGroups(userId, opts = {}) {
 
 async function createGroup(userId, body = {}) {
   const name = sanitizeText(body.name ?? body.nome, 60);
-  const faculty = sanitizeText(body.faculty ?? body.facolta ?? body.course ?? body.corso, 80);
-  const subject = sanitizeText(body.subject ?? body.materia, 80);
+  const faculty = sanitizeText(body.faculty ?? body.facolta, 80);
+  const course = sanitizeText(body.course ?? body.corso ?? body.subject ?? body.materia, 80);
+  const subject = sanitizeText(body.subject ?? body.materia ?? course, 80);
   const description = sanitizeText(body.description ?? body.descrizione, 400);
   const examDate = sanitizeText(body.examDate ?? body.dataEsame, 40);
   const colorClass = normalizeColorClass(
@@ -284,6 +300,12 @@ async function createGroup(userId, body = {}) {
   if (!name) throw badRequest('nome gruppo obbligatorio');
   if (!faculty) throw badRequest('facolta obbligatoria');
   if (!subject) throw badRequest('materia obbligatoria');
+  if (!isMeaningfulSubjectValue(subject)) throw badRequest('corso non valido');
+
+  const isValidSelection = await isValidFacultyCourseSelection(faculty, course || subject);
+  if (!isValidSelection) {
+    throw badRequest('facolta e corso non coerenti');
+  }
 
   const ownerId = await resolveOwnerId(userId, body.userId);
   const now = nowIso();
@@ -296,7 +318,7 @@ async function createGroup(userId, body = {}) {
     [
       name,
       description || null,
-      faculty || null,
+      course || null,
       faculty || null,
       subject || null,
       examDate || null,

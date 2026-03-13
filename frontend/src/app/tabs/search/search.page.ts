@@ -1,10 +1,11 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { firstValueFrom } from 'rxjs';
+import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { Appunto } from '../../core/interfaces/models'; // Rimosso Gruppo e Evento
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector: 'app-search',
@@ -13,10 +14,14 @@ import { Appunto } from '../../core/interfaces/models'; // Rimosso Gruppo e Even
   styleUrls: ['./search.page.scss'],
   imports: [IonicModule, CommonModule, FormsModule],
 })
-export class SearchPage implements OnInit {
+export class SearchPage implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+  private notesRequestId = 0;
+  private uploadSubjectsRequestId = 0;
+  private readonly destroy$ = new Subject<void>();
+  private lastProfileFaculty = '';
+  private lastProfileCourse = '';
 
-  private readonly allSubjectsLabel = 'Tutti';
   private readonly fileSizeLimits = {
     pdf: 10 * 1024 * 1024,
     doc: 8 * 1024 * 1024,
@@ -26,7 +31,8 @@ export class SearchPage implements OnInit {
 
   query = '';
   sessionUserName = 'Utente';
-  activeCategory = this.allSubjectsLabel;
+  myFacultyLabel = '';
+  showAllFaculties = false;
   
   downloadingNoteId: number | null = null;
   deletingNoteId: number | null = null;
@@ -43,25 +49,29 @@ export class SearchPage implements OnInit {
   filteredNotes: Appunto[] = [];
   selectedNote: Appunto | null = null;
 
-  categoryChips: string[] = [this.allSubjectsLabel];
   subjectOptions: string[] = [];
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
   readonly uploadExtensions = ['PDF 10MB', 'DOC 8MB', 'DOCX 8MB', 'JPG/JPEG 8MB', 'PNG 4MB'];
 
   constructor(
     private apiService: ApiService,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private userService: UserService
   ) {}
 
   ngOnInit() {
     this.sessionUserName = this.readSessionUserName();
-    this.loadSubjects();
-    this.eseguiRicerca();
+    this.bindProfileSync();
+    this.loadNoteContext();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ionViewWillEnter() {
-    this.loadSubjects();
-    this.eseguiRicerca();
+    this.loadNoteContext();
   }
 
   onSearchChange(event: Event) {
@@ -71,21 +81,30 @@ export class SearchPage implements OnInit {
   }
 
   eseguiRicerca() {
-    const materia = this.activeCategory === this.allSubjectsLabel ? '' : this.activeCategory;
+    const requestId = ++this.notesRequestId;
+    const scope = this.currentScope;
 
-    this.apiService.getAppunti(this.query, materia).subscribe(res => {
-      this.allNotes = Array.isArray(res) ? res : [];
-      this.applyNoteFilters();
+    this.apiService.getAppunti(this.query, '', scope).subscribe({
+      next: (res) => {
+        if (requestId !== this.notesRequestId) return;
+        this.allNotes = Array.isArray(res) ? res : [];
+        this.applyNoteFilters();
+      },
+      error: () => {
+        if (requestId !== this.notesRequestId) return;
+        this.allNotes = [];
+        this.applyNoteFilters();
+      }
     });
   }
 
-  setCategory(category: string) {
-    if (this.activeCategory === category) return;
+  onFacultyScopeChange(showAll: boolean): void {
+    if (!this.myFacultyLabel) return;
+    if (this.showAllFaculties === showAll) return;
 
-    this.activeCategory = category;
-    if (!this.uploadSubject && category !== this.allSubjectsLabel) {
-      this.uploadSubject = category;
-    }
+    this.showAllFaculties = showAll;
+    this.allNotes = [];
+    this.filteredNotes = [];
     this.eseguiRicerca();
   }
 
@@ -122,16 +141,21 @@ export class SearchPage implements OnInit {
     return 'Utente';
   }
 
+  getNoteFaculty(note: Appunto | null | undefined): string | null {
+    const value = String(note?.facolta || '').trim();
+    if (value) return value;
+    if (note?.canDelete && this.myFacultyLabel) {
+      return this.myFacultyLabel;
+    }
+    return null;
+  }
+
   toggleUploadPanel(): void {
     const nextValue = !this.showUploadPanel;
     this.showUploadPanel = nextValue;
 
-    if (nextValue && !this.uploadSubject) {
-      if (this.activeCategory !== this.allSubjectsLabel) {
-        this.uploadSubject = this.activeCategory;
-      } else if (this.subjectOptions.length === 1) {
-        this.uploadSubject = this.subjectOptions[0];
-      }
+    if (nextValue && !this.uploadSubject && this.subjectOptions.length === 1) {
+      this.uploadSubject = this.subjectOptions[0];
     }
   }
 
@@ -167,12 +191,31 @@ export class SearchPage implements OnInit {
   resetUploadForm(): void {
     this.selectedFile = null;
     this.uploadTitle = '';
-    this.uploadSubject = this.activeCategory !== this.allSubjectsLabel ? this.activeCategory : '';
+    this.uploadSubject = '';
     this.dragActive = false;
     if (this.fileInput?.nativeElement) {
       this.fileInput.nativeElement.value = '';
     }
     this.showUploadPanel = false;
+  }
+
+  get facultyScopeTitle(): string {
+    if (!this.myFacultyLabel || this.showAllFaculties) {
+      return 'Tutte le facoltà';
+    }
+
+    return `Solo ${this.myFacultyLabel}`;
+  }
+
+  get facultyScopeDescription(): string {
+    const count = this.filteredNotes.length;
+    const label = count === 1 ? 'appunto' : 'appunti';
+
+    if (!this.myFacultyLabel || this.showAllFaculties) {
+      return `Stai vedendo ${count} ${label} da tutte le facoltà`;
+    }
+
+    return `${count} ${label} della tua facoltà`;
   }
 
   async submitUpload(): Promise<void> {
@@ -207,9 +250,8 @@ export class SearchPage implements OnInit {
 
       await this.showToast('Appunto caricato con successo', 'success');
       this.resetUploadForm();
-      this.loadSubjects();
       this.query = '';
-      this.eseguiRicerca();
+      this.loadNoteContext();
     } catch (err: any) {
       const message = err?.error?.message || 'Errore durante il caricamento appunto';
       await this.showToast(message, 'danger');
@@ -424,41 +466,96 @@ export class SearchPage implements OnInit {
     return 'Utente';
   }
 
-  private loadSubjects(): void {
-    this.apiService.getNoteSubjects().subscribe({
-      next: (result) => {
-        const subjects = Array.isArray(result?.subjects) ? result.subjects : [];
-        const hadActiveFilter =
-          this.activeCategory !== this.allSubjectsLabel &&
-          !subjects.includes(this.activeCategory);
+  private get currentScope(): 'all' | 'faculty' {
+    return this.myFacultyLabel && !this.showAllFaculties ? 'faculty' : 'all';
+  }
 
-        this.subjectOptions = subjects;
-        this.categoryChips = [this.allSubjectsLabel, ...subjects];
+  private bindProfileSync(): void {
+    this.userService
+      .getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((profile) => {
+        const nextName =
+          String(profile?.displayName || profile?.nome || '').trim() ||
+          this.readSessionUserName();
+        this.sessionUserName = nextName || 'Utente';
 
-        if (hadActiveFilter) {
-          this.activeCategory = this.allSubjectsLabel;
-          this.eseguiRicerca();
+        const nextFaculty = String(profile?.facolta || '').trim();
+        const nextCourse = String(profile?.corso || '').trim();
+        const hasAcademicChange =
+          nextFaculty !== this.lastProfileFaculty || nextCourse !== this.lastProfileCourse;
+
+        this.lastProfileFaculty = nextFaculty;
+        this.lastProfileCourse = nextCourse;
+
+        if (hasAcademicChange) {
+          this.loadNoteContext();
         }
+      });
+  }
+
+  private loadNoteContext(): void {
+    this.loadUploadSubjects();
+  }
+
+  private loadUploadSubjects(): void {
+    const requestId = ++this.uploadSubjectsRequestId;
+
+    this.apiService.getNoteSubjects('faculty', 'upload').subscribe({
+      next: (result) => {
+        if (requestId !== this.uploadSubjectsRequestId) return;
+        const subjects = Array.isArray(result?.subjects) ? result.subjects : [];
+        this.subjectOptions = subjects;
+        if (this.uploadSubject && !subjects.includes(this.uploadSubject)) {
+          this.uploadSubject = '';
+        }
+        if (!this.uploadSubject && subjects.length === 1) {
+          this.uploadSubject = subjects[0];
+        }
+        this.myFacultyLabel = String(result?.faculty || '').trim();
+        if (!this.myFacultyLabel) {
+          this.showAllFaculties = true;
+        }
+        this.eseguiRicerca();
       },
       error: () => {
+        if (requestId !== this.uploadSubjectsRequestId) return;
         this.subjectOptions = [];
-        this.categoryChips = [this.allSubjectsLabel];
-
-        if (this.activeCategory !== this.allSubjectsLabel) {
-          this.activeCategory = this.allSubjectsLabel;
-          this.eseguiRicerca();
-        }
+        this.myFacultyLabel = '';
+        this.showAllFaculties = true;
+        this.eseguiRicerca();
       }
     });
   }
 
   private applyNoteFilters(): void {
     const source = Array.isArray(this.allNotes) ? this.allNotes : [];
-    this.filteredNotes = source;
+    const query = this.normalizeText(this.query);
+
+    const nextNotes = source.filter((note) => {
+      if (!query) {
+        return true;
+      }
+
+      const searchableValues = [
+        note.titolo,
+        note.materia,
+        note.autoreNome,
+        this.getNoteFaculty(note),
+      ];
+
+      return searchableValues.some((value) => this.normalizeText(value).includes(query));
+    });
+
+    this.filteredNotes = nextNotes;
 
     if (!this.selectedNote) return;
 
-    const nextSelectedNote = source.find((note) => note.id === this.selectedNote?.id) || null;
+    const nextSelectedNote = nextNotes.find((note) => note.id === this.selectedNote?.id) || null;
     this.selectedNote = nextSelectedNote;
+  }
+
+  private normalizeText(value: unknown): string {
+    return String(value || '').trim().toLowerCase();
   }
 }

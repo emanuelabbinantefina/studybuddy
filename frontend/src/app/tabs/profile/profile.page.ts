@@ -86,6 +86,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   openEditProfile(): void {
+    this.userService.reloadProfile();
     this.isEditModalOpen = true;
   }
 

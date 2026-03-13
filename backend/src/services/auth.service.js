@@ -43,6 +43,24 @@ function normalizeUserRow(row) {
   };
 }
 
+async function isValidFacultyCourseSelection(facultyName, courseName) {
+  const faculty = String(facultyName || '').trim();
+  const course = String(courseName || '').trim();
+  if (!faculty || !course) return false;
+
+  const row = await get(
+    `select Courses.id
+     from Courses
+     join Faculties on Faculties.id = Courses.facultyId
+     where lower(trim(Faculties.name)) = lower(trim(?))
+       and lower(trim(Courses.name)) = lower(trim(?))
+     limit 1`,
+    [faculty, course]
+  );
+
+  return !!row;
+}
+
 async function facultiesWithCourses() {
   const faculties = await all(
     `select id, name, createdAt, updatedAt
@@ -195,6 +213,7 @@ async function updateProfile(userId, body) {
   const lastNameIn = body && typeof body.lastName === 'string' ? body.lastName.trim() : undefined;
   const usernameIn = body && typeof body.username === 'string' ? body.username.trim() : undefined;
   const bioIn = body && typeof body.bio === 'string' ? body.bio.trim() : undefined;
+  const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() : undefined;
   const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() : undefined;
   const courseYearIn = body && typeof body.courseYear === 'string' ? body.courseYear.trim() : undefined;
   const avatarUrlIn = body && typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
@@ -225,6 +244,12 @@ async function updateProfile(userId, body) {
     params.push(bioIn || null);
   }
 
+  if (facoltaIn !== undefined) {
+    if (!facoltaIn) throw badRequest('facolta obbligatoria');
+    updates.push('facolta = ?');
+    params.push(facoltaIn);
+  }
+
   if (corsoIn !== undefined) {
     if (!corsoIn) throw badRequest('corso obbligatorio');
     updates.push('corso = ?');
@@ -246,8 +271,17 @@ async function updateProfile(userId, body) {
 
   const nextFirstName = firstNameIn !== undefined ? firstNameIn : current.firstName;
   const nextLastName = lastNameIn !== undefined ? lastNameIn : current.lastName;
+  const nextFaculty = facoltaIn !== undefined ? facoltaIn : String(current.facolta || '').trim();
+  const nextCourse = corsoIn !== undefined ? corsoIn : String(current.corso || '').trim();
   if (!nextFirstName) throw badRequest('nome obbligatorio');
   if (!nextLastName) throw badRequest('cognome obbligatorio');
+  if (!nextFaculty) throw badRequest('facolta obbligatoria');
+  if (!nextCourse) throw badRequest('corso obbligatorio');
+
+  const isValidSelection = await isValidFacultyCourseSelection(nextFaculty, nextCourse);
+  if (!isValidSelection) {
+    throw badRequest('facolta e corso non coerenti');
+  }
 
   updates.push('name = ?');
   params.push([nextFirstName, nextLastName].filter(Boolean).join(' ').trim());

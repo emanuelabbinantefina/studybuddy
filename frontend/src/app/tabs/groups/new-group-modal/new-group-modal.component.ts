@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
+import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { IonContent, IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
 
 interface FacultyRow {
   id: number;
@@ -25,8 +26,12 @@ interface SeedQuestionRow {
   styleUrls: ['./new-group-modal.component.scss'],
   imports: [IonicModule, CommonModule, FormsModule],
 })
-export class NewGroupModalComponent implements OnInit {
+export class NewGroupModalComponent implements OnInit, OnDestroy {
   @ViewChild(IonContent, { static: false }) content?: IonContent;
+  private readonly destroy$ = new Subject<void>();
+  private preferredFacultyName = '';
+  private preferredCourseName = '';
+  private facultySelectionTouched = false;
 
   step = 1;
   creating = false;
@@ -60,13 +65,26 @@ export class NewGroupModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private apiService: ApiService,
     private authService: AuthService,
+    private userService: UserService,
     private toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
-    this.authService.getFaculties().subscribe({
+    this.userService.reloadProfile();
+
+    this.userService
+      .getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((profile) => {
+        this.preferredFacultyName = String(profile?.facolta || '').trim();
+        this.preferredCourseName = String(profile?.corso || '').trim();
+        this.applyPreferredSelection();
+      });
+
+    this.authService.getFaculties().pipe(takeUntil(this.destroy$)).subscribe({
       next: (rows) => {
         this.faculties = Array.isArray(rows) ? rows : [];
+        this.applyPreferredSelection();
       },
       error: () => {
         this.faculties = [];
@@ -74,11 +92,19 @@ export class NewGroupModalComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   cancel() {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  selectFaculty(faculty: FacultyRow) {
+  selectFaculty(faculty: FacultyRow, markTouched = true) {
+    if (markTouched) {
+      this.facultySelectionTouched = true;
+    }
     this.selectedFacultyId = faculty.id;
     this.selectedFacultyName = faculty.name;
     this.subjectOptions = (faculty.Courses || []).map((course) => course.name);
@@ -162,6 +188,7 @@ export class NewGroupModalComponent implements OnInit {
         this.apiService.createStudyGroup({
           nome: this.groupName.trim(),
           facolta: this.selectedFacultyName,
+          corso: this.selectedSubject,
           materia: this.selectedSubject,
           dataEsame: this.examDate ? new Date(this.examDate).toISOString() : undefined,
           colorClass: this.selectedColorClass,
@@ -219,5 +246,23 @@ export class NewGroupModalComponent implements OnInit {
     requestAnimationFrame(() => {
       this.content?.scrollToTop(180).catch(() => undefined);
     });
+  }
+
+  private applyPreferredSelection(): void {
+    if (this.facultySelectionTouched || this.faculties.length === 0 || !this.preferredFacultyName) {
+      return;
+    }
+
+    const faculty = this.faculties.find(
+      (item) => String(item?.name || '').trim() === this.preferredFacultyName
+    );
+
+    if (!faculty) return;
+
+    this.selectFaculty(faculty, false);
+
+    if (this.preferredCourseName && this.subjectOptions.includes(this.preferredCourseName)) {
+      this.selectedSubject = this.preferredCourseName;
+    }
   }
 }

@@ -1,5 +1,6 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
+const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 
 const FILE_SIZE_LIMITS = {
   pdf: 10 * 1024 * 1024,
@@ -22,6 +23,41 @@ function forbidden(message) {
   const err = new Error(message);
   err.code = 'FORBIDDEN';
   return err;
+}
+
+function normalizeScope(value, fallback = 'all') {
+  const raw = String(value || fallback).trim().toLowerCase();
+  return raw === 'faculty' ? 'faculty' : 'all';
+}
+
+function normalizeSubjectSource(value, fallback = 'browse') {
+  const raw = String(value || fallback).trim().toLowerCase();
+  return raw === 'upload' ? 'upload' : 'browse';
+}
+
+async function getUserAcademicContext(userId) {
+  const user = await get(
+    `select facolta, corso
+     from Users
+     where id = ?`,
+    [userId]
+  );
+
+  return {
+    faculty: String(user?.facolta || '').trim() || null,
+    course: String(user?.corso || '').trim() || null,
+  };
+}
+
+function mergeUniqueSubjects(target, rows = [], field = 'subject') {
+  rows.forEach((row) => {
+    const value = normalizeAcademicValue(row?.[field]);
+    if (!isMeaningfulSubjectValue(value)) return;
+    const key = value.toLowerCase();
+    if (!target.has(key)) {
+      target.set(key, value);
+    }
+  });
 }
 
 function formatMegabytes(bytes) {
@@ -127,6 +163,7 @@ async function list(userId, query = {}) {
   const rawGroupId = query.groupId;
   const hasGroupContext = rawGroupId !== undefined && rawGroupId !== null && rawGroupId !== '';
   const groupId = hasGroupContext ? Number(rawGroupId) : null;
+  const scope = normalizeScope(query.scope, 'all');
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
 
   if (hasGroupContext && (!Number.isFinite(groupId) || groupId <= 0)) {
@@ -141,6 +178,14 @@ async function list(userId, query = {}) {
 
   if (groupId) {
     params.push(groupId);
+  }
+
+  if (!groupId && scope === 'faculty') {
+    const context = await getUserAcademicContext(userId);
+    if (context.faculty) {
+      where.push(`lower(trim(coalesce(Users.facolta, ''))) = lower(trim(?))`);
+      params.push(context.faculty);
+    }
   }
 
   if (q) {
@@ -167,6 +212,7 @@ async function list(userId, query = {}) {
        Notes.mimeType as mimeType,
        Notes.sizeBytes as sizeBytes,
        Notes.createdAt as createdAt,
+       Users.facolta as facolta,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
        case when saved.noteId is not null then 1 else 0 end as isSaved
      from Notes
@@ -188,6 +234,7 @@ async function list(userId, query = {}) {
     mimeType: row.mimeType || null,
     sizeBytes: Number(row.sizeBytes || 0),
     groupId: row.groupId || null,
+    facolta: String(row.facolta || '').trim() || null,
     autoreNome: row.autoreNome,
     createdAt: row.createdAt,
     tempoUpload: formatRelativeTime(row.createdAt),
@@ -226,6 +273,7 @@ async function listSaved(userId, query = {}) {
        Notes.subject as materia,
        Notes.fileType as tipoFile,
        Notes.createdAt as createdAt,
+       Users.facolta as facolta,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome
      from NoteBookmarks
      inner join Notes on Notes.id = NoteBookmarks.noteId
@@ -241,6 +289,7 @@ async function listSaved(userId, query = {}) {
     titolo: row.titolo,
     materia: row.materia,
     tipoFile: row.tipoFile,
+    facolta: String(row.facolta || '').trim() || null,
     autoreNome: row.autoreNome,
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
@@ -250,22 +299,41 @@ async function listSaved(userId, query = {}) {
   return mapped;
 }
 
-async function listSubjects(userId) {
-  const user = await get(
-    `select facolta, corso
-     from Users
-     where id = ?`,
-    [userId]
-  );
+async function listSubjects(userId, query = {}) {
+  const { faculty, course } = await getUserAcademicContext(userId);
+  const scope = normalizeScope(query.scope, 'faculty');
+  const source = normalizeSubjectSource(query.source, 'browse');
+  const subjects = new Map();
 
-  const faculty = String(user?.facolta || '').trim() || null;
-  const course = String(user?.corso || '').trim() || null;
+  let noteRows = [];
 
-  if (!faculty) return { faculty: null, course, subjects: [] };
+  if (scope === 'all') {
+    noteRows = await all(
+      `select distinct trim(subject) as subject
+       from Notes
+       where groupId is null
+         and trim(coalesce(subject, '')) <> ''
+       order by lower(trim(subject)) asc`
+    );
+  } else if (faculty) {
+    noteRows = await all(
+      `select distinct trim(Notes.subject) as subject
+       from Notes
+       join Users on Users.id = Notes.userId
+       where Notes.groupId is null
+         and trim(coalesce(Notes.subject, '')) <> ''
+         and lower(trim(coalesce(Users.facolta, ''))) = lower(trim(?))
+       order by lower(trim(Notes.subject)) asc`,
+      [faculty]
+    );
+  }
 
-  let rows = [];
-  if (course) {
-    rows = await all(
+  if (source !== 'upload') {
+    mergeUniqueSubjects(subjects, noteRows);
+  }
+
+  if (source === 'upload' && scope === 'faculty' && faculty && course) {
+    const courseRows = await all(
       `select subjectName as subject
        from ExamSubjects
        where lower(trim(facultyName)) = lower(trim(?))
@@ -273,10 +341,11 @@ async function listSubjects(userId) {
        order by lower(trim(subjectName)) asc`,
       [faculty, course]
     );
+    mergeUniqueSubjects(subjects, courseRows);
   }
 
-  if (!rows.length) {
-    rows = await all(
+  if (source === 'upload' && scope === 'faculty' && faculty) {
+    const fallbackRows = await all(
       `select subjectName as subject
        from ExamSubjects
        where lower(trim(facultyName)) = lower(trim(?))
@@ -284,12 +353,13 @@ async function listSubjects(userId) {
        order by lower(trim(subjectName)) asc`,
       [faculty]
     );
+    mergeUniqueSubjects(subjects, fallbackRows);
   }
 
   return {
-    faculty,
+    faculty: faculty || null,
     course,
-    subjects: rows.map((row) => String(row?.subject || '').trim()).filter(Boolean)
+    subjects: Array.from(subjects.values()),
   };
 }
 
@@ -318,6 +388,9 @@ async function create(userId, body = {}) {
 
   if (!titolo) throw badRequest('titolo obbligatorio');
   if (!materia) throw badRequest('materia obbligatoria');
+  if (!isMeaningfulSubjectValue(materia)) {
+    throw badRequest('materia non valida');
+  }
   if (!fileName) throw badRequest('nome file obbligatorio');
   if (!fileData) throw badRequest('contenuto file obbligatorio');
   if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) {
@@ -349,6 +422,18 @@ async function create(userId, body = {}) {
       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [userId, groupId, titolo, materia, fileName, tipoFile, mimeType, actualSizeBytes, fileData, now, now]
   );
+
+  const context = await getUserAcademicContext(userId);
+  const facultyName = normalizeAcademicValue(context.faculty);
+  const courseName = normalizeAcademicValue(context.course);
+  const subjectName = normalizeAcademicValue(materia);
+  if (facultyName && courseName && isMeaningfulSubjectValue(subjectName)) {
+    await run(
+      `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
+       values (?, ?, ?, ?, ?)`,
+      [facultyName, courseName, subjectName, now, now]
+    );
+  }
 
   return { id: out.lastID };
 }

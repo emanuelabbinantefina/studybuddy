@@ -5,6 +5,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 
 import { DataService, EventItem } from '../../core/services/data.service';
+import { UserService } from '../../core/services/user.service';
 
 interface PlannerExamCard {
   id: number;
@@ -50,10 +51,12 @@ export class PlannerPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly dataService: DataService,
-    private readonly toastCtrl: ToastController
+    private readonly toastCtrl: ToastController,
+    private readonly userService: UserService
   ) {}
 
   ngOnInit(): void {
+    this.userService.reloadProfile();
     this.loadSubjects();
     this.loadExams();
   }
@@ -64,6 +67,7 @@ export class PlannerPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter(): void {
+    this.userService.reloadProfile();
     this.loadSubjects();
     this.loadExams();
   }
@@ -119,7 +123,7 @@ export class PlannerPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.myFacultyLabel = data?.faculty || '';
+          this.myFacultyLabel = String(data?.faculty || '').trim();
           this.subjectOptions = Array.isArray(data?.subjects) ? data.subjects : [];
         },
         error: () => {

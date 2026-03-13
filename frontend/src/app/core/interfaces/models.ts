@@ -99,6 +99,7 @@ export interface Appunto {
   id: number;
   titolo: string;
   materia: string;
+  facolta?: string | null;
   tipoFile: 'pdf' | 'doc' | 'img';
   fileName?: string;
   mimeType?: string | null;

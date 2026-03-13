@@ -18,6 +18,7 @@ interface UploadAppuntoPayload {
 interface CreateGroupPayload {
   nome: string;
   facolta: string;
+  corso?: string;
   materia: string;
   dataEsame?: string;
   colorClass?: string;
@@ -197,13 +198,13 @@ export class ApiService {
     });
   }
 
-  getAppunti(query: string, materia = ''): Observable<Appunto[]> {
+  getAppunti(query: string, materia = '', scope: 'all' | 'faculty' = 'all'): Observable<Appunto[]> {
     const token = localStorage.getItem('auth_token') || '';
     if (!token) return of([]);
 
     const q = (query || '').trim();
     const subject = (materia || '').trim();
-    const params: Record<string, string> = {};
+    const params: Record<string, string> = { scope };
     if (q) params['cerca'] = q;
     if (subject) params['materia'] = subject;
 
@@ -229,12 +230,16 @@ export class ApiService {
     });
   }
 
-  getNoteSubjects(): Observable<NoteSubjectsResponse> {
+  getNoteSubjects(
+    scope: 'all' | 'faculty' = 'faculty',
+    source: 'browse' | 'upload' = 'browse'
+  ): Observable<NoteSubjectsResponse> {
     const token = localStorage.getItem('auth_token') || '';
     if (!token) return of({ faculty: null, subjects: [] });
 
     return this.http.get<any>(`${this.baseUrl}/appunti/subjects`, {
-      headers: this.authHeaders()
+      headers: this.authHeaders(),
+      params: { scope, source }
     }).pipe(
       map((raw) => ({
         faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,

@@ -22,19 +22,17 @@
         </div>
       </div>
 
-      <div class="category-chips">
-        <button
-          type="button"
-          class="chip-btn"
-          *ngFor="let chip of categoryChips"
-          [class.active]="activeCategory === chip"
-          (click)="setCategory(chip)">
-          {{ chip }}
-        </button>
-      </div>
-      <p class="subjects-empty" *ngIf="categoryChips.length === 1">
-        Nessuna materia ufficiale configurata per il tuo corso di laurea.
-      </p>
+      <section class="faculty-scope-card" *ngIf="myFacultyLabel">
+        <div class="faculty-scope-copy">
+          <h3>{{ facultyScopeTitle }}</h3>
+          <p>{{ facultyScopeDescription }}</p>
+        </div>
+
+        <ion-toggle
+          [checked]="showAllFaculties"
+          (ionChange)="onFacultyScopeChange($event.detail.checked)">
+        </ion-toggle>
+      </section>
 
       <section *ngIf="showUploadPanel" class="upload-panel fade-in">
         <div class="upload-panel-header">
@@ -73,16 +71,21 @@
         <div class="upload-fields">
           <input type="text" class="upload-input" placeholder="Titolo appunto" [(ngModel)]="uploadTitle">
           <select
+            *ngIf="subjectOptions.length > 0; else freeSubjectInput"
             class="upload-input upload-select"
-            [(ngModel)]="uploadSubject"
-            [disabled]="subjectOptions.length === 0">
-            <option value="" disabled>
-              {{ subjectOptions.length ? 'Seleziona materia' : 'Nessuna materia configurata per il tuo corso' }}
-            </option>
+            [(ngModel)]="uploadSubject">
+            <option value="">Seleziona materia</option>
             <option *ngFor="let subject of subjectOptions" [value]="subject">
               {{ subject }}
             </option>
           </select>
+          <ng-template #freeSubjectInput>
+            <input
+              type="text"
+              class="upload-input"
+              placeholder="Materia"
+              [(ngModel)]="uploadSubject">
+          </ng-template>
         </div>
 
         <div class="upload-actions">
@@ -100,7 +103,11 @@
             <span class="tile-meta">{{ n.tempoUpload }}</span>
           </div>
           <h4>{{ n.titolo }}</h4>
-          <p>di {{ getUploaderName(n) }} &middot; {{ n.materia }}</p>
+          <p>
+            di {{ getUploaderName(n) }}
+            <span *ngIf="getNoteFaculty(n)"> &middot; {{ getNoteFaculty(n) }}</span>
+            <span> &middot; {{ n.materia }}</span>
+          </p>
         </article>
       </div>
 
@@ -122,7 +129,11 @@
       </div>
 
       <h3>{{ selectedNote.titolo }}</h3>
-      <p class="detail-meta">{{ selectedNote.materia }} &middot; {{ getUploaderName(selectedNote) }}</p>
+      <p class="detail-meta">
+        {{ selectedNote.materia }}
+        <span *ngIf="getNoteFaculty(selectedNote)"> &middot; {{ getNoteFaculty(selectedNote) }}</span>
+        &middot; {{ getUploaderName(selectedNote) }}
+      </p>
 
       <div class="detail-actions">
         <button

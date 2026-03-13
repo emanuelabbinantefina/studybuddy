@@ -167,6 +167,7 @@ export class UserService {
       firstName: String(newData?.firstName || '').trim(),
       lastName: String(newData?.lastName || '').trim(),
       username: typeof newData?.username === 'string' ? newData.username.trim() : '',
+      facolta: String(newData?.facolta || '').trim(),
       corso: String(newData?.corso || '').trim(),
       courseYear: String(newData?.courseYear || '').trim(),
       bio: typeof newData?.bio === 'string' ? newData.bio.trim().slice(0, 120) : '',

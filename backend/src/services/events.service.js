@@ -1,5 +1,6 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
+const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 
 function badRequest(msg) {
   const err = new Error(msg);
@@ -142,35 +143,50 @@ async function listMyExamSubjects(userId) {
 
   const faculty = String(user.facolta || '').trim();
   const course = String(user.corso || '').trim();
-  if (!faculty) return { faculty: null, course: course || null, subjects: [] };
+  const subjects = [];
+  const seen = new Set();
+  const pushSubjectRows = (rows = []) => {
+    rows.forEach((row) => {
+      const subject = normalizeAcademicValue(row?.subjectName);
+      if (!isMeaningfulSubjectValue(subject)) return;
 
-  let rows = [];
-  if (course) {
-    rows = await all(
-      `select subjectName
+      const key = subject.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      subjects.push(subject);
+    });
+  };
+
+  if (faculty && course) {
+    const courseRows = await all(
+      `select distinct trim(subjectName) as subjectName
        from ExamSubjects
        where lower(trim(facultyName)) = lower(trim(?))
          and lower(trim(courseName)) = lower(trim(?))
-       order by subjectName asc`,
+         and trim(coalesce(subjectName, '')) <> ''
+       order by lower(trim(subjectName)) asc`,
       [faculty, course]
     );
+    pushSubjectRows(courseRows);
   }
 
-  if (!rows.length) {
-    rows = await all(
-      `select subjectName
+  if (faculty) {
+    const fallbackRows = await all(
+      `select distinct trim(subjectName) as subjectName
        from ExamSubjects
        where lower(trim(facultyName)) = lower(trim(?))
          and trim(coalesce(courseName, '')) = ''
-       order by subjectName asc`,
+         and trim(coalesce(subjectName, '')) <> ''
+       order by lower(trim(subjectName)) asc`,
       [faculty]
     );
+    pushSubjectRows(fallbackRows);
   }
 
   return {
-    faculty,
+    faculty: faculty || null,
     course: course || null,
-    subjects: rows.map((row) => row.subjectName)
+    subjects
   };
 }
 

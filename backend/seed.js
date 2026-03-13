@@ -191,6 +191,8 @@ async function seed() {
       console.log(`inserita facoltà: ${facultyName} (${coursesData[facultyName].length} corsi)`);
     }
 
+    await initDb();
+
     console.log('seed completato');
     process.exit(0);
   } catch (err) {

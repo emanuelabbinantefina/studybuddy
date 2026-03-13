@@ -1,41 +1,95 @@
-const { run } = require('./connection');
+const { all, run } = require('./connection');
+const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
+const { buildSubjectsForCourse } = require('../utils/academic-catalog');
 
 function nowIso() {
   return new Date().toISOString();
 }
 
-const GIURISPRUDENZA_EXAM_SUBJECTS = [
-  'Diritto Privato',
-  'Diritto Costituzionale',
-  'Diritto Penale',
-  'Diritto Commerciale',
-  'Diritto Amministrativo',
-  'Diritto Processuale Civile',
-  'Diritto Processuale Penale',
-  'Filosofia del Diritto'
-];
-const GIURISPRUDENZA_FACULTY_NAME = 'Giurisprudenza';
-const GIURISPRUDENZA_COURSE_NAME = 'Giurisprudenza';
-
 async function seedExamSubjects() {
   const now = nowIso();
+  await run(`delete from ExamSubjects`);
 
-  for (const subjectName of GIURISPRUDENZA_EXAM_SUBJECTS) {
-    await run(
-      `update ExamSubjects
-       set courseName = ?, updatedAt = ?
-       where lower(trim(facultyName)) = lower(trim(?))
-         and lower(trim(subjectName)) = lower(trim(?))
-         and trim(coalesce(courseName, '')) = ''`,
-      [GIURISPRUDENZA_COURSE_NAME, now, GIURISPRUDENZA_FACULTY_NAME, subjectName]
-    );
+  const courseRows = await all(
+    `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+     from Courses
+     join Faculties on Faculties.id = Courses.facultyId
+     where trim(coalesce(Faculties.name, '')) <> ''
+       and trim(coalesce(Courses.name, '')) <> ''
+     order by lower(trim(Faculties.name)) asc, lower(trim(Courses.name)) asc`
+  );
+
+  const distinctFaculties = Array.from(
+    new Set(courseRows.map((row) => normalizeAcademicValue(row?.facultyName)).filter(Boolean))
+  );
+
+  for (const facultyName of distinctFaculties) {
+    const subjects = buildSubjectsForCourse(facultyName, '');
+    for (const subjectName of subjects) {
+      const normalizedSubject = normalizeAcademicValue(subjectName);
+      if (!isMeaningfulSubjectValue(normalizedSubject)) continue;
+      await run(
+        `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
+         values (?, '', ?, ?, ?)`,
+        [facultyName, normalizedSubject, now, now]
+      );
+    }
+  }
+
+  for (const row of courseRows) {
+    const facultyName = normalizeAcademicValue(row?.facultyName);
+    const courseName = normalizeAcademicValue(row?.courseName);
+    if (!facultyName || !courseName) continue;
+
+    const subjects = buildSubjectsForCourse(facultyName, courseName);
+    for (const subjectName of subjects) {
+      const normalizedSubject = normalizeAcademicValue(subjectName);
+      if (!isMeaningfulSubjectValue(normalizedSubject)) continue;
+      await run(
+        `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
+         values (?, ?, ?, ?, ?)`,
+        [facultyName, courseName, normalizedSubject, now, now]
+      );
+    }
+  }
+
+  const noteRows = await all(
+    `select distinct trim(Users.facolta) as facultyName, trim(Users.corso) as courseName, trim(Notes.subject) as subjectName
+     from Notes
+     join Users on Users.id = Notes.userId
+     where Notes.groupId is null
+       and trim(coalesce(Users.facolta, '')) <> ''
+       and trim(coalesce(Users.corso, '')) <> ''
+       and trim(coalesce(Notes.subject, '')) <> ''`
+  );
+
+  for (const row of noteRows) {
+    const facultyName = normalizeAcademicValue(row?.facultyName);
+    const courseName = normalizeAcademicValue(row?.courseName);
+    const subjectName = normalizeAcademicValue(row?.subjectName);
+    if (!facultyName || !courseName || !isMeaningfulSubjectValue(subjectName)) continue;
 
     await run(
       `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
        values (?, ?, ?, ?, ?)`,
-      [GIURISPRUDENZA_FACULTY_NAME, GIURISPRUDENZA_COURSE_NAME, subjectName, now, now]
+      [facultyName, courseName, subjectName, now, now]
     );
   }
+}
+
+async function repairGroupsAcademicFields() {
+  const now = nowIso();
+  await run(
+    `update Groups
+     set course = subject,
+         updatedAt = ?
+     where trim(coalesce(subject, '')) <> ''
+       and (
+         trim(coalesce(course, '')) = ''
+         or lower(trim(coalesce(course, ''))) = lower(trim(coalesce(faculty, '')))
+       )`,
+    [now]
+  );
 }
 
 async function initDb() {
@@ -165,8 +219,6 @@ async function initDb() {
   await run(`drop index if exists idx_examsubjects_faculty`);
   await run(`create unique index if not exists uq_examsubjects_faculty_course_subject on ExamSubjects(facultyName, courseName, subjectName)`);
   await run(`create index if not exists idx_examsubjects_faculty_course on ExamSubjects(facultyName, courseName)`);
-
-  await seedExamSubjects();
 
   // events
   await run(`
@@ -374,6 +426,9 @@ async function initDb() {
   await run(`create index if not exists idx_groupquestions_group_created on GroupQuestions(groupId, createdAt desc)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
   await run(`create index if not exists idx_groupmessages_parent on GroupMessages(parentMessageId)`);
+
+  await repairGroupsAcademicFields();
+  await seedExamSubjects();
 }
 
 module.exports = { initDb, nowIso };

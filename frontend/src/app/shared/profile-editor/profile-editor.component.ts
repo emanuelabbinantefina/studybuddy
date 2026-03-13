@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Subject, filter, take, takeUntil } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
 import { lastValueFrom } from 'rxjs';
 import { UserProfile } from '../../core/interfaces/models';
 import { AuthService } from '../../core/services/auth.service';
@@ -14,11 +14,20 @@ interface FacultyRow {
   Courses?: Array<{ id: number; name: string }>;
 }
 
+interface CourseOption {
+  key: string;
+  label: string;
+  facultyName: string;
+  courseName: string;
+}
+
 interface ProfileFormState {
   avatarUrl: string;
   firstName: string;
   lastName: string;
   username: string;
+  courseKey: string;
+  facolta: string;
   corso: string;
   courseYear: string;
   bio: string;
@@ -46,12 +55,15 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   saving = false;
   loadingProfile = true;
-  courseOptions: string[] = [];
+  faculties: FacultyRow[] = [];
+  courseOptions: CourseOption[] = [];
   profileData: ProfileFormState = {
     avatarUrl: '',
     firstName: '',
     lastName: '',
     username: '',
+    courseKey: '',
+    facolta: '',
     corso: '',
     courseYear: '',
     bio: '',
@@ -66,12 +78,11 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadCourses();
+    this.loadFaculties();
     this.userService
       .getProfile()
       .pipe(
         filter((profile): profile is UserProfile => !!profile),
-        take(1),
         takeUntil(this.destroy$)
       )
       .subscribe((profile) => {
@@ -93,6 +104,8 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
       !this.saving &&
       this.profileData.firstName.trim() &&
       this.profileData.lastName.trim() &&
+      this.profileData.courseKey.trim() &&
+      this.profileData.facolta.trim() &&
       this.profileData.corso.trim() &&
       this.profileData.courseYear.trim()
     );
@@ -139,7 +152,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   async saveProfile(): Promise<void> {
     if (!this.canSave()) {
-      await this.presentToast('Compila nome, cognome, corso e anno', 'warning');
+      await this.presentToast('Compila nome, cognome, corso di laurea e anno', 'warning');
       return;
     }
 
@@ -150,6 +163,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
           firstName: this.profileData.firstName.trim(),
           lastName: this.profileData.lastName.trim(),
           username: this.cleanUsername(this.profileData.username),
+          facolta: this.profileData.facolta.trim(),
           corso: this.profileData.corso.trim(),
           courseYear: this.profileData.courseYear.trim(),
           bio: this.profileData.bio.trim().slice(0, 120),
@@ -172,43 +186,100 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
       firstName: profile.firstName || '',
       lastName: profile.lastName || '',
       username: this.cleanUsername(profile.username || ''),
+      courseKey: '',
+      facolta: profile.facolta || '',
       corso: profile.corso || '',
       courseYear: profile.courseYear || '',
       bio: (profile.bio || '').slice(0, 120),
     };
 
-    this.ensureCourseOption(this.profileData.corso);
+    this.syncCourseSelection();
     this.loadingProfile = false;
   }
 
-  private loadCourses(): void {
+  onCourseChange(value: string): void {
+    const option = this.courseOptions.find((entry) => entry.key === String(value || '').trim());
+    this.profileData.courseKey = option?.key || '';
+    this.profileData.corso = option?.courseName || '';
+    this.profileData.facolta = option?.facultyName || '';
+  }
+
+  private loadFaculties(): void {
     this.authService
       .getFaculties()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (rows) => {
-          const values = new Set<string>();
-          (Array.isArray(rows) ? rows : []).forEach((faculty: FacultyRow) => {
-            (faculty?.Courses || []).forEach((course) => {
-              const clean = String(course?.name || '').trim();
-              if (clean) values.add(clean);
-            });
-          });
-          this.courseOptions = Array.from(values).sort((left, right) => left.localeCompare(right, 'it'));
-          this.ensureCourseOption(this.profileData.corso);
+          this.faculties = Array.isArray(rows) ? rows : [];
+          this.courseOptions = this.buildCourseOptions(this.faculties);
+          this.syncCourseSelection();
         },
         error: () => {
+          this.faculties = [];
           this.courseOptions = [];
-          this.ensureCourseOption(this.profileData.corso);
+          this.syncCourseSelection();
         },
       });
   }
 
-  private ensureCourseOption(value: string): void {
-    const clean = String(value || '').trim();
-    if (!clean) return;
-    if (this.courseOptions.includes(clean)) return;
-    this.courseOptions = [...this.courseOptions, clean].sort((left, right) => left.localeCompare(right, 'it'));
+  private buildCourseOptions(rows: FacultyRow[]): CourseOption[] {
+    const flatRows = (Array.isArray(rows) ? rows : []).reduce<Array<{ facultyName: string; courseName: string }>>(
+      (accumulator, faculty: FacultyRow) => {
+        const nextRows = (faculty?.Courses || []).map((course: { id: number; name: string }) => ({
+          facultyName: String(faculty?.name || '').trim(),
+          courseName: String(course?.name || '').trim(),
+        }));
+        return accumulator.concat(nextRows);
+      },
+      []
+    ).filter((entry: { facultyName: string; courseName: string }) => entry.facultyName && entry.courseName);
+
+    const courseOccurrences = new Map();
+    flatRows.forEach((entry: { facultyName: string; courseName: string }) => {
+      const key = entry.courseName.toLowerCase();
+      courseOccurrences.set(key, (courseOccurrences.get(key) || 0) + 1);
+    });
+
+    return flatRows
+      .map((entry: { facultyName: string; courseName: string }) => ({
+        key: `${entry.facultyName}::${entry.courseName}`,
+        label:
+          (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1
+            ? `${entry.courseName} · ${entry.facultyName}`
+            : entry.courseName,
+        facultyName: entry.facultyName,
+        courseName: entry.courseName,
+      }))
+      .sort((left: CourseOption, right: CourseOption) => left.label.localeCompare(right.label, 'it'));
+  }
+
+  private syncCourseSelection(): void {
+    const currentFaculty = String(this.profileData.facolta || '').trim();
+    const currentCourse = String(this.profileData.corso || '').trim();
+
+    const exactMatch = this.courseOptions.find(
+      (option) =>
+        option.facultyName === currentFaculty &&
+        option.courseName === currentCourse
+    );
+
+    if (exactMatch) {
+      this.profileData.courseKey = exactMatch.key;
+      this.profileData.facolta = exactMatch.facultyName;
+      this.profileData.corso = exactMatch.courseName;
+      return;
+    }
+
+    const matchesByCourse = this.courseOptions.filter((option) => option.courseName === currentCourse);
+    if (matchesByCourse.length === 1) {
+      const fallbackMatch = matchesByCourse[0];
+      this.profileData.courseKey = fallbackMatch.key;
+      this.profileData.facolta = fallbackMatch.facultyName;
+      this.profileData.corso = fallbackMatch.courseName;
+      return;
+    }
+
+    this.profileData.courseKey = '';
   }
 
   private cleanUsername(value: string): string {

@@ -33,7 +33,7 @@ async function listSaved(req, res) {
 
 async function listSubjects(req, res) {
   try {
-    const out = await notesService.listSubjects(req.userData.userId);
+    const out = await notesService.listSubjects(req.userData.userId, req.query);
     res.json(out);
   } catch (e) {
     handleError(res, e);

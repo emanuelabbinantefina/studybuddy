@@ -44,11 +44,14 @@
         <input type="text" maxlength="40" [(ngModel)]="profileData.username" placeholder="@marco.r">
       </label>
 
-      <label class="field">
+      <label class="field field--full">
         <span>Corso di laurea</span>
-        <select [(ngModel)]="profileData.corso">
+        <select
+          [(ngModel)]="profileData.courseKey"
+          (ngModelChange)="onCourseChange($event)"
+          [disabled]="courseOptions.length === 0">
           <option value="" disabled>Seleziona corso</option>
-          <option *ngFor="let course of courseOptions" [value]="course">{{ course }}</option>
+          <option *ngFor="let course of courseOptions" [value]="course.key">{{ course.label }}</option>
         </select>
       </label>
 
