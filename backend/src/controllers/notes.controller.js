@@ -1,11 +1,24 @@
 const notesService = require('../services/notes.service');
 
+function handleError(res, err) {
+  if (err.code === 'BAD_REQUEST') {
+    return res.status(400).json({ message: err.message });
+  }
+  if (err.code === 'FORBIDDEN') {
+    return res.status(403).json({ message: err.message });
+  }
+  if (err.code === 'NOT_FOUND') {
+    return res.status(404).json({ message: err.message });
+  }
+  return res.status(500).json({ message: err.message });
+}
+
 async function list(req, res) {
   try {
     const notes = await notesService.list(req.userData.userId, req.query);
     res.json(notes);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -14,7 +27,7 @@ async function listSaved(req, res) {
     const notes = await notesService.listSaved(req.userData.userId, req.query);
     res.json(notes);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -23,7 +36,7 @@ async function listSubjects(req, res) {
     const out = await notesService.listSubjects(req.userData.userId);
     res.json(out);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -32,10 +45,7 @@ async function create(req, res) {
     const out = await notesService.create(req.userData.userId, req.body);
     res.status(201).json(out);
   } catch (e) {
-    if (e.code === 'BAD_REQUEST') {
-      return res.status(400).json({ message: e.message });
-    }
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -46,7 +56,7 @@ async function download(req, res) {
       return res.status(400).json({ message: 'id appunto non valido' });
     }
 
-    const out = await notesService.getDownload(noteId);
+    const out = await notesService.getDownload(noteId, req.userData.userId);
     if (!out) {
       return res.status(404).json({ message: 'appunto non trovato' });
     }
@@ -58,7 +68,7 @@ async function download(req, res) {
     );
     return res.send(out.buffer);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -76,10 +86,7 @@ async function remove(req, res) {
 
     return res.json({ ok: true });
   } catch (e) {
-    if (e.code === 'FORBIDDEN') {
-      return res.status(403).json({ message: e.message });
-    }
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -97,10 +104,7 @@ async function addBookmark(req, res) {
 
     return res.status(201).json({ ok: true });
   } catch (e) {
-    if (e.code === 'BAD_REQUEST') {
-      return res.status(400).json({ message: e.message });
-    }
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 
@@ -114,7 +118,7 @@ async function removeBookmark(req, res) {
     await notesService.removeBookmark(req.userData.userId, noteId);
     return res.json({ ok: true });
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    handleError(res, e);
   }
 }
 

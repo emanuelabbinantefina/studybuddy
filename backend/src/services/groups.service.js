@@ -27,6 +27,12 @@ const ALLOWED_COLOR_CLASSES = new Set([
   'bg-pink',
   'bg-orange',
 ]);
+const QUESTION_SESSIONS = [
+  'Sessione invernale',
+  'Sessione primaverile',
+  'Sessione estiva',
+  'Sessione autunnale',
+];
 
 function normalizeColorClass(value) {
   const parsed = String(value || '').trim().toLowerCase();
@@ -38,6 +44,69 @@ function sanitizeText(value, maxLen = 255) {
   const txt = String(value || '').trim();
   if (!txt) return '';
   return txt.slice(0, maxLen);
+}
+
+function sanitizeQuestionYear(value) {
+  const raw = String(value || '').replace(/\D+/g, '').slice(0, 4);
+  if (!raw) return '';
+  if (raw.length !== 4) return '';
+
+  const year = Number(raw);
+  const maxYear = new Date().getFullYear();
+  if (!Number.isFinite(year) || year < 2000 || year > maxYear) return '';
+  return String(year);
+}
+
+function sanitizeQuestionSession(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+
+  const match = QUESTION_SESSIONS.find((item) => item.toLowerCase() === raw);
+  return match || '';
+}
+
+function parseQuestionAnswer(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { session: '', year: '' };
+
+  const sessionOnly = sanitizeQuestionSession(raw);
+  if (sessionOnly) return { session: sessionOnly, year: '' };
+
+  const legacyYear = sanitizeQuestionYear(raw.replace(/^anno\s+/i, ''));
+  if (legacyYear) return { session: '', year: legacyYear };
+
+  const lowered = raw.toLowerCase();
+  for (const session of QUESTION_SESSIONS) {
+    const sessionKey = session.toLowerCase();
+    if (!lowered.startsWith(sessionKey)) continue;
+
+    const rest = raw.slice(session.length).replace(/^[\s,\-–/]+/, '').trim();
+    return {
+      session,
+      year: sanitizeQuestionYear(rest),
+    };
+  }
+
+  return { session: '', year: '' };
+}
+
+function buildQuestionAnswer(session, year) {
+  if (session && year) return `${session} ${year}`;
+  if (session) return session;
+  if (year) return year;
+  return '';
+}
+
+function resolveQuestionMeta(row = {}) {
+  const parsedAnswer = parseQuestionAnswer(row.answer);
+  const session = sanitizeQuestionSession(row.session || parsedAnswer.session);
+  const year = sanitizeQuestionYear(row.year || parsedAnswer.year);
+
+  return {
+    session,
+    year,
+    answer: buildQuestionAnswer(session, year),
+  };
 }
 
 function parseTopics(rawTopics) {
@@ -64,6 +133,27 @@ function parseTopics(rawTopics) {
   });
 
   return cleaned.slice(0, 60);
+}
+
+function parseQuestionsSeed(rawQuestions) {
+  if (!Array.isArray(rawQuestions)) return [];
+
+  const dedupe = new Set();
+  const out = [];
+
+  rawQuestions.forEach((row) => {
+    const question = sanitizeText(row?.question ?? row?.text ?? row, 500);
+    const meta = resolveQuestionMeta(row || {});
+    if (!question) return;
+
+    const key = `${question.toLowerCase()}|${meta.session.toLowerCase()}|${meta.year.toLowerCase()}`;
+    if (dedupe.has(key)) return;
+    dedupe.add(key);
+
+    out.push({ question, answer: meta.answer || null });
+  });
+
+  return out.slice(0, 20);
 }
 
 async function resolveOwnerId(authenticatedUserId, bodyUserId) {
@@ -123,10 +213,14 @@ function mapGroupRow(row) {
     visibility: row.visibility || 'public',
     colorClass: normalizeColorClass(row.colorClass),
     ownerId: row.ownerId,
+    ownerName: row.ownerName || 'Studente',
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     isMember: Number(row.isMember || 0) === 1,
     membersCount: Number(row.membersCount || 0),
+    notesCount: Number(row.notesCount || 0),
+    messagesCount: Number(row.messagesCount || 0),
+    questionsCount: Number(row.questionsCount || 0),
     topicsTotal,
     topicsDone,
     topicsReserved: Number(row.topicsReserved || 0),
@@ -164,8 +258,12 @@ async function listGroups(userId, opts = {}) {
     `
     select
       g.id, g.name, g.description, g.course, g.faculty, g.subject, g.examDate, g.visibility, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
+      coalesce(owner.nickname, owner.name, 'Studente') as ownerName,
       case when gm.userId is null then 0 else 1 end as isMember,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
+      (select count(*) from Notes n where n.groupId = g.id) as notesCount,
+      (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
+      (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
       (select count(*) from GroupTopics t where t.groupId = g.id) as topicsTotal,
       (select count(*) from GroupTopics t where t.groupId = g.id and t.done = 1) as topicsDone,
       (select count(*) from GroupTopics t where t.groupId = g.id and t.assignedUserId is not null) as topicsReserved,
@@ -173,6 +271,7 @@ async function listGroups(userId, opts = {}) {
       (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
+    left join Users owner on owner.id = g.ownerId
     left join GroupMembers gm
       on gm.groupId = g.id and gm.userId = ?
     ${whereClause}
@@ -198,8 +297,10 @@ async function createGroup(userId, body = {}) {
   const colorClass = normalizeColorClass(
     body.colorClass ?? body.colore ?? body.color ?? body.selectedColorClass
   );
+  const boardMessage = sanitizeText(body.boardMessage ?? body.firstMessage ?? body.firstPost, 1000);
   const visibility = 'public';
   const topics = parseTopics(body.topics ?? body.programma ?? body.programTopics);
+  const seedQuestions = parseQuestionsSeed(body.questions ?? body.initialQuestions);
 
   if (!name) throw badRequest('nome gruppo obbligatorio');
   if (!faculty) throw badRequest('facolta obbligatoria');
@@ -241,6 +342,24 @@ async function createGroup(userId, body = {}) {
        values
         (?, ?, ?, null, 0, ?, ?, ?)`,
       [out.lastID, topics[i], i, ownerId, now, now]
+    );
+  }
+
+  if (boardMessage) {
+    await run(
+      `insert into GroupMessages (groupId, userId, text, createdAt)
+       values (?, ?, ?, ?)`,
+      [out.lastID, ownerId, boardMessage, now]
+    );
+  }
+
+  for (const item of seedQuestions) {
+    await run(
+      `insert into GroupQuestions
+        (groupId, question, answer, createdByUserId, createdAt, updatedAt)
+       values
+        (?, ?, ?, ?, ?, ?)`,
+      [out.lastID, item.question, item.answer, ownerId, now, now]
     );
   }
 
@@ -295,8 +414,12 @@ async function groupDetail(userId, groupId) {
     `
     select
       g.id, g.name, g.description, g.course, g.faculty, g.subject, g.examDate, g.visibility, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
+      coalesce(owner.nickname, owner.name, 'Studente') as ownerName,
       case when gm.userId is null then 0 else 1 end as isMember,
       (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
+      (select count(*) from Notes n where n.groupId = g.id) as notesCount,
+      (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
+      (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
       (select count(*) from GroupTopics t where t.groupId = g.id) as topicsTotal,
       (select count(*) from GroupTopics t where t.groupId = g.id and t.done = 1) as topicsDone,
       (select count(*) from GroupTopics t where t.groupId = g.id and t.assignedUserId is not null) as topicsReserved,
@@ -304,6 +427,7 @@ async function groupDetail(userId, groupId) {
       (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
     from Groups g
+    left join Users owner on owner.id = g.ownerId
     left join GroupMembers gm
       on gm.groupId = g.id and gm.userId = ?
     where g.id = ?
@@ -556,8 +680,19 @@ async function createQuestion(userId, groupId, body = {}) {
   await ensureMember(groupId, userId);
 
   const question = sanitizeText(body.question, 500);
-  const answer = sanitizeText(body.answer, 1000);
+  const answerRaw = String(body.answer || '').trim();
+  const sessionRaw = String(body.session || '').trim();
+  const yearRaw = String(body.year || '').trim();
+  const meta = resolveQuestionMeta(body || {});
+  const hasPartialExplicitMeta = (!!sessionRaw && !yearRaw) || (!sessionRaw && !!yearRaw);
   if (!question) throw badRequest('testo domanda obbligatorio');
+  if (hasPartialExplicitMeta) {
+    throw badRequest('se indichi la sessione devi specificare anche l anno, e viceversa');
+  }
+  if ((sessionRaw || yearRaw) && (!meta.session || !meta.year)) {
+    throw badRequest('sessione o anno non validi');
+  }
+  if (answerRaw && !meta.answer) throw badRequest('sessione o anno non validi');
 
   const now = nowIso();
   const out = await run(
@@ -565,7 +700,7 @@ async function createQuestion(userId, groupId, body = {}) {
       (groupId, question, answer, createdByUserId, createdAt, updatedAt)
      values
       (?, ?, ?, ?, ?, ?)`,
-    [groupId, question, answer || null, userId, now, now]
+    [groupId, question, meta.answer || null, userId, now, now]
   );
 
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
@@ -590,9 +725,22 @@ async function listMessages(userId, groupId, query = {}) {
 
   return all(
     `
-    select m.id, m.groupId, m.userId, coalesce(u.nickname, u.name) as userName, u.avatarUrl as userAvatar, m.text, m.createdAt
+    select
+      m.id,
+      m.groupId,
+      m.userId,
+      m.parentMessageId,
+      coalesce(u.nickname, u.name) as userName,
+      u.avatarUrl as userAvatar,
+      m.text,
+      m.createdAt,
+      parent.text as parentText,
+      coalesce(parentUser.nickname, parentUser.name) as parentUserName,
+      parent.userId as parentUserId
     from GroupMessages m
     join Users u on u.id = m.userId
+    left join GroupMessages parent on parent.id = m.parentMessageId
+    left join Users parentUser on parentUser.id = parent.userId
     where m.groupId = ?
     order by m.createdAt desc
     limit ?
@@ -603,30 +751,93 @@ async function listMessages(userId, groupId, query = {}) {
 
 async function sendMessage(userId, groupId, body = {}) {
   const text = sanitizeText(body.text, 1000);
+  const parentMessageId = Number(body.parentMessageId || 0) || null;
   if (!text) throw badRequest('text e obbligatorio');
 
   await ensureMember(groupId, userId);
 
+  if (parentMessageId) {
+    const parent = await get(
+      `select id
+       from GroupMessages
+       where id = ? and groupId = ?`,
+      [parentMessageId, groupId]
+    );
+    if (!parent) throw badRequest('messaggio padre non valido');
+  }
+
   const now = nowIso();
   const out = await run(
-    `insert into GroupMessages (groupId, userId, text, createdAt)
-     values (?, ?, ?, ?)`,
-    [groupId, userId, text, now]
+    `insert into GroupMessages (groupId, userId, parentMessageId, text, createdAt)
+     values (?, ?, ?, ?, ?)`,
+    [groupId, userId, parentMessageId, text, now]
   );
 
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
 
   const saved = await get(
     `
-    select m.id, m.groupId, m.userId, coalesce(u.nickname, u.name) as userName, u.avatarUrl as userAvatar, m.text, m.createdAt
+    select
+      m.id,
+      m.groupId,
+      m.userId,
+      m.parentMessageId,
+      coalesce(u.nickname, u.name) as userName,
+      u.avatarUrl as userAvatar,
+      m.text,
+      m.createdAt,
+      parent.text as parentText,
+      coalesce(parentUser.nickname, parentUser.name) as parentUserName,
+      parent.userId as parentUserId
     from GroupMessages m
     join Users u on u.id = m.userId
+    left join GroupMessages parent on parent.id = m.parentMessageId
+    left join Users parentUser on parentUser.id = parent.userId
     where m.id = ?
     `,
     [out.lastID]
   );
 
-  return saved || { id: out.lastID, groupId, userId, text, createdAt: now };
+  return saved || { id: out.lastID, groupId, userId, parentMessageId, text, createdAt: now };
+}
+
+async function deleteMessage(userId, groupId, messageId) {
+  await ensureMember(groupId, userId);
+
+  const message = await get(
+    `
+    select
+      m.id,
+      m.groupId,
+      m.userId
+    from GroupMessages m
+    where m.id = ? and m.groupId = ?
+    `,
+    [messageId, groupId]
+  );
+
+  if (!message) throw notFound('messaggio non trovato');
+
+  if (Number(message.userId) !== Number(userId)) {
+    throw forbidden('puoi eliminare solo i tuoi messaggi');
+  }
+
+  await run(
+    `update GroupMessages
+     set parentMessageId = null
+     where parentMessageId = ? and groupId = ?`,
+    [messageId, groupId]
+  );
+
+  await run(
+    `delete from GroupMessages
+     where id = ? and groupId = ?`,
+    [messageId, groupId]
+  );
+
+  await run(`update Groups set updatedAt = ? where id = ?`, [nowIso(), groupId]);
+
+  return { ok: true };
 }
 
 function toLegacyGroup(row) {
@@ -669,6 +880,7 @@ module.exports = {
   createQuestion,
   listMessages,
   sendMessage,
+  deleteMessage,
   legacyGroupsList,
   toLegacyGroup,
   listGroups,

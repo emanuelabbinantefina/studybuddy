@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Gruppo, Appunto, GroupQuestion, GroupSession, GroupTopic } from '../interfaces/models';
+import { Gruppo, Appunto, GroupBoardMessage, GroupQuestion, GroupSession, GroupTopic } from '../interfaces/models';
 
 interface UploadAppuntoPayload {
   titolo: string;
@@ -12,6 +12,7 @@ interface UploadAppuntoPayload {
   mimeType?: string;
   sizeBytes: number;
   fileData: string;
+  groupId?: number;
 }
 
 interface CreateGroupPayload {
@@ -19,9 +20,9 @@ interface CreateGroupPayload {
   facolta: string;
   materia: string;
   dataEsame?: string;
-  descrizione?: string;
   colorClass?: string;
-  topics?: string[];
+  boardMessage?: string;
+  questions?: Array<{ question: string; session?: string; year?: string }>;
 }
 
 interface NoteSubjectsResponse {
@@ -51,6 +52,10 @@ export class ApiService {
         descrizione: raw.descrizione || raw.description || '',
         examDate: raw.examDate || null,
         visibility: raw.visibility || 'public',
+        ownerName: raw.ownerName || 'Studente',
+        notesCount: Number(raw.notesCount || 0),
+        messagesCount: Number(raw.messagesCount || 0),
+        questionsCount: Number(raw.questionsCount || 0),
         progressPercent: Number(raw.progressPercent || 0),
         topicsTotal: Number(raw.topicsTotal || 0),
         topicsDone: Number(raw.topicsDone || 0),
@@ -74,6 +79,10 @@ export class ApiService {
       descrizione: raw?.description || '',
       examDate: raw?.examDate || null,
       visibility: raw?.visibility || 'public',
+      ownerName: raw?.ownerName || 'Studente',
+      notesCount: Number(raw?.notesCount || 0),
+      messagesCount: Number(raw?.messagesCount || 0),
+      questionsCount: Number(raw?.questionsCount || 0),
       progressPercent: Number(raw?.progressPercent || 0),
       topicsTotal: Number(raw?.topicsTotal || 0),
       topicsDone: Number(raw?.topicsDone || 0),
@@ -213,12 +222,39 @@ export class ApiService {
     });
   }
 
-  addGroupQuestion(groupId: number, payload: { question: string; answer?: string }): Observable<GroupQuestion> {
+  addGroupQuestion(groupId: number, payload: { question: string; answer?: string; session?: string; year?: string }): Observable<GroupQuestion> {
     return this.http.post<GroupQuestion>(
       `${this.baseUrl}/groups/${groupId}/questions`,
       payload,
       { headers: this.authHeaders() }
     );
+  }
+
+  getGroupMessages(groupId: number): Observable<GroupBoardMessage[]> {
+    return this.http.get<GroupBoardMessage[]>(`${this.baseUrl}/groups/${groupId}/messages`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  addGroupMessage(groupId: number, text: string, parentMessageId?: number | null): Observable<GroupBoardMessage> {
+    return this.http.post<GroupBoardMessage>(
+      `${this.baseUrl}/groups/${groupId}/messages`,
+      { text, parentMessageId: parentMessageId || undefined },
+      { headers: this.authHeaders() }
+    );
+  }
+
+  deleteGroupMessage(groupId: number, messageId: number): Observable<{ ok: boolean }> {
+    return this.http.post<{ ok: boolean }>(`${this.baseUrl}/groups/${groupId}/messages/${messageId}/delete`, {}, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getGroupAppunti(groupId: number): Observable<Appunto[]> {
+    return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
+      headers: this.authHeaders(),
+      params: { groupId: String(groupId) }
+    });
   }
 
   getAppunti(query: string, materia = ''): Observable<Appunto[]> {

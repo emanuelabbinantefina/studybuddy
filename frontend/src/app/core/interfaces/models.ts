@@ -42,6 +42,10 @@ export interface Gruppo {
   descrizione?: string;
   examDate?: string | null;
   visibility?: 'public' | 'private';
+  ownerName?: string;
+  notesCount?: number;
+  messagesCount?: number;
+  questionsCount?: number;
   progressPercent?: number;
   topicsTotal?: number;
   topicsDone?: number;
@@ -93,6 +97,20 @@ export interface GroupQuestion {
   updatedAt: string;
 }
 
+export interface GroupBoardMessage {
+  id: number;
+  groupId: number;
+  userId: number;
+  parentMessageId?: number | null;
+  parentUserId?: number | null;
+  parentUserName?: string | null;
+  parentText?: string | null;
+  userName: string;
+  userAvatar?: string | null;
+  text: string;
+  createdAt: string;
+}
+
 // Questa serve per la pagina della Chat singola
 export interface Messaggio {
   id: number;
@@ -109,7 +127,12 @@ export interface Appunto {
   titolo: string;
   materia: string;
   tipoFile: 'pdf' | 'doc' | 'img';
+  fileName?: string;
+  mimeType?: string | null;
+  sizeBytes?: number;
+  groupId?: number | null;
   autoreNome?: string;
+  createdAt?: string;
   tempoUpload: string;
   canDelete?: boolean;
   isSaved?: boolean;

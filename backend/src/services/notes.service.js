@@ -4,7 +4,11 @@ const { nowIso } = require('../db/init');
 const FILE_SIZE_LIMITS = {
   pdf: 10 * 1024 * 1024,
   doc: 8 * 1024 * 1024,
-  img: 4 * 1024 * 1024,
+};
+const IMAGE_SIZE_LIMITS = {
+  jpg: 8 * 1024 * 1024,
+  png: 4 * 1024 * 1024,
+  other: 4 * 1024 * 1024,
 };
 const MAX_FILE_DATA_LEN = 20_000_000; // base64/data-url in json body
 
@@ -24,14 +28,39 @@ function formatMegabytes(bytes) {
   return `${Math.round(bytes / (1024 * 1024))} MB`;
 }
 
-function getFileTypeLabel(tipoFile) {
-  if (tipoFile === 'pdf') return 'PDF';
-  if (tipoFile === 'doc') return 'DOC/DOCX';
-  return 'JPG/PNG';
+function inferImageFormat({ fileName = '', mimeType = '' }) {
+  const lowerName = String(fileName).toLowerCase();
+  const lowerMime = String(mimeType).toLowerCase();
+
+  if (
+    lowerName.endsWith('.jpg') ||
+    lowerName.endsWith('.jpeg') ||
+    lowerMime.includes('image/jpeg') ||
+    lowerMime.includes('image/jpg')
+  ) {
+    return 'jpg';
+  }
+
+  if (lowerName.endsWith('.png') || lowerMime.includes('image/png')) {
+    return 'png';
+  }
+
+  return 'other';
 }
 
-function getFileSizeLimit(tipoFile) {
-  return FILE_SIZE_LIMITS[tipoFile] || FILE_SIZE_LIMITS.img;
+function getFileTypeLabel(tipoFile, imageFormat = 'other') {
+  if (tipoFile === 'pdf') return 'PDF';
+  if (tipoFile === 'doc') return 'DOC/DOCX';
+  if (imageFormat === 'jpg') return 'JPG/JPEG';
+  if (imageFormat === 'png') return 'PNG';
+  return 'Immagine';
+}
+
+function getFileSizeLimit(tipoFile, imageFormat = 'other') {
+  if (tipoFile === 'img') {
+    return IMAGE_SIZE_LIMITS[imageFormat] || IMAGE_SIZE_LIMITS.other;
+  }
+  return FILE_SIZE_LIMITS[tipoFile] || IMAGE_SIZE_LIMITS.other;
 }
 
 function inferFileType({ tipoFile, fileName = '', mimeType = '' }) {
@@ -53,6 +82,24 @@ function inferFileType({ tipoFile, fileName = '', mimeType = '' }) {
   }
 
   return 'img';
+}
+
+async function ensureGroupMember(groupId, userId) {
+  const group = await get(`select id from Groups where id = ?`, [groupId]);
+  if (!group) throw badRequest('gruppo non valido');
+
+  const membership = await get(
+    `select role
+     from GroupMembers
+     where groupId = ? and userId = ?`,
+    [groupId, userId]
+  );
+
+  if (!membership) {
+    throw forbidden('devi entrare nel gruppo prima di vedere questi appunti');
+  }
+
+  return membership.role;
 }
 
 function formatRelativeTime(isoDate) {
@@ -77,10 +124,24 @@ function formatRelativeTime(isoDate) {
 async function list(userId, query = {}) {
   const q = String(query.cerca || '').trim().toLowerCase();
   const materia = String(query.materia || '').trim();
+  const rawGroupId = query.groupId;
+  const hasGroupContext = rawGroupId !== undefined && rawGroupId !== null && rawGroupId !== '';
+  const groupId = hasGroupContext ? Number(rawGroupId) : null;
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
 
-  const where = [];
+  if (hasGroupContext && (!Number.isFinite(groupId) || groupId <= 0)) {
+    throw badRequest('id gruppo non valido');
+  }
+  if (groupId) {
+    await ensureGroupMember(groupId, userId);
+  }
+
+  const where = [groupId ? `Notes.groupId = ?` : `Notes.groupId is null`];
   const params = [userId];
+
+  if (groupId) {
+    params.push(groupId);
+  }
 
   if (q) {
     where.push(`(lower(Notes.title) like ? or lower(Notes.subject) like ?)`);
@@ -98,9 +159,13 @@ async function list(userId, query = {}) {
     `select
        Notes.id as id,
        Notes.userId as userId,
+       Notes.groupId as groupId,
        Notes.title as titolo,
        Notes.subject as materia,
        Notes.fileType as tipoFile,
+       Notes.fileName as fileName,
+       Notes.mimeType as mimeType,
+       Notes.sizeBytes as sizeBytes,
        Notes.createdAt as createdAt,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
        case when saved.noteId is not null then 1 else 0 end as isSaved
@@ -119,7 +184,12 @@ async function list(userId, query = {}) {
     titolo: row.titolo,
     materia: row.materia,
     tipoFile: row.tipoFile,
+    fileName: row.fileName,
+    mimeType: row.mimeType || null,
+    sizeBytes: Number(row.sizeBytes || 0),
+    groupId: row.groupId || null,
     autoreNome: row.autoreNome,
+    createdAt: row.createdAt,
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
     isSaved: !!row.isSaved,
@@ -133,7 +203,7 @@ async function listSaved(userId, query = {}) {
   const materia = String(query.materia || '').trim();
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
 
-  const where = [`NoteBookmarks.userId = ?`];
+  const where = [`NoteBookmarks.userId = ?`, `Notes.groupId is null`];
   const params = [userId];
 
   if (q) {
@@ -229,12 +299,22 @@ async function create(userId, body = {}) {
   const fileName = String(body.fileName || '').trim();
   const mimeType = body.mimeType ? String(body.mimeType).trim() : null;
   const fileData = String(body.fileData || '').trim();
+  const rawGroupId = body.groupId;
+  const hasGroupContext = rawGroupId !== undefined && rawGroupId !== null && rawGroupId !== '';
+  const groupId = hasGroupContext ? Number(rawGroupId) : null;
   const sizeBytes = Number(body.sizeBytes || 0);
   const tipoFile = inferFileType({
     tipoFile: body.tipoFile,
     fileName,
     mimeType,
   });
+
+  if (hasGroupContext && (!Number.isFinite(groupId) || groupId <= 0)) {
+    throw badRequest('id gruppo non valido');
+  }
+  if (groupId) {
+    await ensureGroupMember(groupId, userId);
+  }
 
   if (!titolo) throw badRequest('titolo obbligatorio');
   if (!materia) throw badRequest('materia obbligatoria');
@@ -249,10 +329,14 @@ async function create(userId, body = {}) {
 
   const parsedFile = parseDataUrl(fileData, mimeType);
   const actualSizeBytes = parsedFile.buffer.length || sizeBytes;
-  const maxSizeBytes = getFileSizeLimit(tipoFile);
+  const imageFormat = inferImageFormat({
+    fileName,
+    mimeType: parsedFile.mimeType || mimeType,
+  });
+  const maxSizeBytes = getFileSizeLimit(tipoFile, imageFormat);
   if (actualSizeBytes > maxSizeBytes) {
     throw badRequest(
-      `${getFileTypeLabel(tipoFile)} troppo grande. Massimo ${formatMegabytes(maxSizeBytes)}`
+      `${getFileTypeLabel(tipoFile, imageFormat)} troppo grande. Massimo ${formatMegabytes(maxSizeBytes)}`
     );
   }
 
@@ -260,10 +344,10 @@ async function create(userId, body = {}) {
 
   const out = await run(
     `insert into Notes
-      (userId, title, subject, fileName, fileType, mimeType, sizeBytes, fileData, createdAt, updatedAt)
+      (userId, groupId, title, subject, fileName, fileType, mimeType, sizeBytes, fileData, createdAt, updatedAt)
      values
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, titolo, materia, fileName, tipoFile, mimeType, actualSizeBytes, fileData, now, now]
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [userId, groupId, titolo, materia, fileName, tipoFile, mimeType, actualSizeBytes, fileData, now, now]
   );
 
   return { id: out.lastID };
@@ -297,14 +381,17 @@ function parseDataUrl(fileData, fallbackMimeType) {
   return { mimeType, buffer: Buffer.from(base64, 'base64') };
 }
 
-async function getDownload(noteId) {
+async function getDownload(noteId, userId) {
   const row = await get(
-    `select id, fileName, mimeType, fileData
+    `select id, groupId, fileName, mimeType, fileData
      from Notes
      where id = ?`,
     [noteId]
   );
   if (!row) return null;
+  if (row.groupId) {
+    await ensureGroupMember(row.groupId, userId);
+  }
 
   const parsed = parseDataUrl(row.fileData, row.mimeType);
   return {
@@ -317,13 +404,16 @@ async function getDownload(noteId) {
 
 async function remove(userId, noteId) {
   const current = await get(
-    `select id, userId
+    `select id, userId, groupId
      from Notes
      where id = ?`,
     [noteId]
   );
 
   if (!current) return { removed: false, reason: 'NOT_FOUND' };
+  if (current.groupId) {
+    await ensureGroupMember(current.groupId, userId);
+  }
   if (Number(current.userId) !== Number(userId)) {
     throw forbidden('puoi eliminare solo i tuoi appunti');
   }
@@ -334,13 +424,16 @@ async function remove(userId, noteId) {
 
 async function addBookmark(userId, noteId) {
   const note = await get(
-    `select id, userId
+    `select id, userId, groupId
      from Notes
      where id = ?`,
     [noteId]
   );
 
   if (!note) return { added: false, reason: 'NOT_FOUND' };
+  if (note.groupId) {
+    throw badRequest('gli appunti del gruppo non possono essere salvati nei bookmark');
+  }
   if (Number(note.userId) === Number(userId)) {
     throw badRequest('non puoi salvare i tuoi appunti');
   }

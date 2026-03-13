@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -10,6 +10,12 @@ interface FacultyRow {
   id: number;
   name: string;
   Courses?: Array<{ id: number; name: string }>;
+}
+
+interface SeedQuestionRow {
+  question: string;
+  session?: string;
+  year?: string;
 }
 
 @Component({
@@ -31,12 +37,22 @@ export class NewGroupModalComponent implements OnInit {
 
   groupName = '';
   examDate = '';
-  description = '';
-  topicsRaw = '';
   selectedColorClass = 'bg-blue';
+  boardMessage = '';
+  questionDraft = '';
+  questionSessionDraft = '';
+  questionYearDraft = '';
+  seedQuestions: SeedQuestionRow[] = [];
+  readonly minQuestionYear = 2000;
+  readonly maxQuestionYear = new Date().getFullYear();
+  readonly questionSessionOptions = [
+    'Sessione invernale',
+    'Sessione primaverile',
+    'Sessione estiva',
+    'Sessione autunnale',
+  ];
 
-  readonly visibility = 'Pubblico';
-  readonly colorOptions = ['bg-blue', 'bg-green', 'bg-teal', 'bg-purple', 'bg-pink', 'bg-orange'];
+  readonly colorOptions = ['bg-blue', 'bg-green', 'bg-teal', 'bg-pink', 'bg-orange', 'bg-purple'];
 
   constructor(
     private modalCtrl: ModalController,
@@ -63,7 +79,7 @@ export class NewGroupModalComponent implements OnInit {
   selectFaculty(faculty: FacultyRow) {
     this.selectedFacultyId = faculty.id;
     this.selectedFacultyName = faculty.name;
-    this.subjectOptions = (faculty.Courses || []).map((c) => c.name);
+    this.subjectOptions = (faculty.Courses || []).map((course) => course.name);
     this.selectedSubject = '';
   }
 
@@ -76,40 +92,61 @@ export class NewGroupModalComponent implements OnInit {
     );
   }
 
-  canContinueStep2(): boolean {
-    return true;
-  }
-
   canCreate(): boolean {
-    return this.canContinueStep1() && this.parsedTopics().length > 0 && !this.creating;
+    return this.canContinueStep1() && !this.creating;
   }
 
   nextStep() {
-    if (this.step === 1 && !this.canContinueStep1()) return;
-    if (this.step === 2 && !this.canContinueStep2()) return;
-    this.step = Math.min(3, this.step + 1);
+    if (!this.canContinueStep1()) return;
+    this.step = 2;
   }
 
   prevStep() {
-    this.step = Math.max(1, this.step - 1);
+    this.step = 1;
   }
 
-  parsedTopics(): string[] {
-    const dedupe = new Set<string>();
-    const out: string[] = [];
+  async addSeedQuestion(): Promise<void> {
+    const question = this.questionDraft.trim();
+    const session = this.normalizeQuestionSession(this.questionSessionDraft);
+    const year = this.normalizeQuestionYear(this.questionYearDraft);
+    if (!question) return;
+    const hasAnyMeta = !!this.questionSessionDraft.trim() || !!this.questionYearDraft.trim();
+    if (hasAnyMeta && (!session || !year)) {
+      await this.showToast(
+        `Se specifichi i dettagli d esame, inserisci sia sessione sia anno valido fino al ${this.maxQuestionYear}`,
+        'warning'
+      );
+      return;
+    }
 
-    (this.topicsRaw || '')
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => !!line)
-      .forEach((line) => {
-        const key = line.toLowerCase();
-        if (dedupe.has(key)) return;
-        dedupe.add(key);
-        out.push(line.slice(0, 120));
-      });
+    const exists = this.seedQuestions.some(
+      (item) =>
+        item.question.toLowerCase() === question.toLowerCase() &&
+        String(item.session || '').toLowerCase() === session.toLowerCase() &&
+        String(item.year || '').toLowerCase() === year.toLowerCase()
+    );
+    if (exists) return;
 
-    return out.slice(0, 60);
+    this.seedQuestions = [
+      ...this.seedQuestions,
+      {
+        question,
+        session: session || undefined,
+        year: year || undefined,
+      },
+    ].slice(0, 8);
+
+    this.questionDraft = '';
+    this.questionSessionDraft = '';
+    this.questionYearDraft = '';
+  }
+
+  onQuestionYearChange(value: string): void {
+    this.questionYearDraft = String(value || '').replace(/\D+/g, '').slice(0, 4);
+  }
+
+  removeSeedQuestion(index: number): void {
+    this.seedQuestions = this.seedQuestions.filter((_, currentIndex) => currentIndex !== index);
   }
 
   async createGroup() {
@@ -123,9 +160,13 @@ export class NewGroupModalComponent implements OnInit {
           facolta: this.selectedFacultyName,
           materia: this.selectedSubject,
           dataEsame: this.examDate ? new Date(this.examDate).toISOString() : undefined,
-          descrizione: this.description.trim() || undefined,
           colorClass: this.selectedColorClass,
-          topics: this.parsedTopics(),
+          boardMessage: this.boardMessage.trim() || undefined,
+          questions: this.seedQuestions.map((item) => ({
+            question: item.question,
+            session: item.session,
+            year: item.year,
+          })),
         })
       );
 
@@ -141,5 +182,32 @@ export class NewGroupModalComponent implements OnInit {
     } finally {
       this.creating = false;
     }
+  }
+
+  private normalizeQuestionSession(value: string | null | undefined): string {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw) return '';
+
+    const match = this.questionSessionOptions.find((item) => item.toLowerCase() === raw);
+    return match || '';
+  }
+
+  private normalizeQuestionYear(value: string | null | undefined): string {
+    const raw = String(value || '').replace(/\D+/g, '').slice(0, 4);
+    if (raw.length !== 4) return '';
+
+    const year = Number(raw);
+    if (!Number.isFinite(year) || year < this.minQuestionYear || year > this.maxQuestionYear) return '';
+    return String(year);
+  }
+
+  private async showToast(message: string, color: 'warning' | 'danger'): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2000,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 }

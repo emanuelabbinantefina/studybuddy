@@ -191,6 +191,7 @@ async function initDb() {
     create table if not exists Notes (
       id integer primary key autoincrement,
       userId integer not null,
+      groupId integer,
       title text not null,
       subject text not null,
       fileName text not null,
@@ -200,9 +201,18 @@ async function initDb() {
       fileData text not null,
       createdAt text not null,
       updatedAt text not null,
-      foreign key (userId) references Users(id) on delete cascade
+      foreign key (userId) references Users(id) on delete cascade,
+      foreign key (groupId) references Groups(id) on delete cascade
     )
   `);
+
+  try {
+    await run(`alter table Notes add column groupId integer references Groups(id) on delete cascade`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
 
   // bookmarks for notes saved by users
   await run(`
@@ -335,6 +345,7 @@ async function initDb() {
       id integer primary key autoincrement,
       groupId integer not null,
       userId integer not null,
+      parentMessageId integer,
       text text not null,
       createdAt text not null,
       foreign key (groupId) references Groups(id) on delete cascade,
@@ -342,9 +353,18 @@ async function initDb() {
     )
   `);
 
+  try {
+    await run(`alter table GroupMessages add column parentMessageId integer`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
   await run(`create index if not exists idx_courses_facultyId on Courses(facultyId)`);
   await run(`create index if not exists idx_events_user_start on Events(userId, startAt)`);
   await run(`create index if not exists idx_notes_user_created on Notes(userId, createdAt desc)`);
+  await run(`create index if not exists idx_notes_group_created on Notes(groupId, createdAt desc)`);
   await run(`create index if not exists idx_bookmarks_user_created on NoteBookmarks(userId, createdAt desc)`);
   await run(`create index if not exists idx_bookmarks_note on NoteBookmarks(noteId)`);
   await run(`create index if not exists idx_groups_faculty_subject on Groups(faculty, subject)`);
@@ -354,6 +374,7 @@ async function initDb() {
   await run(`create index if not exists idx_groupsessions_group_starts on GroupSessions(groupId, startsAt)`);
   await run(`create index if not exists idx_groupquestions_group_created on GroupQuestions(groupId, createdAt desc)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
+  await run(`create index if not exists idx_groupmessages_parent on GroupMessages(parentMessageId)`);
 }
 
 module.exports = { initDb, nowIso };

@@ -20,7 +20,8 @@ export class SearchPage implements OnInit {
   private readonly fileSizeLimits = {
     pdf: 10 * 1024 * 1024,
     doc: 8 * 1024 * 1024,
-    img: 4 * 1024 * 1024,
+    jpg: 8 * 1024 * 1024,
+    png: 4 * 1024 * 1024,
   } as const;
 
   query = '';
@@ -45,7 +46,7 @@ export class SearchPage implements OnInit {
   categoryChips: string[] = [this.allSubjectsLabel];
   subjectOptions: string[] = [];
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-  readonly uploadExtensions = ['PDF 10MB', 'DOC 8MB', 'DOCX 8MB', 'JPG 4MB', 'PNG 4MB'];
+  readonly uploadExtensions = ['PDF 10MB', 'DOC 8MB', 'DOCX 8MB', 'JPG/JPEG 8MB', 'PNG 4MB'];
 
   constructor(
     private apiService: ApiService,
@@ -304,11 +305,10 @@ export class SearchPage implements OnInit {
       return;
     }
 
-    const tipoFile = this.resolveTipoFile(file);
-    const maxFileBytes = this.getMaxFileBytes(tipoFile);
+    const maxFileBytes = this.getMaxFileBytes(file);
     if (file.size > maxFileBytes) {
       void this.showToast(
-        `${this.getUploadTypeLabel(tipoFile)} troppo grande. Massimo ${this.formatLimit(maxFileBytes)}`,
+        `${this.getUploadTypeLabel(file)} troppo grande. Massimo ${this.formatLimit(maxFileBytes)}`,
         'warning'
       );
       return;
@@ -335,14 +335,20 @@ export class SearchPage implements OnInit {
     return 'img';
   }
 
-  private getMaxFileBytes(tipoFile: 'pdf' | 'doc' | 'img'): number {
-    return this.fileSizeLimits[tipoFile];
+  private getMaxFileBytes(file: File): number {
+    const ext = this.getFileExtension(file.name);
+    if (ext === 'pdf') return this.fileSizeLimits.pdf;
+    if (ext === 'doc' || ext === 'docx') return this.fileSizeLimits.doc;
+    if (ext === 'jpg' || ext === 'jpeg') return this.fileSizeLimits.jpg;
+    return this.fileSizeLimits.png;
   }
 
-  private getUploadTypeLabel(tipoFile: 'pdf' | 'doc' | 'img'): string {
-    if (tipoFile === 'pdf') return 'PDF';
-    if (tipoFile === 'doc') return 'DOC/DOCX';
-    return 'JPG/PNG';
+  private getUploadTypeLabel(file: File): string {
+    const ext = this.getFileExtension(file.name);
+    if (ext === 'pdf') return 'PDF';
+    if (ext === 'doc' || ext === 'docx') return 'DOC/DOCX';
+    if (ext === 'jpg' || ext === 'jpeg') return 'JPG/JPEG';
+    return 'PNG';
   }
 
   private formatLimit(sizeBytes: number): string {

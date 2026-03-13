@@ -32,6 +32,8 @@ groupsRouter.post('/:id/questions', groupsController.addQuestion);
 
 groupsRouter.get('/:id/messages', groupsController.messages);
 groupsRouter.post('/:id/messages', groupsController.sendMessage);
+groupsRouter.delete('/:id/messages/:messageId', groupsController.deleteMessage);
+groupsRouter.post('/:id/messages/:messageId/delete', groupsController.deleteMessage);
 
 gruppiRouter.get('/', groupsController.legacyList);
 gruppiRouter.post('/', groupsController.legacyCreate);
