@@ -1,4 +1,4 @@
-<ion-content class="modal-bg">
+<ion-content class="modal-bg" [fullscreen]="true" [forceOverscroll]="false">
   <section class="modal-card">
     <header class="modal-header">
       <div>
@@ -53,7 +53,6 @@
         <div>
           <h3>{{ groupName || 'Nome gruppo' }}</h3>
           <p>{{ selectedFacultyName || 'Facolta' }} · {{ selectedSubject || 'Materia' }}</p>
-          <small>Creato da studenti</small>
         </div>
       </article>
 

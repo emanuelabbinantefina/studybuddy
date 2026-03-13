@@ -46,10 +46,6 @@ export interface Gruppo {
   notesCount?: number;
   messagesCount?: number;
   questionsCount?: number;
-  progressPercent?: number;
-  topicsTotal?: number;
-  topicsDone?: number;
-  topicsReserved?: number;
   ultimoMessaggio: string;
   autoreMessaggio: string;
   tempoTrascorso: string;
@@ -59,31 +55,6 @@ export interface Gruppo {
   isMember?: boolean;
   currentRole?: 'owner' | 'member' | null;
   membersCount?: number;
-}
-
-export interface GroupTopic {
-  id: number;
-  groupId: number;
-  title: string;
-  position: number;
-  assignedUserId?: number | null;
-  assignedUserName?: string | null;
-  done: boolean;
-  createdByUserId: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GroupSession {
-  id: number;
-  groupId: number;
-  title: string;
-  startsAt?: string | null;
-  notes?: string | null;
-  createdByUserId: number;
-  createdByName?: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface GroupQuestion {

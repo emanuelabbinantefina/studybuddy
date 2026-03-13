@@ -87,8 +87,10 @@ export class GroupsPage implements OnInit {
   async onCreateGroup(): Promise<void> {
     const modal = await this.modalCtrl.create({
       component: NewGroupModalComponent,
+      cssClass: 'create-group-modal',
       breakpoints: [0, 0.92],
       initialBreakpoint: 0.92,
+      expandToScroll: false,
     });
     await modal.present();
 
@@ -721,9 +723,6 @@ export class GroupsPage implements OnInit {
     const sessionOnly = this.normalizeQuestionSession(answer);
     if (sessionOnly) return { session: sessionOnly, year: '' };
 
-    const legacyYear = this.normalizeLegacyQuestionYear(answer.replace(/^Anno\s+/i, ''));
-    if (legacyYear) return { session: '', year: legacyYear };
-
     const lowered = answer.toLowerCase();
     for (const session of this.questionSessionOptions) {
       const sessionKey = session.toLowerCase();
@@ -735,6 +734,9 @@ export class GroupsPage implements OnInit {
         year: this.normalizeQuestionYear(rest),
       };
     }
+
+    const legacyYear = this.normalizeLegacyQuestionYear(answer.replace(/^Anno\s+/i, ''));
+    if (legacyYear) return { session: '', year: legacyYear };
 
     return { session: '', year: '' };
   }

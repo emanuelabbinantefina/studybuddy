@@ -72,9 +72,6 @@ function parseQuestionAnswer(value) {
   const sessionOnly = sanitizeQuestionSession(raw);
   if (sessionOnly) return { session: sessionOnly, year: '' };
 
-  const legacyYear = sanitizeQuestionYear(raw.replace(/^anno\s+/i, ''));
-  if (legacyYear) return { session: '', year: legacyYear };
-
   const lowered = raw.toLowerCase();
   for (const session of QUESTION_SESSIONS) {
     const sessionKey = session.toLowerCase();
@@ -86,6 +83,9 @@ function parseQuestionAnswer(value) {
       year: sanitizeQuestionYear(rest),
     };
   }
+
+  const legacyYear = sanitizeQuestionYear(raw.replace(/^anno\s+/i, ''));
+  if (legacyYear) return { session: '', year: legacyYear };
 
   return { session: '', year: '' };
 }
@@ -107,32 +107,6 @@ function resolveQuestionMeta(row = {}) {
     year,
     answer: buildQuestionAnswer(session, year),
   };
-}
-
-function parseTopics(rawTopics) {
-  let rows = [];
-
-  if (Array.isArray(rawTopics)) {
-    rows = rawTopics.map((x) => String(x || ''));
-  } else if (typeof rawTopics === 'string') {
-    rows = rawTopics.split('\n');
-  } else {
-    rows = [];
-  }
-
-  const dedupe = new Set();
-  const cleaned = [];
-
-  rows.forEach((line) => {
-    const title = sanitizeText(line, 120);
-    if (!title) return;
-    const key = title.toLowerCase();
-    if (dedupe.has(key)) return;
-    dedupe.add(key);
-    cleaned.push(title);
-  });
-
-  return cleaned.slice(0, 60);
 }
 
 function parseQuestionsSeed(rawQuestions) {
@@ -196,10 +170,6 @@ async function ensureMember(groupId, userId) {
 }
 
 function mapGroupRow(row) {
-  const topicsTotal = Number(row.topicsTotal || 0);
-  const topicsDone = Number(row.topicsDone || 0);
-  const progressPercent = topicsTotal > 0 ? Math.round((topicsDone * 100) / topicsTotal) : 0;
-
   return {
     id: row.id,
     name: row.name,
@@ -221,10 +191,6 @@ function mapGroupRow(row) {
     notesCount: Number(row.notesCount || 0),
     messagesCount: Number(row.messagesCount || 0),
     questionsCount: Number(row.questionsCount || 0),
-    topicsTotal,
-    topicsDone,
-    topicsReserved: Number(row.topicsReserved || 0),
-    progressPercent,
     lastMessage: row.lastMessage || '',
     lastMessageUserName: row.lastMessageUserName || '',
     lastMessageAt: row.lastMessageAt || null,
@@ -281,9 +247,6 @@ async function listGroups(userId, opts = {}) {
       (select count(*) from Notes n where n.groupId = g.id) as notesCount,
       (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
       (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
-      (select count(*) from GroupTopics t where t.groupId = g.id) as topicsTotal,
-      (select count(*) from GroupTopics t where t.groupId = g.id and t.done = 1) as topicsDone,
-      (select count(*) from GroupTopics t where t.groupId = g.id and t.assignedUserId is not null) as topicsReserved,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
       (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
@@ -316,7 +279,6 @@ async function createGroup(userId, body = {}) {
   );
   const boardMessage = sanitizeText(body.boardMessage ?? body.firstMessage ?? body.firstPost, 1000);
   const visibility = 'public';
-  const topics = parseTopics(body.topics ?? body.programma ?? body.programTopics);
   const seedQuestions = parseQuestionsSeed(body.questions ?? body.initialQuestions);
 
   if (!name) throw badRequest('nome gruppo obbligatorio');
@@ -351,16 +313,6 @@ async function createGroup(userId, body = {}) {
      values (?, ?, 'owner', ?)`,
     [out.lastID, ownerId, now]
   );
-
-  for (let i = 0; i < topics.length; i += 1) {
-    await run(
-      `insert into GroupTopics
-        (groupId, title, position, assignedUserId, done, createdByUserId, createdAt, updatedAt)
-       values
-        (?, ?, ?, null, 0, ?, ?, ?)`,
-      [out.lastID, topics[i], i, ownerId, now, now]
-    );
-  }
 
   if (boardMessage) {
     await run(
@@ -437,9 +389,6 @@ async function groupDetail(userId, groupId) {
       (select count(*) from Notes n where n.groupId = g.id) as notesCount,
       (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
       (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
-      (select count(*) from GroupTopics t where t.groupId = g.id) as topicsTotal,
-      (select count(*) from GroupTopics t where t.groupId = g.id and t.done = 1) as topicsDone,
-      (select count(*) from GroupTopics t where t.groupId = g.id and t.assignedUserId is not null) as topicsReserved,
       (select m.text from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessage,
       (select coalesce(u.nickname, u.name) from GroupMessages m join Users u on u.id = m.userId where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageUserName,
       (select m.createdAt from GroupMessages m where m.groupId = g.id order by m.createdAt desc limit 1) as lastMessageAt
@@ -459,221 +408,6 @@ async function groupDetail(userId, groupId) {
   out.currentRole = currentRole || null;
 
   return out;
-}
-
-async function listTopics(_userId, groupId) {
-  await ensureGroupExists(groupId);
-
-  const rows = await all(
-    `
-    select
-      t.id, t.groupId, t.title, t.position, t.assignedUserId, t.done, t.createdByUserId, t.createdAt, t.updatedAt,
-      coalesce(u.nickname, u.name) as assignedUserName
-    from GroupTopics t
-    left join Users u on u.id = t.assignedUserId
-    where t.groupId = ?
-    order by t.position asc, t.createdAt asc
-    `,
-    [groupId]
-  );
-
-  return rows.map((row) => ({
-    id: row.id,
-    groupId: row.groupId,
-    title: row.title,
-    position: row.position,
-    assignedUserId: row.assignedUserId || null,
-    assignedUserName: row.assignedUserName || null,
-    done: Number(row.done || 0) === 1,
-    createdByUserId: row.createdByUserId,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  }));
-}
-
-async function addTopic(userId, groupId, body = {}) {
-  await ensureMember(groupId, userId);
-
-  const title = sanitizeText(body.title, 120);
-  if (!title) throw badRequest('titolo argomento obbligatorio');
-
-  const maxRow = await get(
-    `select coalesce(max(position), -1) as maxPos
-     from GroupTopics
-     where groupId = ?`,
-    [groupId]
-  );
-
-  const now = nowIso();
-  const position = Number(maxRow?.maxPos || -1) + 1;
-
-  const out = await run(
-    `insert into GroupTopics
-      (groupId, title, position, assignedUserId, done, createdByUserId, createdAt, updatedAt)
-     values
-      (?, ?, ?, null, 0, ?, ?, ?)`,
-    [groupId, title, position, userId, now, now]
-  );
-
-  const row = await get(
-    `select id, groupId, title, position, assignedUserId, done, createdByUserId, createdAt, updatedAt
-     from GroupTopics
-     where id = ?`,
-    [out.lastID]
-  );
-
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
-
-  return {
-    id: row.id,
-    groupId: row.groupId,
-    title: row.title,
-    position: row.position,
-    assignedUserId: null,
-    assignedUserName: null,
-    done: false,
-    createdByUserId: row.createdByUserId,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  };
-}
-
-async function reserveTopic(userId, groupId, topicId) {
-  await ensureMember(groupId, userId);
-
-  const topic = await get(
-    `select id, assignedUserId
-     from GroupTopics
-     where id = ? and groupId = ?`,
-    [topicId, groupId]
-  );
-  if (!topic) throw notFound('argomento non trovato');
-
-  if (topic.assignedUserId && Number(topic.assignedUserId) !== Number(userId)) {
-    throw badRequest('argomento gia prenotato da un altro utente');
-  }
-
-  const now = nowIso();
-  await run(
-    `update GroupTopics
-     set assignedUserId = ?, updatedAt = ?
-     where id = ? and groupId = ?`,
-    [userId, now, topicId, groupId]
-  );
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
-
-  return { ok: true };
-}
-
-async function releaseTopic(userId, groupId, topicId) {
-  const role = await ensureMember(groupId, userId);
-
-  const topic = await get(
-    `select id, assignedUserId
-     from GroupTopics
-     where id = ? and groupId = ?`,
-    [topicId, groupId]
-  );
-  if (!topic) throw notFound('argomento non trovato');
-
-  if (!topic.assignedUserId) return { ok: true };
-
-  const isOwner = role === 'owner';
-  const isAssignee = Number(topic.assignedUserId) === Number(userId);
-  if (!isOwner && !isAssignee) {
-    throw forbidden('puoi rilasciare solo argomenti assegnati a te');
-  }
-
-  const now = nowIso();
-  await run(
-    `update GroupTopics
-     set assignedUserId = null, updatedAt = ?
-     where id = ? and groupId = ?`,
-    [now, topicId, groupId]
-  );
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
-
-  return { ok: true };
-}
-
-async function toggleTopicDone(userId, groupId, topicId) {
-  const role = await ensureMember(groupId, userId);
-
-  const topic = await get(
-    `select id, done, assignedUserId
-     from GroupTopics
-     where id = ? and groupId = ?`,
-    [topicId, groupId]
-  );
-  if (!topic) throw notFound('argomento non trovato');
-
-  const isOwner = role === 'owner';
-  const isAssignee = topic.assignedUserId && Number(topic.assignedUserId) === Number(userId);
-  if (!isOwner && !isAssignee) {
-    throw forbidden('puoi completare solo i tuoi argomenti');
-  }
-
-  const nextDone = Number(topic.done || 0) === 1 ? 0 : 1;
-  const now = nowIso();
-
-  await run(
-    `update GroupTopics
-     set done = ?, updatedAt = ?
-     where id = ? and groupId = ?`,
-    [nextDone, now, topicId, groupId]
-  );
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
-
-  return { ok: true, done: nextDone === 1 };
-}
-
-async function listSessions(_userId, groupId) {
-  await ensureGroupExists(groupId);
-
-  return all(
-    `
-    select
-      s.id, s.groupId, s.title, s.startsAt, s.notes, s.createdByUserId, s.createdAt, s.updatedAt,
-      coalesce(u.nickname, u.name) as createdByName
-    from GroupSessions s
-    left join Users u on u.id = s.createdByUserId
-    where s.groupId = ?
-    order by coalesce(s.startsAt, s.createdAt) asc
-    `,
-    [groupId]
-  );
-}
-
-async function createSession(userId, groupId, body = {}) {
-  await ensureMember(groupId, userId);
-
-  const title = sanitizeText(body.title, 120);
-  const startsAt = sanitizeText(body.startsAt, 40);
-  const notes = sanitizeText(body.notes, 400);
-  if (!title) throw badRequest('titolo sessione obbligatorio');
-
-  const now = nowIso();
-  const out = await run(
-    `insert into GroupSessions
-      (groupId, title, startsAt, notes, createdByUserId, createdAt, updatedAt)
-     values
-      (?, ?, ?, ?, ?, ?, ?)`,
-    [groupId, title, startsAt || null, notes || null, userId, now, now]
-  );
-
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
-
-  return get(
-    `
-    select
-      s.id, s.groupId, s.title, s.startsAt, s.notes, s.createdByUserId, s.createdAt, s.updatedAt,
-      coalesce(u.nickname, u.name) as createdByName
-    from GroupSessions s
-    left join Users u on u.id = s.createdByUserId
-    where s.id = ?
-    `,
-    [out.lastID]
-  );
 }
 
 async function listQuestions(_userId, groupId) {
@@ -890,13 +624,6 @@ module.exports = {
   joinGroup,
   leaveGroup,
   groupDetail,
-  listTopics,
-  addTopic,
-  reserveTopic,
-  releaseTopic,
-  toggleTopicDone,
-  listSessions,
-  createSession,
   listQuestions,
   createQuestion,
   listMessages,

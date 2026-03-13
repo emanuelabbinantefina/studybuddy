@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Gruppo, Appunto, GroupBoardMessage, GroupQuestion, GroupSession, GroupTopic } from '../interfaces/models';
+import { Gruppo, Appunto, GroupBoardMessage, GroupQuestion } from '../interfaces/models';
 
 interface UploadAppuntoPayload {
   titolo: string;
@@ -56,10 +56,6 @@ export class ApiService {
         notesCount: Number(raw.notesCount || 0),
         messagesCount: Number(raw.messagesCount || 0),
         questionsCount: Number(raw.questionsCount || 0),
-        progressPercent: Number(raw.progressPercent || 0),
-        topicsTotal: Number(raw.topicsTotal || 0),
-        topicsDone: Number(raw.topicsDone || 0),
-        topicsReserved: Number(raw.topicsReserved || 0),
         colorClass: raw.colorClass || 'bg-blue',
         isMember: typeof raw.isMember === 'boolean' ? raw.isMember : false,
         currentRole: raw.currentRole || null,
@@ -83,10 +79,6 @@ export class ApiService {
       notesCount: Number(raw?.notesCount || 0),
       messagesCount: Number(raw?.messagesCount || 0),
       questionsCount: Number(raw?.questionsCount || 0),
-      progressPercent: Number(raw?.progressPercent || 0),
-      topicsTotal: Number(raw?.topicsTotal || 0),
-      topicsDone: Number(raw?.topicsDone || 0),
-      topicsReserved: Number(raw?.topicsReserved || 0),
       colorClass: raw?.colorClass || 'bg-blue',
       isMember: !!raw?.isMember,
       currentRole: raw?.currentRole || null,
@@ -162,58 +154,6 @@ export class ApiService {
     return this.http.get<any>(`${this.baseUrl}/groups/${groupId}`, {
       headers: this.authHeaders()
     }).pipe(map((row) => this.toGruppoDto(row)));
-  }
-
-  getGroupTopics(groupId: number): Observable<GroupTopic[]> {
-    return this.http.get<GroupTopic[]>(`${this.baseUrl}/groups/${groupId}/topics`, {
-      headers: this.authHeaders()
-    });
-  }
-
-  addGroupTopic(groupId: number, title: string): Observable<GroupTopic> {
-    return this.http.post<GroupTopic>(
-      `${this.baseUrl}/groups/${groupId}/topics`,
-      { title },
-      { headers: this.authHeaders() }
-    );
-  }
-
-  reserveGroupTopic(groupId: number, topicId: number): Observable<{ ok: boolean }> {
-    return this.http.post<{ ok: boolean }>(
-      `${this.baseUrl}/groups/${groupId}/topics/${topicId}/reserve`,
-      {},
-      { headers: this.authHeaders() }
-    );
-  }
-
-  releaseGroupTopic(groupId: number, topicId: number): Observable<{ ok: boolean }> {
-    return this.http.post<{ ok: boolean }>(
-      `${this.baseUrl}/groups/${groupId}/topics/${topicId}/release`,
-      {},
-      { headers: this.authHeaders() }
-    );
-  }
-
-  toggleGroupTopicDone(groupId: number, topicId: number): Observable<{ ok: boolean; done: boolean }> {
-    return this.http.post<{ ok: boolean; done: boolean }>(
-      `${this.baseUrl}/groups/${groupId}/topics/${topicId}/toggle-done`,
-      {},
-      { headers: this.authHeaders() }
-    );
-  }
-
-  getGroupSessions(groupId: number): Observable<GroupSession[]> {
-    return this.http.get<GroupSession[]>(`${this.baseUrl}/groups/${groupId}/sessions`, {
-      headers: this.authHeaders()
-    });
-  }
-
-  addGroupSession(groupId: number, payload: { title: string; startsAt?: string; notes?: string }): Observable<GroupSession> {
-    return this.http.post<GroupSession>(
-      `${this.baseUrl}/groups/${groupId}/sessions`,
-      payload,
-      { headers: this.authHeaders() }
-    );
   }
 
   getGroupQuestions(groupId: number): Observable<GroupQuestion[]> {

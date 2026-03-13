@@ -18,15 +18,6 @@ groupsRouter.get('/:id', groupsController.detail);
 groupsRouter.post('/:id/join', groupsController.join);
 groupsRouter.post('/:id/leave', groupsController.leave);
 
-groupsRouter.get('/:id/topics', groupsController.topics);
-groupsRouter.post('/:id/topics', groupsController.addTopic);
-groupsRouter.post('/:id/topics/:topicId/reserve', groupsController.reserveTopic);
-groupsRouter.post('/:id/topics/:topicId/release', groupsController.releaseTopic);
-groupsRouter.post('/:id/topics/:topicId/toggle-done', groupsController.toggleTopicDone);
-
-groupsRouter.get('/:id/sessions', groupsController.sessions);
-groupsRouter.post('/:id/sessions', groupsController.addSession);
-
 groupsRouter.get('/:id/questions', groupsController.questions);
 groupsRouter.post('/:id/questions', groupsController.addQuestion);
 

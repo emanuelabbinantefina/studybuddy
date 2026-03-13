@@ -9,15 +9,6 @@ function parseGroupId(req, res) {
   return groupId;
 }
 
-function parseTopicId(req, res) {
-  const topicId = Number(req.params.topicId);
-  if (!Number.isFinite(topicId) || topicId <= 0) {
-    res.status(400).json({ message: 'id argomento non valido' });
-    return null;
-  }
-  return topicId;
-}
-
 function handleError(res, err) {
   if (err.code === 'BAD_REQUEST') return res.status(400).json({ message: err.message });
   if (err.code === 'FORBIDDEN') return res.status(403).json({ message: err.message });
@@ -93,96 +84,6 @@ async function detail(req, res) {
     const out = await groupsService.groupDetail(req.userData.userId, groupId);
     if (!out) return res.status(404).json({ message: 'gruppo non trovato' });
     res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function topics(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-
-  try {
-    const out = await groupsService.listTopics(req.userData.userId, groupId);
-    res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function addTopic(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-
-  try {
-    const out = await groupsService.addTopic(req.userData.userId, groupId, req.body);
-    res.status(201).json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function reserveTopic(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-  const topicId = parseTopicId(req, res);
-  if (!topicId) return;
-
-  try {
-    const out = await groupsService.reserveTopic(req.userData.userId, groupId, topicId);
-    res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function releaseTopic(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-  const topicId = parseTopicId(req, res);
-  if (!topicId) return;
-
-  try {
-    const out = await groupsService.releaseTopic(req.userData.userId, groupId, topicId);
-    res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function toggleTopicDone(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-  const topicId = parseTopicId(req, res);
-  if (!topicId) return;
-
-  try {
-    const out = await groupsService.toggleTopicDone(req.userData.userId, groupId, topicId);
-    res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function sessions(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-
-  try {
-    const out = await groupsService.listSessions(req.userData.userId, groupId);
-    res.json(out);
-  } catch (e) {
-    handleError(res, e);
-  }
-}
-
-async function addSession(req, res) {
-  const groupId = parseGroupId(req, res);
-  if (!groupId) return;
-
-  try {
-    const out = await groupsService.createSession(req.userData.userId, groupId, req.body);
-    res.status(201).json(out);
   } catch (e) {
     handleError(res, e);
   }
@@ -281,13 +182,6 @@ module.exports = {
   join,
   leave,
   detail,
-  topics,
-  addTopic,
-  reserveTopic,
-  releaseTopic,
-  toggleTopicDone,
-  sessions,
-  addSession,
   questions,
   addQuestion,
   messages,

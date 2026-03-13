@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { IonContent, IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -26,6 +26,8 @@ interface SeedQuestionRow {
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class NewGroupModalComponent implements OnInit {
+  @ViewChild(IonContent, { static: false }) content?: IonContent;
+
   step = 1;
   creating = false;
 
@@ -99,10 +101,12 @@ export class NewGroupModalComponent implements OnInit {
   nextStep() {
     if (!this.canContinueStep1()) return;
     this.step = 2;
+    this.scrollToTopSoon();
   }
 
   prevStep() {
     this.step = 1;
+    this.scrollToTopSoon();
   }
 
   async addSeedQuestion(): Promise<void> {
@@ -209,5 +213,11 @@ export class NewGroupModalComponent implements OnInit {
       position: 'bottom',
     });
     await toast.present();
+  }
+
+  private scrollToTopSoon(): void {
+    requestAnimationFrame(() => {
+      this.content?.scrollToTop(180).catch(() => undefined);
+    });
   }
 }

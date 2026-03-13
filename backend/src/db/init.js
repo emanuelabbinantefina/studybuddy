@@ -290,7 +290,7 @@ async function initDb() {
     )
   `);
 
-  // study topics / syllabus for each group
+  // compatibility tables kept because some running clients/processes may still read them
   await run(`
     create table if not exists GroupTopics (
       id integer primary key autoincrement,
@@ -308,7 +308,6 @@ async function initDb() {
     )
   `);
 
-  // planned study sessions inside a group
   await run(`
     create table if not exists GroupSessions (
       id integer primary key autoincrement,
