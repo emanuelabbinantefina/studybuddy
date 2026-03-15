@@ -58,6 +58,13 @@ const FACULTY_SUBJECT_TEMPLATES = {
     'Produzioni vegetali',
     'Ecologia',
   ],
+  'Scienze della Terra e del Mare': [
+    'Geologia',
+    'Ecologia marina',
+    'Oceanografia',
+    'Zoologia',
+    'Botanica ambientale',
+  ],
   'Scienze e Tecnologie Biologiche, Chimiche e Farmaceutiche': [
     'Biologia cellulare',
     'Chimica organica',
@@ -173,6 +180,13 @@ const COURSE_SUBJECT_TEMPLATES = {
     'Elettronica',
     'Programmazione',
   ],
+  'Automation and Systems Engineering': [
+    'Controlli automatici',
+    'Sistemi dinamici',
+    'Robotica',
+    'Elettronica',
+    'Programmazione',
+  ],
   'Automation and System Engineering': [
     'Controlli automatici',
     'Sistemi dinamici',
@@ -214,6 +228,48 @@ const COURSE_SUBJECT_TEMPLATES = {
     'Probabilita',
     'Programmazione',
     'Data mining',
+  ],
+  'Architettura e Progetto Sostenibile per l Esistente': [
+    'Restauro architettonico',
+    'Tecnologia dell architettura',
+    'Progettazione architettonica',
+    'Storia dell architettura',
+    'Urbanistica',
+  ],
+  'Urban Design per la Citta in Transizione': [
+    'Urbanistica',
+    'Progettazione urbanistica',
+    'Disegno tecnico',
+    'Storia dell architettura',
+    'Tecnologia dell architettura',
+  ],
+  'Biotecnologie Mediche e Medicina Molecolare': [
+    'Biologia molecolare',
+    'Genetica medica',
+    'Biochimica',
+    'Patologia generale',
+    'Farmacologia',
+  ],
+  'Scienze Geologiche': [
+    'Geologia',
+    'Mineralogia',
+    'Petrografia',
+    'Geomorfologia',
+    'Geofisica',
+  ],
+  'Marine Biology': [
+    'Biologia marina',
+    'Ecologia marina',
+    'Zoologia',
+    'Botanica marina',
+    'Oceanografia',
+  ],
+  'International Relations': [
+    'Relazioni internazionali',
+    'Scienza politica',
+    'Diritto internazionale',
+    'Storia delle relazioni internazionali',
+    'Economia politica',
   ],
   Matematica: [
     'Analisi matematica',
@@ -330,14 +386,33 @@ const COURSE_SUBJECT_TEMPLATES = {
 };
 
 function normalizeAcademicKey(value) {
-  return String(value || '').trim().toLowerCase();
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+const ACADEMIC_ALIASES = new Map([
+  ['automation and system engineering', 'automation and systems engineering'],
+  ['intenational relation', 'international relations'],
+  ['consulente giuridico d impresa', 'consulente giuridico d impresa'],
+  ['consulente giuridico dimpresa', 'consulente giuridico d impresa'],
+  ['tecnologie digitali per l architettura', 'tecnologie digitali per l architettura'],
+  ['design sostenibilita e cultura digitale per il territorio', 'design sostenibilita e cultura digitale per il territorio'],
+]);
+
+function canonicalAcademicKey(value) {
+  const normalized = normalizeAcademicKey(value);
+  return ACADEMIC_ALIASES.get(normalized) || normalized;
 }
 
 function getTemplate(map, key) {
-  const normalizedKey = normalizeAcademicKey(key);
+  const normalizedKey = canonicalAcademicKey(key);
   if (!normalizedKey) return [];
 
-  const match = Object.entries(map).find(([entryKey]) => normalizeAcademicKey(entryKey) === normalizedKey);
+  const match = Object.entries(map).find(([entryKey]) => canonicalAcademicKey(entryKey) === normalizedKey);
   return match ? [...match[1]] : [];
 }
 
@@ -345,7 +420,7 @@ function pushUnique(target, values) {
   values.forEach((value) => {
     const clean = String(value || '').trim();
     if (!clean) return;
-    if (!target.some((item) => normalizeAcademicKey(item) === normalizeAcademicKey(clean))) {
+    if (!target.some((item) => canonicalAcademicKey(item) === canonicalAcademicKey(clean))) {
       target.push(clean);
     }
   });

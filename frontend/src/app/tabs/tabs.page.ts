@@ -43,9 +43,7 @@ export class TabsPage implements OnInit, OnDestroy {
       .getProfile()
       .pipe(takeUntil(this.destroy$))
       .subscribe((profile) => {
-        if (profile?.avatar) {
-          this.profileAvatar = profile.avatar;
-        }
+        this.profileAvatar = profile?.avatar || this.fallbackAvatar;
       });
   }
 
@@ -89,8 +87,15 @@ export class TabsPage implements OnInit, OnDestroy {
   }
 
   private restoreAvatarFromStorage(): void {
+    const rawSession = localStorage.getItem('user_data');
+    if (!rawSession) return;
+
     try {
-      const savedProfile = localStorage.getItem('user_profile');
+      const session = JSON.parse(rawSession);
+      const userId = Number(session?.id || 0) || null;
+      const profileKey = userId ? `user_profile_${userId}` : null;
+      const avatarKey = userId ? `user_avatar_${userId}` : null;
+      const savedProfile = profileKey ? localStorage.getItem(profileKey) : null;
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
         if (profile?.avatar) {
@@ -98,18 +103,8 @@ export class TabsPage implements OnInit, OnDestroy {
           return;
         }
       }
-    } catch {
-      // Ignore malformed local profile
-    }
 
-    const rawSession = localStorage.getItem('user_data');
-    if (!rawSession) return;
-
-    try {
-      const session = JSON.parse(rawSession);
-      const userId = session?.id;
-      const key = userId ? `user_avatar_${userId}` : 'user_avatar';
-      const avatar = localStorage.getItem(key) || localStorage.getItem('user_avatar');
+      const avatar = avatarKey ? localStorage.getItem(avatarKey) : null;
       if (avatar) {
         this.profileAvatar = avatar;
       }

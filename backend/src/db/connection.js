@@ -35,4 +35,29 @@ function all(sql, params = []) {
   });
 }
 
-module.exports = { db, dbPath, run, get, all };
+function exec(sql) {
+  return new Promise((resolve, reject) => {
+    db.exec(sql, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
+async function withTransaction(work) {
+  await exec('BEGIN IMMEDIATE TRANSACTION');
+  try {
+    const result = await work({ run, get, all, exec });
+    await exec('COMMIT');
+    return result;
+  } catch (err) {
+    try {
+      await exec('ROLLBACK');
+    } catch {
+      // Ignore rollback errors so the original failure is preserved.
+    }
+    throw err;
+  }
+}
+
+module.exports = { db, dbPath, run, get, all, exec, withTransaction };

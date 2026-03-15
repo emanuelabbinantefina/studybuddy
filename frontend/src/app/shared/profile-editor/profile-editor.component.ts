@@ -128,7 +128,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      await this.presentToast('L immagine deve essere al massimo di 5 MB', 'warning');
+      await this.presentToast("L'immagine deve essere al massimo di 5 MB", 'warning');
       if (input) input.value = '';
       return;
     }
@@ -158,6 +158,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
     this.saving = true;
     try {
+      const avatarUrl = this.normalizedAvatarUrl();
       const updated = await lastValueFrom(
         this.userService.updateProfile({
           firstName: this.profileData.firstName.trim(),
@@ -167,7 +168,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
           corso: this.profileData.corso.trim(),
           courseYear: this.profileData.courseYear.trim(),
           bio: this.profileData.bio.trim().slice(0, 120),
-          avatarUrl: this.profileData.avatarUrl,
+          ...(avatarUrl ? { avatarUrl } : {}),
         })
       );
 
@@ -182,7 +183,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   private applyProfile(profile: UserProfile): void {
     this.profileData = {
-      avatarUrl: profile.avatar || '',
+      avatarUrl: this.isCustomAvatar(profile.avatar) ? profile.avatar : '',
       firstName: profile.firstName || '',
       lastName: profile.lastName || '',
       username: this.cleanUsername(profile.username || ''),
@@ -241,15 +242,16 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     });
 
     return flatRows
-      .map((entry: { facultyName: string; courseName: string }) => ({
-        key: `${entry.facultyName}::${entry.courseName}`,
-        label:
-          (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1
-            ? `${entry.courseName} · ${entry.facultyName}`
-            : entry.courseName,
-        facultyName: entry.facultyName,
-        courseName: entry.courseName,
-      }))
+      .map((entry: { facultyName: string; courseName: string }) => {
+        const hasDuplicateName = (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1;
+
+        return {
+          key: `${entry.facultyName}::${entry.courseName}`,
+          label: hasDuplicateName ? `${entry.courseName} - ${entry.facultyName}` : entry.courseName,
+          facultyName: entry.facultyName,
+          courseName: entry.courseName,
+        };
+      })
       .sort((left: CourseOption, right: CourseOption) => left.label.localeCompare(right.label, 'it'));
   }
 
@@ -284,6 +286,15 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   private cleanUsername(value: string): string {
     return String(value || '').trim().replace(/^@+/, '');
+  }
+
+  private normalizedAvatarUrl(): string {
+    return this.isCustomAvatar(this.profileData.avatarUrl) ? String(this.profileData.avatarUrl).trim() : '';
+  }
+
+  private isCustomAvatar(value: unknown): value is string {
+    const normalized = String(value || '').trim();
+    return !!normalized && normalized !== this.fallbackAvatar;
   }
 
   private async presentToast(

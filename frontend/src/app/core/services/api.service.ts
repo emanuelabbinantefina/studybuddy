@@ -161,6 +161,14 @@ export class ApiService {
     }).pipe(map((row) => this.toGruppoDto(row)));
   }
 
+  updateGroupExamDate(groupId: number, examDate?: string | null): Observable<Gruppo> {
+    return this.http.patch<any>(
+      `${this.baseUrl}/groups/${groupId}`,
+      { examDate: examDate || null },
+      { headers: this.authHeaders() }
+    ).pipe(map((row) => this.toGruppoDto(row)));
+  }
+
   getGroupQuestions(groupId: number): Observable<GroupQuestion[]> {
     return this.http.get<GroupQuestion[]>(`${this.baseUrl}/groups/${groupId}/questions`, {
       headers: this.authHeaders()
@@ -190,7 +198,7 @@ export class ApiService {
   }
 
   deleteGroupMessage(groupId: number, messageId: number): Observable<{ ok: boolean }> {
-    return this.http.post<{ ok: boolean }>(`${this.baseUrl}/groups/${groupId}/messages/${messageId}/delete`, {}, {
+    return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/groups/${groupId}/messages/${messageId}`, {
       headers: this.authHeaders()
     });
   }

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController, ToastController } from '@ionic/angular';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { Appunto, Gruppo, UserProfile } from '../../core/interfaces/models';
@@ -7,25 +8,27 @@ import { ApiService } from '../../core/services/api.service';
 import { UserService } from '../../core/services/user.service';
 import { ProfileEditorComponent } from '../../shared/profile-editor/profile-editor.component';
 
-type ProfileSection = 'notes' | 'groups';
+type DeleteFlowStep = 'impact' | 'confirm' | 'success';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [IonicModule, CommonModule, ProfileEditorComponent],
+  imports: [IonicModule, CommonModule, FormsModule, ProfileEditorComponent],
 })
 export class ProfilePage implements OnInit, OnDestroy {
   readonly fallbackAvatar = 'assets/images/logo-uni.png';
 
   user: UserProfile | null = null;
-  activeSection: ProfileSection = 'notes';
   myNotes: Appunto[] = [];
   savedNotes: Appunto[] = [];
   myGroups: Gruppo[] = [];
   isEditModalOpen = false;
-  downloadingNoteId: number | null = null;
+  isDeleteModalOpen = false;
+  deleteFlowStep: DeleteFlowStep = 'impact';
+  deleteConfirmation = '';
+  isDeletingAccount = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -81,10 +84,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.refreshScreenData();
   }
 
-  setActiveSection(section: ProfileSection): void {
-    this.activeSection = section;
-  }
-
   openEditProfile(): void {
     this.userService.reloadProfile();
     this.isEditModalOpen = true;
@@ -104,57 +103,98 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.navCtrl.navigateRoot('/login');
   }
 
+  openDeleteAccount(): void {
+    this.refreshScreenData();
+    this.deleteFlowStep = 'impact';
+    this.deleteConfirmation = '';
+    this.isDeleteModalOpen = true;
+  }
+
+  closeDeleteAccount(): void {
+    if (this.isDeletingAccount) return;
+    const shouldRedirectToLogin = this.deleteFlowStep === 'success';
+    this.isDeleteModalOpen = false;
+    this.deleteFlowStep = 'impact';
+    this.deleteConfirmation = '';
+    if (shouldRedirectToLogin) {
+      this.navCtrl.navigateRoot('/login');
+    }
+  }
+
+  goToDeleteConfirmation(): void {
+    this.deleteFlowStep = 'confirm';
+    this.deleteConfirmation = '';
+  }
+
+  backToDeleteImpact(): void {
+    if (this.isDeletingAccount) return;
+    this.deleteFlowStep = 'impact';
+    this.deleteConfirmation = '';
+  }
+
+  get deleteConfirmationValid(): boolean {
+    return this.deleteConfirmation.trim().toUpperCase() === 'ELIMINA';
+  }
+
+  get deletionImpactSummary(): Array<{ icon: string; title: string; detail: string }> {
+    return [
+      {
+        icon: 'document-text-outline',
+        title: 'Tutti i tuoi appunti caricati',
+        detail: `${this.uploadedNotesCount} file`
+      },
+      {
+        icon: 'bookmark-outline',
+        title: 'I tuoi appunti salvati',
+        detail: `${this.savedNotesCount} salvataggi`
+      },
+      {
+        icon: 'people-outline',
+        title: 'Lascerai tutti i gruppi di cui fai parte',
+        detail: `${this.groupsCount} gruppi`
+      },
+      {
+        icon: 'calendar-clear-outline',
+        title: 'Il tuo planner e tutti gli esami',
+        detail: 'Eventi e promemoria'
+      },
+      {
+        icon: 'person-outline',
+        title: 'Il tuo profilo e le tue informazioni',
+        detail: 'Dati account'
+      }
+    ];
+  }
+
+  async confirmDeleteAccount(): Promise<void> {
+    if (this.isDeletingAccount || !this.deleteConfirmationValid) return;
+
+    try {
+      this.isDeletingAccount = true;
+      await firstValueFrom(this.userService.deleteAccount('ELIMINA'));
+      this.userService.logout();
+      this.user = null;
+      this.myNotes = [];
+      this.savedNotes = [];
+      this.myGroups = [];
+      this.deleteFlowStep = 'success';
+      this.deleteConfirmation = '';
+    } catch (err: any) {
+      await this.presentToast(err?.error?.message || 'Impossibile eliminare l account', 'danger');
+    } finally {
+      this.isDeletingAccount = false;
+    }
+  }
+
+  finishDeleteAccount(): void {
+    this.closeDeleteAccount();
+  }
+
   onAvatarError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
     if (!img.src.includes(this.fallbackAvatar)) {
       img.src = this.fallbackAvatar;
-    }
-  }
-
-  openGroupsTab(): void {
-    this.navCtrl.navigateForward('/tabs/groups');
-  }
-
-  goToSearch(): void {
-    this.navCtrl.navigateForward('/tabs/search');
-  }
-
-  openUploadsSearch(): void {
-    this.activeSection = 'notes';
-    this.goToSearch();
-  }
-
-  openSavedSearch(): void {
-    this.activeSection = 'notes';
-    this.goToSearch();
-  }
-
-  async onViewNote(note: Appunto, event?: Event): Promise<void> {
-    event?.stopPropagation();
-    if (this.downloadingNoteId) return;
-
-    try {
-      this.downloadingNoteId = note.id;
-      const response = await firstValueFrom(this.apiService.downloadAppunto(note.id));
-      const blob = response.body;
-      if (!blob) throw new Error('contenuto vuoto');
-
-      const fileName =
-        this.extractFileName(response.headers.get('content-disposition')) ||
-        this.buildFallbackFileName(note);
-      const url = URL.createObjectURL(blob);
-
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = fileName;
-      anchor.click();
-
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      await this.presentToast(err?.error?.message || 'Impossibile scaricare il file');
-    } finally {
-      this.downloadingNoteId = null;
     }
   }
 
@@ -216,31 +256,13 @@ export class ProfilePage implements OnInit, OnDestroy {
     });
   }
 
-  private async presentToast(message: string): Promise<void> {
+  private async presentToast(message: string, color: 'success' | 'warning' | 'danger' = 'success'): Promise<void> {
     const toast = await this.toastCtrl.create({
       message,
       duration: 1700,
-      position: 'bottom'
+      position: 'bottom',
+      color
     });
     await toast.present();
-  }
-
-  private extractFileName(contentDisposition: string | null): string | null {
-    if (!contentDisposition) return null;
-
-    const utfMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
-    if (utfMatch?.[1]) {
-      return decodeURIComponent(utfMatch[1]);
-    }
-
-    const plainMatch = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);
-    return plainMatch?.[1] || null;
-  }
-
-  private buildFallbackFileName(note: Appunto): string {
-    const safeTitle = (note.titolo || 'appunto').replace(/[^\w\-]+/g, '_');
-    if (note.tipoFile === 'pdf') return `${safeTitle}.pdf`;
-    if (note.tipoFile === 'doc') return `${safeTitle}.docx`;
-    return `${safeTitle}.png`;
   }
 }

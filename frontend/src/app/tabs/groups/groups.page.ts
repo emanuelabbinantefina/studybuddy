@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
+import { firstValueFrom, forkJoin } from 'rxjs';
+
 import { ApiService } from '../../core/services/api.service';
 import { Gruppo } from '../../core/interfaces/models';
 import { NewGroupModalComponent } from './new-group-modal/new-group-modal.component';
-import { firstValueFrom } from 'rxjs';
+
+type GroupSection = 'my' | 'all';
 
 @Component({
   selector: 'app-groups',
@@ -17,10 +20,9 @@ import { firstValueFrom } from 'rxjs';
 })
 export class GroupsPage implements OnInit {
   loadingList = false;
-  gruppi: Gruppo[] = [];
-  filteredGruppi: Gruppo[] = []; 
-  searchQuery = ''; 
-  private currentUserId = 0;
+  activeSection: GroupSection = 'my';
+  myGroups: Gruppo[] = [];
+  publicGroups: Gruppo[] = [];
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -30,7 +32,6 @@ export class GroupsPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.currentUserId = this.readSessionUserId();
     this.loadGroups();
   }
 
@@ -38,20 +39,30 @@ export class GroupsPage implements OnInit {
     this.loadGroups();
   }
 
-  filterGroups(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    if (!q) {
-      this.filteredGruppi = [...this.gruppi];
-      return;
-    }
-    this.filteredGruppi = this.gruppi.filter(g => 
-      (g.nome || '').toLowerCase().includes(q) || 
-      (g.materia || '').toLowerCase().includes(q)
-    );
+  get visibleGroups(): Gruppo[] {
+    return this.activeSection === 'my' ? this.myGroups : this.publicGroups;
+  }
+
+  get visibleTitle(): string {
+    return this.activeSection === 'my' ? 'I miei gruppi' : 'Tutti i gruppi';
+  }
+
+  get visibleSubtitle(): string {
+    return this.activeSection === 'my'
+      ? 'Qui trovi i gruppi a cui partecipi gia`.'
+      : 'Qui trovi tutti i gruppi disponibili da aprire o scoprire.';
+  }
+
+  get totalVisibleGroups(): number {
+    return this.visibleGroups.length;
+  }
+
+  setSection(section: GroupSection): void {
+    this.activeSection = section;
   }
 
   async doRefresh(event: any): Promise<void> {
-    this.loadGroups(event); 
+    this.loadGroups(event);
   }
 
   async onCreateGroup(): Promise<void> {
@@ -79,7 +90,7 @@ export class GroupsPage implements OnInit {
         return;
       }
     }
-    // Naviga verso la nuova pagina di dettaglio passandogli l'ID
+
     this.router.navigate(['/groups', group.id]);
   }
 
@@ -87,26 +98,65 @@ export class GroupsPage implements OnInit {
     return group.colorClass || 'bg-blue';
   }
 
-  openLinkClass(group: Gruppo): string {
-    return this.groupColorClass(group).replace('bg-', 'accent-');
+  groupContextLabel(group: Gruppo): string {
+    const parts = [group.materia, group.facolta].filter(Boolean);
+    return parts.join(' - ') || 'Gruppo di studio';
+  }
+
+  trackById(index: number, item: Gruppo): number {
+    return item.id;
+  }
+
+  daysToExam(dateString?: string | null): number | null {
+    if (!dateString) return null;
+
+    const examDate = new Date(dateString);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    examDate.setHours(0, 0, 0, 0);
+
+    const diffTime = examDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 3600 * 24));
   }
 
   private loadGroups(event?: any): void {
-    if (!event) this.loadingList = true; 
+    if (!event) this.loadingList = true;
 
-    this.apiService.getGruppi('all').subscribe({
-      next: (rows) => {
-        this.gruppi = (rows || []).map((group) => ({
+    forkJoin({
+      myGroups: this.apiService.getGruppi('my'),
+      publicGroups: this.apiService.getGruppi('all')
+    }).subscribe({
+      next: ({ myGroups, publicGroups }) => {
+        this.myGroups = (myGroups || []).map((group) => ({
           ...group,
+          isMember: true,
           colorClass: group.colorClass || this.resolveGroupColor(group.materia),
         }));
-        this.filterGroups(); 
+
+        const myIds = new Set(this.myGroups.map((group) => group.id));
+        this.publicGroups = (publicGroups || [])
+          .filter((group) => !myIds.has(group.id))
+          .map((group) => ({
+            ...group,
+            isMember: !!group.isMember,
+            colorClass: group.colorClass || this.resolveGroupColor(group.materia),
+          }));
+
+        if (this.activeSection === 'my' && this.myGroups.length === 0 && this.publicGroups.length > 0) {
+          this.activeSection = 'all';
+        }
+
+        if (this.activeSection === 'all' && this.publicGroups.length === 0 && this.myGroups.length > 0) {
+          this.activeSection = 'my';
+        }
+
         this.loadingList = false;
-        if (event) event.target.complete(); 
+        if (event) event.target.complete();
       },
       error: async (err) => {
-        this.gruppi = [];
-        this.filteredGruppi = [];
+        this.myGroups = [];
+        this.publicGroups = [];
         this.loadingList = false;
         if (event) event.target.complete();
         await this.showToast(err?.error?.message || 'Errore caricamento gruppi', 'danger');
@@ -123,17 +173,6 @@ export class GroupsPage implements OnInit {
     return 'bg-green';
   }
 
-  private readSessionUserId(): number {
-    try {
-      const raw = localStorage.getItem('user_data');
-      if (!raw) return 0;
-      const parsed = JSON.parse(raw);
-      return Number(parsed?.id || 0) || 0;
-    } catch {
-      return 0;
-    }
-  }
-
   private async showToast(message: string, color: 'success' | 'warning' | 'danger'): Promise<void> {
     const toast = await this.toastCtrl.create({
       message,
@@ -142,26 +181,5 @@ export class GroupsPage implements OnInit {
       position: 'bottom',
     });
     await toast.present();
-  }
-
-  trackById(index: number, item: any) {
-    return item.id;
-  }
-
-  daysToExam(dateString?: string | null): number | null {
-    if (!dateString) return null;
-    
-    const examDate = new Date(dateString);
-    const today = new Date();
-    
-    today.setHours(0, 0, 0, 0);
-    examDate.setHours(0, 0, 0, 0);
-    
-    const diffTime = examDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 3600 * 24));
-  }
-
-  apriGruppo(id: string | number) {
-    this.router.navigate(['/groups', id]);
   }
 }

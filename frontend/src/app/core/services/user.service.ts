@@ -25,7 +25,6 @@ export class UserService {
   private readonly groupsApiUrl = 'http://localhost:3000/api/groups';
   private readonly userProfile = new BehaviorSubject<UserProfile | null>(null);
   private profileLoaded = false;
-  private readonly fallbackAvatar = 'assets/images/logo-uni.png';
 
   constructor(private readonly http: HttpClient) {}
 
@@ -43,6 +42,11 @@ export class UserService {
     }
   }
 
+  private getCurrentUserId(): number | null {
+    const sessionUser = this.readSessionUser();
+    return Number(sessionUser?.id || 0) || null;
+  }
+
   private splitName(name: string | null | undefined): { firstName: string; lastName: string } {
     const clean = String(name || '').trim();
     if (!clean) {
@@ -56,6 +60,63 @@ export class UserService {
     };
   }
 
+  private profileStorageKey(userId: number | null | undefined): string | null {
+    return userId ? `user_profile_${userId}` : null;
+  }
+
+  private avatarStorageKey(userId: number | null | undefined): string | null {
+    return userId ? `user_avatar_${userId}` : null;
+  }
+
+  private hasOwnAvatar(source: unknown): source is { avatarUrl: string | null } {
+    return !!source && typeof source === 'object' && Object.prototype.hasOwnProperty.call(source, 'avatarUrl');
+  }
+
+  private normalizeAvatarValue(value: unknown): string {
+    return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private readStoredProfileForUser(userId: number | null): UserProfile | null {
+    if (!userId) return null;
+
+    const profileKey = this.profileStorageKey(userId);
+    const candidateKeys = profileKey ? [profileKey, 'user_profile'] : ['user_profile'];
+
+    for (const key of candidateKeys) {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (Number(parsed?.id || 0) === userId) {
+          return parsed as UserProfile;
+        }
+      } catch {
+        // Ignore malformed cache entries
+      }
+    }
+
+    return null;
+  }
+
+  private readStoredAvatarForUser(userId: number | null): string {
+    if (!userId) return '';
+
+    const avatarKey = this.avatarStorageKey(userId);
+    const keyedAvatar = this.normalizeAvatarValue(avatarKey ? localStorage.getItem(avatarKey) : '');
+    if (keyedAvatar) {
+      return keyedAvatar;
+    }
+
+    const storedProfile = this.readStoredProfileForUser(userId);
+    return this.normalizeAvatarValue(storedProfile?.avatar);
+  }
+
+  private clearLegacySessionCache(): void {
+    localStorage.removeItem('user_profile');
+    localStorage.removeItem('user_avatar');
+  }
+
   private mapBackendUser(user: any): UserProfile {
     const sessionUser = this.readSessionUser();
     const fallbackNames = this.splitName(user?.name || sessionUser?.name);
@@ -66,13 +127,15 @@ export class UserService {
       || String(user?.name || sessionUser?.name || user?.nickname || sessionUser?.nickname || 'Utente').trim();
     const username = String(user?.username || sessionUser?.username || user?.nickname || sessionUser?.nickname || '').trim();
     const userId = Number(user?.id || sessionUser?.id || 0) || null;
-    const avatarKey = userId ? `user_avatar_${userId}` : null;
+
+    const backendAvatar = this.hasOwnAvatar(user) ? this.normalizeAvatarValue(user.avatarUrl) : '';
+    const sessionAvatar = this.hasOwnAvatar(sessionUser) ? this.normalizeAvatarValue(sessionUser.avatarUrl) : '';
     const storedAvatar =
-      user?.avatarUrl
-      || sessionUser?.avatarUrl
-      || (avatarKey ? localStorage.getItem(avatarKey) : null)
-      || localStorage.getItem('user_avatar')
-      || this.fallbackAvatar;
+      this.hasOwnAvatar(user)
+        ? backendAvatar
+        : this.hasOwnAvatar(sessionUser)
+          ? sessionAvatar
+          : this.readStoredAvatarForUser(userId);
 
     return {
       id: userId,
@@ -95,7 +158,23 @@ export class UserService {
   }
 
   private persistProfile(profile: UserProfile): void {
-    localStorage.setItem('user_profile', JSON.stringify(profile));
+    const userId = Number(profile?.id || 0) || null;
+    const profileKey = this.profileStorageKey(userId);
+    const avatarKey = this.avatarStorageKey(userId);
+
+    if (profileKey) {
+      localStorage.setItem(profileKey, JSON.stringify(profile));
+    }
+
+    if (avatarKey) {
+      if (this.normalizeAvatarValue(profile.avatar)) {
+        localStorage.setItem(avatarKey, profile.avatar);
+      } else {
+        localStorage.removeItem(avatarKey);
+      }
+    }
+
+    this.clearLegacySessionCache();
     this.userProfile.next(profile);
 
     try {
@@ -113,7 +192,7 @@ export class UserService {
         corso: profile.corso || session.corso || null,
         courseYear: profile.courseYear || null,
         bio: profile.bio || null,
-        avatarUrl: profile.avatar || null
+        avatarUrl: this.normalizeAvatarValue(profile.avatar) || null
       };
       localStorage.setItem('user_data', JSON.stringify(nextSession));
     } catch {
@@ -123,6 +202,7 @@ export class UserService {
 
   private fetchProfile(): Observable<UserProfile | null> {
     const headers = this.authHeaders();
+    const userId = this.getCurrentUserId();
 
     return forkJoin({
       user: this.http.get<any>(`${this.apiUrl}/me`, { headers }),
@@ -135,15 +215,7 @@ export class UserService {
       }),
       tap((profile) => this.persistProfile(profile)),
       catchError(() => {
-        const saved = localStorage.getItem('user_profile');
-        let fallback: UserProfile | null = null;
-        if (saved) {
-          try {
-            fallback = JSON.parse(saved);
-          } catch {
-            fallback = null;
-          }
-        }
+        const fallback = this.readStoredProfileForUser(userId);
         this.userProfile.next(fallback);
         return of(fallback);
       })
@@ -163,7 +235,14 @@ export class UserService {
   }
 
   updateProfile(newData: Partial<UserProfile> & { avatarUrl?: string }): Observable<UserProfile> {
-    const payload = {
+    const avatarUrl =
+      typeof newData?.avatarUrl === 'string'
+        ? newData.avatarUrl.trim()
+        : typeof newData?.avatar === 'string'
+          ? newData.avatar.trim()
+          : '';
+
+    const payload: Record<string, string> = {
       firstName: String(newData?.firstName || '').trim(),
       lastName: String(newData?.lastName || '').trim(),
       username: typeof newData?.username === 'string' ? newData.username.trim() : '',
@@ -171,24 +250,19 @@ export class UserService {
       corso: String(newData?.corso || '').trim(),
       courseYear: String(newData?.courseYear || '').trim(),
       bio: typeof newData?.bio === 'string' ? newData.bio.trim().slice(0, 120) : '',
-      avatarUrl:
-        typeof newData?.avatarUrl === 'string'
-          ? newData.avatarUrl
-          : typeof newData?.avatar === 'string'
-            ? newData.avatar
-            : ''
     };
+
+    if (avatarUrl) {
+      payload['avatarUrl'] = avatarUrl;
+    }
 
     return this.http.patch<any>(`${this.apiUrl}/me`, payload, { headers: this.authHeaders() }).pipe(
       map((user) => {
         const mapped = this.mapBackendUser(user);
         mapped.esamiTotali = this.userProfile.value?.esamiTotali || 0;
 
-        if (payload.avatarUrl) {
-          mapped.avatar = payload.avatarUrl;
-          const avatarKey = mapped.id ? `user_avatar_${mapped.id}` : 'user_avatar';
-          localStorage.setItem(avatarKey, payload.avatarUrl);
-          localStorage.setItem('user_avatar', payload.avatarUrl);
+        if (avatarUrl) {
+          mapped.avatar = avatarUrl;
         }
 
         return mapped;
@@ -197,10 +271,35 @@ export class UserService {
     );
   }
 
+  deleteAccount(confirmation: string): Observable<{ ok: boolean }> {
+    return this.http.request<{ ok: boolean }>('DELETE', `${this.apiUrl}/me`, {
+      headers: this.authHeaders(),
+      body: {
+        confirmation: String(confirmation || '').trim()
+      }
+    });
+  }
+
+  handleSessionChange(): void {
+    this.clearLegacySessionCache();
+    this.userProfile.next(null);
+    this.profileLoaded = false;
+  }
+
   logout(): void {
+    const currentUserId = this.getCurrentUserId();
+    const profileKey = this.profileStorageKey(currentUserId);
+    const avatarKey = this.avatarStorageKey(currentUserId);
+
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
-    localStorage.removeItem('user_profile');
+    if (profileKey) {
+      localStorage.removeItem(profileKey);
+    }
+    if (avatarKey) {
+      localStorage.removeItem(avatarKey);
+    }
+    this.clearLegacySessionCache();
     this.userProfile.next(null);
     this.profileLoaded = false;
   }

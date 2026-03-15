@@ -14,14 +14,14 @@
 
   <div class="editor-body">
     <section class="block">
-      <div class="block-label">Foto profilo</div>
+      <div class="block-label">Foto profilo <em>(opzionale)</em></div>
       <div class="photo-row">
         <div class="avatar-preview">
           <img [src]="profileData.avatarUrl || fallbackAvatar" (error)="onAvatarError($event)" alt="Foto profilo">
         </div>
 
         <button type="button" class="upload-area" (click)="uploadPhoto()">
-          <strong>Trascina un immagine</strong>
+          <strong>Carica un'immagine</strong>
           <span>oppure clicca per scegliere</span>
           <small>JPG, PNG, WEBP - max 5 MB</small>
         </button>

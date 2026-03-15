@@ -47,6 +47,15 @@ function sanitizeText(value, maxLen = 255) {
   return txt.slice(0, maxLen);
 }
 
+function sanitizeExamDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return '';
+  return parsed.toISOString();
+}
+
 function sanitizeQuestionYear(value) {
   const raw = String(value || '').replace(/\D+/g, '').slice(0, 4);
   if (!raw) return '';
@@ -432,6 +441,35 @@ async function groupDetail(userId, groupId) {
   return out;
 }
 
+async function updateGroup(userId, groupId, body = {}) {
+  await ensureMember(groupId, userId);
+
+  if (!Object.prototype.hasOwnProperty.call(body || {}, 'examDate')) {
+    throw badRequest('nessun dato da aggiornare');
+  }
+
+  const nextExamDate =
+    body.examDate === null || body.examDate === ''
+      ? null
+      : sanitizeExamDate(body.examDate);
+
+  if (body.examDate && !nextExamDate) {
+    throw badRequest('data esame non valida');
+  }
+
+  const now = nowIso();
+  await run(
+    `update Groups
+     set examDate = ?, updatedAt = ?
+     where id = ?`,
+    [nextExamDate, now, groupId]
+  );
+
+  const updated = await groupDetail(userId, groupId);
+  if (!updated) throw notFound('gruppo non trovato');
+  return updated;
+}
+
 async function listQuestions(_userId, groupId) {
   await ensureGroupExists(groupId);
 
@@ -646,6 +684,7 @@ module.exports = {
   joinGroup,
   leaveGroup,
   groupDetail,
+  updateGroup,
   listQuestions,
   createQuestion,
   listMessages,

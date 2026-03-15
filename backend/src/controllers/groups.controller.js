@@ -89,6 +89,18 @@ async function detail(req, res) {
   }
 }
 
+async function update(req, res) {
+  const groupId = parseGroupId(req, res);
+  if (!groupId) return;
+
+  try {
+    const out = await groupsService.updateGroup(req.userData.userId, groupId, req.body);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
 async function questions(req, res) {
   const groupId = parseGroupId(req, res);
   if (!groupId) return;
@@ -182,6 +194,7 @@ module.exports = {
   join,
   leave,
   detail,
+  update,
   questions,
   addQuestion,
   messages,

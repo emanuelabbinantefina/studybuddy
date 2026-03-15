@@ -23,15 +23,28 @@
       </div>
 
       <section class="faculty-scope-card" *ngIf="myFacultyLabel">
+        <div class="faculty-scope-switch">
+          <button
+            type="button"
+            class="scope-btn"
+            [class.active]="!showAllFaculties"
+            (click)="onFacultyScopeChange(false)">
+            La mia facolta`
+          </button>
+
+          <button
+            type="button"
+            class="scope-btn"
+            [class.active]="showAllFaculties"
+            (click)="onFacultyScopeChange(true)">
+            Tutti
+          </button>
+        </div>
+
         <div class="faculty-scope-copy">
           <h3>{{ facultyScopeTitle }}</h3>
           <p>{{ facultyScopeDescription }}</p>
         </div>
-
-        <ion-toggle
-          [checked]="showAllFaculties"
-          (ionChange)="onFacultyScopeChange($event.detail.checked)">
-        </ion-toggle>
       </section>
 
       <section *ngIf="showUploadPanel" class="upload-panel fade-in">

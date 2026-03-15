@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,10 +12,14 @@ export class AuthService {
   // Indirizzo del tuo backend Node.js
   private apiUrl = 'http://localhost:3000/api/auth';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private userService: UserService
+  ) { }
 
   private persistSession(response: any) {
     if (!response?.token) return;
+    this.userService.handleSessionChange();
     localStorage.setItem('auth_token', response.token);
     if (response.user) {
       localStorage.setItem('user_data', JSON.stringify(response.user));
@@ -50,8 +55,7 @@ export class AuthService {
    * Rimuove i dati di sessione e disconnette l'utente
    */
   logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+    this.userService.logout();
   }
 
   /**

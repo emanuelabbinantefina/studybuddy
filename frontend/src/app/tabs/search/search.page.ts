@@ -441,21 +441,21 @@ export class SearchPage implements OnInit, OnDestroy {
   }
 
   private readSessionUserName(): string {
-    const fromProfile = localStorage.getItem('user_profile');
-    if (fromProfile) {
-      try {
-        const parsed = JSON.parse(fromProfile);
-        const name = String(parsed?.nome || parsed?.nickname || '').trim();
-        if (name) return name;
-      } catch {
-        // ignore parse errors
-      }
-    }
-
     const fromSession = localStorage.getItem('user_data');
     if (fromSession) {
       try {
         const parsed = JSON.parse(fromSession);
+        const userId = Number(parsed?.id || 0) || null;
+        const profileKey = userId ? `user_profile_${userId}` : null;
+        if (profileKey) {
+          const fromProfile = localStorage.getItem(profileKey);
+          if (fromProfile) {
+            const savedProfile = JSON.parse(fromProfile);
+            const savedName = String(savedProfile?.nome || savedProfile?.nickname || '').trim();
+            if (savedName) return savedName;
+          }
+        }
+
         const name = String(parsed?.name || parsed?.nickname || '').trim();
         if (name) return name;
       } catch {

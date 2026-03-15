@@ -1,10 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController } from '@ionic/angular';
+import { IonicModule, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
-import { Gruppo, Appunto } from '../../../core/interfaces/models';
+import { Appunto, GroupBoardMessage, GroupQuestion, Gruppo } from '../../../core/interfaces/models';
+
+interface ThreadReply extends GroupBoardMessage {
+  isOwn: boolean;
+  authorInitial: string;
+}
+
+interface ThreadMessage extends GroupBoardMessage {
+  isOwn: boolean;
+  authorInitial: string;
+  replies: ThreadReply[];
+}
 
 @Component({
   selector: 'app-group-detail',
@@ -14,30 +26,65 @@ import { Gruppo, Appunto } from '../../../core/interfaces/models';
   imports: [IonicModule, CommonModule, FormsModule]
 })
 export class GroupDetailPage implements OnInit {
+  readonly questionSessionOptions = [
+    'Sessione invernale',
+    'Sessione primaverile',
+    'Sessione estiva',
+    'Sessione autunnale'
+  ];
+  readonly minQuestionYear = 2000;
+  readonly maxQuestionYear = new Date().getFullYear();
+
   gruppo: Gruppo | null = null;
   appunti: Appunto[] = [];
+  messaggi: GroupBoardMessage[] = [];
+  domande: GroupQuestion[] = [];
+  threadMessages: ThreadMessage[] = [];
   loading = true;
+  loadingMessages = false;
+  loadingQuestions = false;
+  sendingMessage = false;
+  sendingQuestion = false;
+  savingExamDate = false;
+  deletingMessageId: number | null = null;
+  showMessageComposer = false;
+  showQuestionComposer = false;
+  editingExamDate = false;
   currentTab: 'appunti' | 'bacheca' | 'domande' = 'appunti';
+  boardDraft = '';
+  questionDraft = '';
+  questionSessionDraft = '';
+  questionYearDraft = '';
+  examDateDraft = '';
+  replyingTo: GroupBoardMessage | null = null;
+  currentUserId = 0;
 
   constructor(
-    private route: ActivatedRoute,
-    private apiService: ApiService,
-    private navCtrl: NavController
+    private readonly route: ActivatedRoute,
+    private readonly apiService: ApiService,
+    private readonly navCtrl: NavController,
+    private readonly toastCtrl: ToastController
   ) {}
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
+    this.currentUserId = this.readSessionUserId();
+    const paramId = this.route.snapshot.paramMap.get('id');
+    const id = Number(paramId);
+    if (Number.isFinite(id) && id > 0) {
       this.loadGroupDetails(id);
     }
   }
 
-  loadGroupDetails(id: string) {
+  loadGroupDetails(id: number) {
     this.loading = true;
     this.apiService.getGroupDetail(id).subscribe({
       next: (data: Gruppo) => {
         this.gruppo = data;
+        this.examDateDraft = this.toDateInputValue(data.examDate);
+        this.editingExamDate = false;
         this.loadAppunti(id);
+        this.loadBacheca(id);
+        this.loadDomande(id);
         this.loading = false;
       },
       error: (err: any) => {
@@ -47,12 +94,47 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
-  loadAppunti(groupId: string) {
+  loadAppunti(groupId: number) {
     this.apiService.getGroupAppunti(groupId).subscribe({
       next: (res: Appunto[]) => {
-        this.appunti = res;
+        this.appunti = Array.isArray(res) ? res : [];
       },
-      error: (err: any) => console.error(err)
+      error: (err: any) => {
+        console.error(err);
+        this.appunti = [];
+      }
+    });
+  }
+
+  loadBacheca(groupId: number) {
+    this.loadingMessages = true;
+    this.apiService.getGroupMessages(groupId).subscribe({
+      next: (res: GroupBoardMessage[]) => {
+        this.messaggi = Array.isArray(res) ? res : [];
+        this.threadMessages = this.buildMessageThreads(this.messaggi);
+        this.loadingMessages = false;
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.messaggi = [];
+        this.threadMessages = [];
+        this.loadingMessages = false;
+      }
+    });
+  }
+
+  loadDomande(groupId: number) {
+    this.loadingQuestions = true;
+    this.apiService.getGroupQuestions(groupId).subscribe({
+      next: (res: GroupQuestion[]) => {
+        this.domande = Array.isArray(res) ? res : [];
+        this.loadingQuestions = false;
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.domande = [];
+        this.loadingQuestions = false;
+      }
     });
   }
 
@@ -73,7 +155,323 @@ export class GroupDetailPage implements OnInit {
     this.navCtrl.back();
   }
 
-  setTab(tab: any) {
+  openExamDateEditor(): void {
+    this.examDateDraft = this.toDateInputValue(this.gruppo?.examDate);
+    this.editingExamDate = true;
+  }
+
+  cancelExamDateEditor(): void {
+    if (this.savingExamDate) return;
+    this.examDateDraft = this.toDateInputValue(this.gruppo?.examDate);
+    this.editingExamDate = false;
+  }
+
+  async saveExamDate(): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!groupId || this.savingExamDate) return;
+
+    try {
+      this.savingExamDate = true;
+      const payload = this.examDateDraft ? new Date(this.examDateDraft).toISOString() : null;
+      const updated = await firstValueFrom(this.apiService.updateGroupExamDate(groupId, payload));
+      this.gruppo = updated;
+      this.examDateDraft = this.toDateInputValue(updated.examDate);
+      this.editingExamDate = false;
+      await this.presentToast(
+        updated.examDate ? 'Data esame aggiornata' : 'Data esame rimossa',
+        'success'
+      );
+    } catch (err: any) {
+      await this.presentToast(err?.error?.message || 'Impossibile aggiornare la data esame', 'danger');
+    } finally {
+      this.savingExamDate = false;
+    }
+  }
+
+  setTab(tab: 'appunti' | 'bacheca' | 'domande') {
     this.currentTab = tab;
+    if (tab !== 'bacheca') this.closeMessageComposer();
+    if (tab !== 'domande') this.closeQuestionComposer();
+  }
+
+  openMessageComposer(): void {
+    this.showMessageComposer = true;
+  }
+
+  closeMessageComposer(): void {
+    if (this.sendingMessage) return;
+    this.showMessageComposer = false;
+    this.boardDraft = '';
+    this.replyingTo = null;
+  }
+
+  startReply(message: GroupBoardMessage): void {
+    this.replyingTo = message;
+    this.showMessageComposer = true;
+  }
+
+  cancelReply(): void {
+    if (this.sendingMessage) return;
+    this.replyingTo = null;
+  }
+
+  async submitMessage(): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    const text = this.boardDraft.trim();
+    if (!groupId || !text || this.sendingMessage) return;
+
+    try {
+      this.sendingMessage = true;
+      await firstValueFrom(this.apiService.addGroupMessage(groupId, text, this.replyingTo?.id || null));
+      this.boardDraft = '';
+      this.replyingTo = null;
+      this.showMessageComposer = false;
+      this.loadBacheca(groupId);
+    } catch (err: any) {
+      await this.presentToast(err?.error?.message || 'Impossibile pubblicare il messaggio', 'danger');
+    } finally {
+      this.sendingMessage = false;
+    }
+  }
+
+  async deleteMessage(message: GroupBoardMessage): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!groupId || !message?.id || this.deletingMessageId) return;
+
+    const confirmed = window.confirm('Vuoi eliminare questo messaggio?');
+    if (!confirmed) return;
+
+    try {
+      this.deletingMessageId = message.id;
+      await firstValueFrom(this.apiService.deleteGroupMessage(groupId, message.id));
+      if (this.replyingTo?.id === message.id) {
+        this.replyingTo = null;
+      }
+      await this.presentToast('Messaggio eliminato', 'success');
+      this.loadBacheca(groupId);
+    } catch (err: any) {
+      await this.presentToast(err?.error?.message || 'Impossibile eliminare il messaggio', 'danger');
+    } finally {
+      this.deletingMessageId = null;
+    }
+  }
+
+  openQuestionComposer(): void {
+    this.showQuestionComposer = true;
+  }
+
+  closeQuestionComposer(): void {
+    if (this.sendingQuestion) return;
+    this.showQuestionComposer = false;
+    this.questionDraft = '';
+    this.questionSessionDraft = '';
+    this.questionYearDraft = '';
+  }
+
+  onQuestionYearChange(value: string): void {
+    this.questionYearDraft = String(value || '').replace(/\D+/g, '').slice(0, 4);
+  }
+
+  async submitQuestion(): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    const question = this.questionDraft.trim();
+    const session = this.normalizeQuestionSession(this.questionSessionDraft);
+    const year = this.normalizeQuestionYear(this.questionYearDraft);
+    const hasAnyMeta = !!this.questionSessionDraft.trim() || !!this.questionYearDraft.trim();
+
+    if (!groupId || !question || this.sendingQuestion) return;
+
+    if (hasAnyMeta && (!session || !year)) {
+      await this.presentToast(
+        `Se indichi la sessione, inserisci anche un anno valido fino al ${this.maxQuestionYear}`,
+        'warning'
+      );
+      return;
+    }
+
+    try {
+      this.sendingQuestion = true;
+      await firstValueFrom(
+        this.apiService.addGroupQuestion(groupId, {
+          question,
+          session: session || undefined,
+          year: year || undefined
+        })
+      );
+
+      this.showQuestionComposer = false;
+      this.questionDraft = '';
+      this.questionSessionDraft = '';
+      this.questionYearDraft = '';
+      this.loadDomande(groupId);
+    } catch (err: any) {
+      await this.presentToast(err?.error?.message || 'Impossibile aggiungere la domanda', 'danger');
+    } finally {
+      this.sendingQuestion = false;
+    }
+  }
+
+  displayMessageAuthor(message: GroupBoardMessage): string {
+    return Number(message.userId) === this.currentUserId ? 'Tu' : (message.userName || 'Studente');
+  }
+
+  questionMetaLabel(question: GroupQuestion): string {
+    const parts = [question.session, question.year ? `Anno ${question.year}` : ''].filter(Boolean);
+    return parts.join(' | ');
+  }
+
+  formatExamDateLabel(value?: string | null): string {
+    if (!value) return 'Nessuna data esame impostata';
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return 'Data esame non valida';
+
+    return new Intl.DateTimeFormat('it-IT', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }).format(parsed);
+  }
+
+  examCountdownLabel(value?: string | null): string {
+    if (!value) return 'Puoi aggiungerla anche dopo la creazione del gruppo.';
+
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    parsed.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((parsed.getTime() - today.getTime()) / 86400000);
+
+    if (diffDays < 0) return 'La data inserita e` gia` passata.';
+    if (diffDays === 0) return 'E` oggi.';
+    if (diffDays === 1) return 'E` domani.';
+    return `Mancano ${diffDays} giorni.`;
+  }
+
+  formatRelativeDate(value?: string | null): string {
+    if (!value) return 'adesso';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'adesso';
+
+    const diffMs = Date.now() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffHours < 1) return 'adesso';
+    if (diffHours < 24) return `${diffHours} h fa`;
+    if (diffDays === 1) return 'ieri';
+    if (diffDays < 7) return `${diffDays} gg fa`;
+
+    return new Intl.DateTimeFormat('it-IT', {
+      day: '2-digit',
+      month: 'short'
+    }).format(date);
+  }
+
+  private buildMessageThreads(messages: GroupBoardMessage[]): ThreadMessage[] {
+    const sorted = [...messages].sort((left, right) =>
+      new Date(left.createdAt || 0).getTime() - new Date(right.createdAt || 0).getTime()
+    );
+
+    const byId = new Map<number, GroupBoardMessage>();
+    sorted.forEach((message) => byId.set(message.id, message));
+
+    const rootMap = new Map<number, ThreadMessage>();
+    const roots: ThreadMessage[] = [];
+
+    sorted.forEach((message) => {
+      const decorated = {
+        ...message,
+        isOwn: Number(message.userId) === this.currentUserId,
+        authorInitial: this.extractInitial(message.userName)
+      };
+
+      const rootId = this.findRootMessageId(message, byId);
+      if (rootId === message.id || !rootMap.has(rootId)) {
+        const rootMessage: ThreadMessage = {
+          ...decorated,
+          replies: []
+        };
+        rootMap.set(message.id, rootMessage);
+        roots.push(rootMessage);
+        return;
+      }
+
+      rootMap.get(rootId)?.replies.push(decorated);
+    });
+
+    roots.sort((left, right) =>
+      new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime()
+    );
+
+    roots.forEach((root) => {
+      root.replies.sort((left, right) =>
+        new Date(left.createdAt || 0).getTime() - new Date(right.createdAt || 0).getTime()
+      );
+    });
+
+    return roots;
+  }
+
+  private findRootMessageId(message: GroupBoardMessage, byId: Map<number, GroupBoardMessage>): number {
+    let current = message;
+    while (current.parentMessageId && byId.has(current.parentMessageId)) {
+      const parent = byId.get(current.parentMessageId);
+      if (!parent) break;
+      current = parent;
+    }
+    return current.id;
+  }
+
+  private extractInitial(name?: string | null): string {
+    const clean = String(name || '').trim();
+    return clean ? clean.charAt(0).toUpperCase() : 'S';
+  }
+
+  private normalizeQuestionSession(value: string | null | undefined): string {
+    const raw = String(value || '').trim().toLowerCase();
+    if (!raw) return '';
+    const match = this.questionSessionOptions.find((item) => item.toLowerCase() === raw);
+    return match || '';
+  }
+
+  private normalizeQuestionYear(value: string | null | undefined): string {
+    const raw = String(value || '').replace(/\D+/g, '').slice(0, 4);
+    if (raw.length !== 4) return '';
+
+    const year = Number(raw);
+    if (!Number.isFinite(year) || year < this.minQuestionYear || year > this.maxQuestionYear) return '';
+    return String(year);
+  }
+
+  private toDateInputValue(value?: string | null): string {
+    if (!value) return '';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return '';
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  private readSessionUserId(): number {
+    try {
+      const raw = localStorage.getItem('user_data');
+      if (!raw) return 0;
+      const parsed = JSON.parse(raw);
+      return Number(parsed?.id || 0) || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  private async presentToast(message: string, color: 'success' | 'warning' | 'danger'): Promise<void> {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 1800,
+      color,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }

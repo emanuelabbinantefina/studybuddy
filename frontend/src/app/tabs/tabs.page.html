@@ -1,19 +1,21 @@
 <div class="tabs-shell" [class.search-open]="isSearchOpen">
   <div class="global-topbar" *ngIf="!isProfileRoute">
-    <button type="button" class="brand-btn" (click)="openHome()">StudyBuddy</button>
+    <div class="global-topbar-inner">
+      <button type="button" class="brand-btn" (click)="openHome()">StudyBuddy</button>
 
-    <div style="flex: 1;"></div>
+      <div class="topbar-spacer" aria-hidden="true"></div>
 
-    <button
-      type="button"
-      class="avatar-btn"
-      aria-label="Vai al profilo"
-      (click)="openProfile()">
-      <img
-        [src]="profileAvatar || fallbackAvatar"
-        (error)="onAvatarError($event)"
-        alt="Avatar profilo">
-    </button>
+      <button
+        type="button"
+        class="avatar-btn"
+        aria-label="Vai al profilo"
+        (click)="openProfile()">
+        <img
+          [src]="profileAvatar || fallbackAvatar"
+          (error)="onAvatarError($event)"
+          alt="Avatar profilo">
+      </button>
+    </div>
   </div>
 
   <ion-tabs>

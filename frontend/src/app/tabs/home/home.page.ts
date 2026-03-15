@@ -1,9 +1,10 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { Appunto, Gruppo } from '../../core/interfaces/models';
+
+import { Appunto } from '../../core/interfaces/models';
 import { ApiService } from '../../core/services/api.service';
 import { DataService, EventItem } from '../../core/services/data.service';
 import { UserService } from '../../core/services/user.service';
@@ -29,10 +30,8 @@ export class HomePage implements OnInit, OnDestroy {
   nextExam: UpcomingExam | null = null;
   upcomingExams: UpcomingExam[] = [];
   recentNotes: Appunto[] = [];
-  myGroups: Gruppo[] = [];
   loadingExams = false;
   loadingNotes = false;
-  loadingGroups = false;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -65,19 +64,11 @@ export class HomePage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/search']);
   }
 
-  openGruppi(): void {
-    this.router.navigate(['/tabs/groups']);
-  }
-
   getHeroSubtitle(): string {
     if (!this.nextExam) {
       return 'Apri Planner e inserisci materia e data del tuo esame.';
     }
     return `${this.nextExam.title} - ${this.nextExam.longDateLabel}`;
-  }
-
-  getGroupColorClass(group: Gruppo): string {
-    return group.colorClass || this.resolveGroupColor(group.materia);
   }
 
   getNoteFileLabel(note: Appunto): string {
@@ -108,7 +99,6 @@ export class HomePage implements OnInit, OnDestroy {
   private loadHomeData(): void {
     this.loadUpcomingExams();
     this.loadRecentNotes();
-    this.loadMyGroups();
   }
 
   private loadUpcomingExams(): void {
@@ -149,24 +139,6 @@ export class HomePage implements OnInit, OnDestroy {
       });
   }
 
-  private loadMyGroups(): void {
-    this.loadingGroups = true;
-    this.apiService
-      .getGruppi()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (groups) => {
-          this.myGroups = Array.isArray(groups) ? groups.slice(0, 4) : [];
-          this.loadingGroups = false;
-        },
-        error: (err) => {
-          console.error('Errore caricamento gruppi home', err);
-          this.myGroups = [];
-          this.loadingGroups = false;
-        },
-      });
-  }
-
   private getSessionName(): string {
     const raw = localStorage.getItem('user_data');
     if (!raw) return 'Studente';
@@ -177,14 +149,6 @@ export class HomePage implements OnInit, OnDestroy {
     } catch {
       return 'Studente';
     }
-  }
-
-  private resolveGroupColor(materia: string): string {
-    const value = (materia || '').toLowerCase();
-    if (value.includes('matematica')) return 'bg-orange';
-    if (value.includes('fisica')) return 'bg-green';
-    if (value.includes('diritto')) return 'bg-purple';
-    return 'bg-blue';
   }
 
   private toUpcomingExams(events: EventItem[]): UpcomingExam[] {

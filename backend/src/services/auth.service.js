@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { all, get, run } = require('../db/connection');
+const { all, get, run, withTransaction } = require('../db/connection');
 const { nowIso } = require('../db/init');
 
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
@@ -300,4 +300,81 @@ async function updateProfile(userId, body) {
   return me(userId);
 }
 
-module.exports = { facultiesWithCourses, register, login, me, updateProfile };
+async function deleteAccount(userId, body = {}) {
+  const current = await me(userId);
+  if (!current) {
+    const err = new Error('utente non trovato');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  const confirmation = String(body?.confirmation || '').trim().toUpperCase();
+  if (confirmation !== 'ELIMINA') {
+    throw badRequest('scrivi ELIMINA per confermare');
+  }
+
+  await withTransaction(async ({ get: txGet, all: txAll, run: txRun }) => {
+    const now = nowIso();
+    const ownedGroups = await txAll(
+      `select id
+       from Groups
+       where ownerId = ?`,
+      [userId]
+    );
+
+    for (const group of ownedGroups) {
+      const nextOwner = await txGet(
+        `select userId
+         from GroupMembers
+         where groupId = ?
+           and userId <> ?
+         order by
+           case role when 'owner' then 0 when 'member' then 1 else 2 end,
+           datetime(createdAt) asc,
+           userId asc
+         limit 1`,
+        [group.id, userId]
+      );
+
+      if (nextOwner?.userId) {
+        await txRun(
+          `update Groups
+           set ownerId = ?, updatedAt = ?
+           where id = ?`,
+          [nextOwner.userId, now, group.id]
+        );
+
+        await txRun(
+          `update GroupMembers
+           set role = 'owner'
+           where groupId = ? and userId = ?`,
+          [group.id, nextOwner.userId]
+        );
+      } else {
+        await txRun(`delete from Groups where id = ?`, [group.id]);
+      }
+    }
+
+    await txRun(
+      `update GroupMessages
+       set parentMessageId = null
+       where parentMessageId in (
+         select id
+         from GroupMessages
+         where userId = ?
+       )`,
+      [userId]
+    );
+
+    const out = await txRun(`delete from Users where id = ?`, [userId]);
+    if (!out.changes) {
+      const err = new Error('utente non trovato');
+      err.code = 'NOT_FOUND';
+      throw err;
+    }
+  });
+
+  return { ok: true };
+}
+
+module.exports = { facultiesWithCourses, register, login, me, updateProfile, deleteAccount };

@@ -1,4 +1,4 @@
-﻿<ion-content [fullscreen]="true" class="bg-content">
+<ion-content [fullscreen]="true" class="bg-content">
   <div class="main-padding">
     <section class="hero-card">
       <div class="hero-text">
@@ -73,35 +73,6 @@
         <div class="empty-card">
           <p>Nessun appunto disponibile.</p>
           <button type="button" class="btn-link" (click)="openAppunti()">Apri Appunti</button>
-        </div>
-      </ng-template>
-    </section>
-
-    <section class="section-block">
-      <div class="section-header">
-        <h3>I tuoi gruppi</h3>
-        <button type="button" class="link-label" (click)="openGruppi()">
-          Vedi tutti
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </button>
-      </div>
-
-      <div class="cards-list" *ngIf="myGroups.length > 0; else emptyGroups">
-        <article class="group-row" *ngFor="let group of myGroups" (click)="openGruppi()">
-          <div class="group-icon" [ngClass]="getGroupColorClass(group)">
-            {{ group.nome.charAt(0) }}
-          </div>
-          <div class="group-info">
-            <h4>{{ group.nome }}</h4>
-            <p>{{ group.materia }} - {{ group.membersCount || 0 }} membri</p>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
-        </article>
-      </div>
-      <ng-template #emptyGroups>
-        <div class="empty-card">
-          <p>Nessun gruppo trovato.</p>
-          <button type="button" class="btn-link" (click)="openGruppi()">Apri Gruppi</button>
         </div>
       </ng-template>
     </section>
