@@ -33,9 +33,9 @@ interface NoteSubjectsResponse {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private baseUrl = 'http://localhost:3000/api'; 
+  private baseUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token') || '';
@@ -110,6 +110,10 @@ export class ApiService {
           return dto;
         }))
       );
+  }
+
+  getGruppoById(id: string | number): Observable<Gruppo> {
+    return this.http.get<Gruppo>(`${this.baseUrl}/gruppi/${id}`);
   }
 
   getPublicGroups(query: string): Observable<Gruppo[]> {
@@ -245,8 +249,8 @@ export class ApiService {
         faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
         subjects: Array.isArray(raw?.subjects)
           ? raw.subjects
-              .map((value: unknown) => String(value || '').trim())
-              .filter((value: string) => !!value)
+            .map((value: unknown) => String(value || '').trim())
+            .filter((value: string) => !!value)
           : []
       }))
     );

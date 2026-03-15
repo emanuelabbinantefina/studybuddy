@@ -1,0 +1,91 @@
+<ion-content class="detail-page">
+  <div class="main-wrapper">
+
+    <div class="top-bar">
+      <button class="back-btn" (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+      <span class="page-title">Dettaglio Gruppo</span>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="group-hero" *ngIf="gruppo">
+      <div class="big-avatar" [class]="gruppo.colorClass || 'bg-blue'">
+        {{ gruppo.nome ? gruppo.nome.charAt(0).toUpperCase() : 'G' }}
+      </div>
+      <h2>{{ gruppo.nome }}</h2>
+      <p class="subtitle">
+        {{ gruppo.materia }} <span class="dot">·</span>
+        <ion-icon name="people"></ion-icon> {{ gruppo.membersCount || 1 }} membri
+      </p>
+    </div>
+
+    <div class="custom-segment">
+      <button class="seg-btn" [class.active]="currentTab === 'appunti'" (click)="setTab('appunti')">
+        <ion-icon name="folder-outline"></ion-icon>
+        Appunti
+      </button>
+      <button class="seg-btn" [class.active]="currentTab === 'bacheca'" (click)="setTab('bacheca')">
+        <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+        Bacheca
+      </button>
+      <button class="seg-btn" [class.active]="currentTab === 'domande'" (click)="setTab('domande')">
+        <ion-icon name="help-circle-outline"></ion-icon>
+        Domande
+      </button>
+    </div>
+
+    <div class="content-area">
+
+      <div class="tab-panel" *ngIf="currentTab === 'appunti'">
+
+        <div class="appunti-list" *ngIf="appunti && appunti.length > 0">
+          <div class="appunto-item" *ngFor="let a of appunti" (click)="scaricaFile(a.id)">
+            <div class="file-icon-wrap" [class]="a.tipoFile">
+              <ion-icon [name]="a.tipoFile === 'pdf' ? 'document-text' : 'image'"></ion-icon>
+            </div>
+            <div class="file-info">
+              <h4>{{ a.titolo }}</h4>
+              <p>{{ a.autoreNome || 'Studente' }} • {{ a.tempoUpload }}</p>
+            </div>
+            <ion-icon name="chevron-forward-outline" class="item-arrow"></ion-icon>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="appunti.length === 0">
+          <div class="icon-circle">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+          </div>
+          <h3>Ancora nessun file</h3>
+          <p>Sii il primo a caricare del materiale per questo gruppo!</p>
+        </div>
+
+        <button class="action-btn">
+          <ion-icon name="add-circle-outline"></ion-icon>
+          Carica appunto
+        </button>
+      </div>
+
+      <div class="tab-panel" *ngIf="currentTab === 'bacheca'">
+        <div class="empty-state">
+          <div class="icon-circle">
+            <ion-icon name="chatbubbles-outline"></ion-icon>
+          </div>
+          <h3>La bacheca è vuota</h3>
+          <p>Inizia una conversazione con gli altri studenti.</p>
+        </div>
+      </div>
+
+      <div class="tab-panel" *ngIf="currentTab === 'domande'">
+        <div class="empty-state">
+          <div class="icon-circle">
+            <ion-icon name="bulb-outline"></ion-icon>
+          </div>
+          <h3>Nessuna domanda</h3>
+          <p>Hai un dubbio? Chiedi aiuto qui.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

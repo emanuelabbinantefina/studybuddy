@@ -60,7 +60,11 @@ export const routes: Routes = [
 
   // --- PAGINE ESTERNE AI TAB (Schermo intero) ---
   {
-    path: 'chat/:id', // <--- MESSA QUI (Fuori dai children)
-    loadComponent: () => import('./pages/chat/chat.page').then(m => m.ChatPage)
+  path: 'groups/:id', 
+  loadComponent: () => import('./tabs/groups/group-detail/group-detail.page').then(m => m.GroupDetailPage)
+},
+  {
+    path: 'group-detail',
+    loadComponent: () => import('./tabs/groups/group-detail/group-detail.page').then( m => m.GroupDetailPage)
   },
 ];

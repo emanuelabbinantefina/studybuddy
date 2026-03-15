@@ -84,16 +84,6 @@ export interface GroupBoardMessage {
   createdAt: string;
 }
 
-// Questa serve per la pagina della Chat singola
-export interface Messaggio {
-  id: number;
-  testo: string;
-  autore: string;
-  orario: string;
-  tipo: 'testo' | 'file';
-  nomeFile?: string;
-  isMe: boolean; 
-}
 
 export interface Appunto {
   id: number;

@@ -1,12 +1,15 @@
 <ion-content class="modal-bg" [fullscreen]="true" [forceOverscroll]="false">
   <section class="modal-card">
+    <div class="drag-handle"></div>
+
     <header class="modal-header">
       <div>
         <h2>Crea gruppo studio</h2>
         <p>Step {{ step }} di 2</p>
       </div>
-
-      <button type="button" class="close-btn" (click)="cancel()">&times;</button>
+      <button type="button" class="close-btn" (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
     </header>
 
     <div class="steps-track">
@@ -14,11 +17,11 @@
       <span [class.active]="step >= 2"></span>
     </div>
 
-    <section *ngIf="step === 1" class="step-pane">
+    <section *ngIf="step === 1" class="step-pane animate-fade-in">
       <label>NOME DEL GRUPPO</label>
       <input type="text" maxlength="60" placeholder="Es. Analisi II - Sessione giugno" [(ngModel)]="groupName">
 
-      <label>FACOLTA</label>
+      <label>FACOLTÀ</label>
       <div class="chips-wrap">
         <button
           type="button"
@@ -30,8 +33,8 @@
         </button>
       </div>
 
-      <label>CORSO</label>
-      <div class="chips-wrap">
+      <label *ngIf="subjectOptions.length > 0">CORSO</label>
+      <div class="chips-wrap" *ngIf="subjectOptions.length > 0">
         <button
           type="button"
           class="chip"
@@ -46,13 +49,14 @@
       <input type="date" [(ngModel)]="examDate">
     </section>
 
-    <section *ngIf="step === 2" class="step-pane">
+    <section *ngIf="step === 2" class="step-pane animate-fade-in">
       <article class="preview-card">
-        <div class="icon-box" [ngClass]="selectedColorClass">{{ groupName ? groupName.charAt(0) : '?' }}</div>
-
+        <div class="icon-box" [ngClass]="selectedColorClass">
+          {{ groupName ? groupName.charAt(0).toUpperCase() : '?' }}
+        </div>
         <div>
           <h3>{{ groupName || 'Nome gruppo' }}</h3>
-          <p>{{ selectedFacultyName || 'Facolta' }} · {{ selectedSubject || 'Materia' }}</p>
+          <p>{{ selectedFacultyName || 'Facoltà' }} &middot; {{ selectedSubject || 'Materia' }}</p>
         </div>
       </article>
 
@@ -71,13 +75,13 @@
       <textarea
         rows="4"
         maxlength="1000"
-        placeholder="Es. Qui condividiamo avvisi, materiali e aggiornamenti utili"
+        placeholder="Es. Qui condividiamo avvisi, materiali e aggiornamenti utili..."
         [(ngModel)]="boardMessage">
       </textarea>
 
       <label>DOMANDE D'ESAME INIZIALI (OPZIONALE)</label>
       <div class="question-row">
-        <input type="text" maxlength="500" placeholder="Inserisci una domanda" [(ngModel)]="questionDraft">
+        <input type="text" maxlength="500" placeholder="Inserisci una domanda..." [(ngModel)]="questionDraft">
         <select [(ngModel)]="questionSessionDraft">
           <option value="">Sessione (opzionale)</option>
           <option *ngFor="let session of questionSessionOptions" [value]="session">
@@ -91,17 +95,18 @@
           placeholder="Anno"
           [ngModel]="questionYearDraft"
           (ngModelChange)="onQuestionYearChange($event)">
-        <button type="button" class="add-question-btn" (click)="addSeedQuestion()">Aggiungi</button>
+        <button type="button" class="add-question-btn" (click)="addSeedQuestion()">+</button>
       </div>
 
       <div class="seed-questions" *ngIf="seedQuestions.length > 0">
-        <article class="seed-question-card" *ngFor="let item of seedQuestions; let i = index">
+        <article class="seed-question-card animate-fade-in" *ngFor="let item of seedQuestions; let i = index">
           <div>
             <strong>{{ item.question }}</strong>
             <p *ngIf="item.session || item.year">{{ item.session }}<span *ngIf="item.session && item.year"> </span>{{ item.year }}</p>
           </div>
-
-          <button type="button" class="remove-btn" (click)="removeSeedQuestion(i)">×</button>
+          <button type="button" class="remove-btn" (click)="removeSeedQuestion(i)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
         </article>
       </div>
     </section>
@@ -112,7 +117,7 @@
         Continua
       </button>
       <button type="button" class="btn primary" *ngIf="step === 2" [disabled]="!canCreate()" (click)="createGroup()">
-        {{ creating ? 'Creazione...' : 'Crea gruppo' }}
+        {{ creating ? 'Creazione in corso...' : 'Crea gruppo' }}
       </button>
     </footer>
   </section>

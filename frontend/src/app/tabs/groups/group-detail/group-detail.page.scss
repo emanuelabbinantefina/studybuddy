@@ -1,0 +1,181 @@
+// Layout Generale
+.group-header {
+  padding: 24px 20px;
+  background: #f8faff; // Sfondo leggero per far risaltare il contenuto
+  
+  .back-btn {
+    --background: white;
+    --color: #1f2240;
+    --border-radius: 12px;
+    --box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 16px;
+    height: 36px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1f2240;
+    margin: 0 0 4px 0;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #8d92aa;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .members {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #5b5ce9;
+      font-weight: 600;
+    }
+  }
+}
+
+// Design dei Tab (coerente con image_3042f8.png)
+.tabs-container {
+  background: white;
+  margin: 0 16px 20px;
+  padding: 6px;
+  border-radius: 16px;
+  display: flex;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+
+  .tab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #8d92aa;
+    transition: all 0.3s ease;
+
+    &.active {
+      background: #f0f1ff;
+      color: #5b5ce9;
+    }
+
+    ion-icon { font-size: 1.2rem; }
+  }
+}
+
+// Pannello Contenuti
+.tab-content {
+  padding: 0 16px 100px;
+}
+
+// Lista Appunti (coerente con image_3042f8.png)
+.appunti-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appunto-item {
+  background: white;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #eef0f7;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
+
+  &:active { transform: scale(0.98); }
+
+  .file-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 12px;
+    background: #f0f7ff; 
+    color: #007bff;
+    
+    &.pdf { background: #fff1f1; color: #ff4d4d; }
+  }
+
+  .file-info {
+    flex: 1;
+    h4 { margin: 0; font-size: 1rem; font-weight: 700; color: #1f2240; }
+    p { margin: 2px 0 0; font-size: 0.8rem; color: #8d92aa; }
+  }
+
+  .item-arrow { color: #d9dbe8; font-size: 1.2rem; }
+}
+
+// Messaggi Bacheca
+.message-card {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-left: 4px solid #5b5ce9;
+  
+  .msg-user { font-weight: 700; color: #1f2240; font-size: 0.9rem; }
+  .msg-text { color: #4a4d70; margin: 6px 0; line-height: 1.4; }
+  .msg-date { font-size: 0.75rem; color: #a0a5ba; }
+}
+
+// Bottone d'azione Flottante (quello in fondo allo screenshot)
+.action-btn {
+  position: fixed;
+  bottom: 30px;
+  left: 20px;
+  right: 20px;
+  background: #5b5ce9;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 10px 20px rgba(91, 92, 233, 0.3);
+  z-index: 100;
+
+  &:active { transform: translateY(2px); box-shadow: 0 5px 10px rgba(91, 92, 233, 0.2); }
+}
+
+// Stato Vuoto
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 20px;
+  border: 2px dashed #eef0f7;
+  
+  .icon-circle {
+    width: 60px;
+    height: 60px;
+    background: #f8faff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2rem;
+    color: #5b5ce9;
+  }
+  
+  h3 { margin: 0; font-size: 1.1rem; color: #1f2240; }
+  p { color: #8d92aa; font-size: 0.9rem; margin-top: 6px; }
+}

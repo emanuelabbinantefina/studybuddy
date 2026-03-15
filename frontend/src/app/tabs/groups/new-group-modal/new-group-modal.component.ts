@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { IonContent, IonicModule, ModalController, ToastController } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { closeOutline, trashOutline } from 'ionicons/icons';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
@@ -50,6 +52,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
   questionSessionDraft = '';
   questionYearDraft = '';
   seedQuestions: SeedQuestionRow[] = [];
+  
   readonly minQuestionYear = 2000;
   readonly maxQuestionYear = new Date().getFullYear();
   readonly questionSessionOptions = [
@@ -67,7 +70,10 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private toastCtrl: ToastController
-  ) {}
+  ) {
+    // Registrazione manuale delle icone necessarie per questo componente
+    addIcons({ closeOutline, trashOutline });
+  }
 
   ngOnInit() {
     this.userService.reloadProfile();
@@ -140,10 +146,11 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
     const session = this.normalizeQuestionSession(this.questionSessionDraft);
     const year = this.normalizeQuestionYear(this.questionYearDraft);
     if (!question) return;
+    
     const hasAnyMeta = !!this.questionSessionDraft.trim() || !!this.questionYearDraft.trim();
     if (hasAnyMeta && (!session || !year)) {
       await this.showToast(
-        `Se specifichi i dettagli d esame, inserisci sia sessione sia anno valido fino al ${this.maxQuestionYear}`,
+        `Se specifichi i dettagli d'esame, inserisci sia sessione sia anno valido fino al ${this.maxQuestionYear}`,
         'warning'
       );
       return;
@@ -164,7 +171,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
         session: session || undefined,
         year: year || undefined,
       },
-    ].slice(0, 8);
+    ].slice(0, 8); // Limita a 8 domande max per la creazione iniziale
 
     this.questionDraft = '';
     this.questionSessionDraft = '';
@@ -203,13 +210,10 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
 
       await this.modalCtrl.dismiss(null, 'confirm');
     } catch (err: any) {
-      const toast = await this.toastCtrl.create({
-        message: err?.error?.message || 'Errore durante la creazione del gruppo',
-        duration: 2000,
-        color: 'danger',
-        position: 'bottom',
-      });
-      await toast.present();
+      await this.showToast(
+        err?.error?.message || 'Errore durante la creazione del gruppo',
+        'danger'
+      );
     } finally {
       this.creating = false;
     }
@@ -235,7 +239,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
   private async showToast(message: string, color: 'warning' | 'danger'): Promise<void> {
     const toast = await this.toastCtrl.create({
       message,
-      duration: 2000,
+      duration: 2500,
       color,
       position: 'bottom',
     });
@@ -244,7 +248,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
 
   private scrollToTopSoon(): void {
     requestAnimationFrame(() => {
-      this.content?.scrollToTop(180).catch(() => undefined);
+      this.content?.scrollToTop(200).catch(() => undefined);
     });
   }
 
