@@ -51,7 +51,7 @@ export class NotesPage implements OnInit, OnDestroy {
 
   sessionUserName = 'Utente';
   myFacultyLabel = '';
-  showAllFaculties = false;
+  showAllFaculties = true;
 
   loading = false;
   downloadingNoteId: number | null = null;
@@ -101,10 +101,19 @@ export class NotesPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  ionViewWillEnter() {
-    this.loadStats();
-    this.loadNoteContext();
-  }
+ ionViewWillEnter() {
+  this.activeTab = 'all';
+  this.activeFileFilter = '';
+  this.activeSubjectFilter = '';
+  this.sortMode = 'newest';
+  this.query = '';
+  this.selectedNote = null;
+  this.showFilters = false;
+  this.showAllFaculties = true;
+
+  this.loadStats();
+  this.loadNoteContext();
+}
   onSearchChange(event: Event) {
     const target = event.target as HTMLInputElement | null;
     this.query = target?.value || '';

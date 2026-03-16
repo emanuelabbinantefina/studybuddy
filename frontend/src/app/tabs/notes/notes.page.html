@@ -12,12 +12,6 @@
   <div class="notes-header">
     <h1 class="page-title">Appunti</h1>
     <div class="header-actions">
-      <button
-        class="view-toggle"
-        (click)="toggleViewMode()"
-      >
-        <ion-icon [name]="viewMode === 'grid' ? 'list-outline' : 'grid-outline'"></ion-icon>
-      </button>
       <button class="upload-btn" (click)="toggleUploadPanel()">
         <ion-icon name="add-outline"></ion-icon>
         Carica
@@ -187,17 +181,17 @@
     <div class="scope-toggle">
       <button
         class="scope-btn"
-        [class.scope-btn--active]="!showAllFaculties"
-        (click)="onFacultyScopeChange(false)"
-      >
-        La mia facoltà
-      </button>
-      <button
-        class="scope-btn"
         [class.scope-btn--active]="showAllFaculties"
         (click)="onFacultyScopeChange(true)"
       >
         Tutti
+      </button>
+      <button
+        class="scope-btn"
+        [class.scope-btn--active]="!showAllFaculties"
+        (click)="onFacultyScopeChange(false)"
+      >
+        La mia facoltà
       </button>
     </div>
     <div class="scope-info">
