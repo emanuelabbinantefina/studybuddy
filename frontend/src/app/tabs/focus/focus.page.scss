@@ -1,0 +1,700 @@
+$bg-page: #f2f2f7;
+$bg-card: #ffffff;
+
+$text-primary: #1a1a2e;
+$text-secondary: #6b6b80;
+$text-muted: #a0a0b2;
+
+$purple: #8b5cf6;
+$purple-light: #ede9fe;
+
+$pink: #ec4899;
+$pink-light: #fce7f3;
+
+$blue: #3b82f6;
+$blue-light: #dbeafe;
+
+$green: #10b981;
+$green-light: #d1fae5;
+
+$orange: #f59e0b;
+
+$radius-sm: 14px;
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 28px;
+$radius-full: 9999px;
+
+$shadow-card: 0 2px 16px rgba(0, 0, 0, 0.04),
+  0 1px 4px rgba(0, 0, 0, 0.03);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.06),
+  0 2px 8px rgba(0, 0, 0, 0.03);
+
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ═══ PAGE ═══
+
+.focus-content {
+  --background: #{$bg-page};
+  --padding-start: 20px;
+  --padding-end: 20px;
+}
+
+// ═══ HEADER ═══
+
+.focus-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 0 8px;
+  margin-top: env(safe-area-inset-top);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-sm;
+  background: $bg-card;
+  border: none;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 20px;
+    color: $text-primary;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.header-center {
+  flex: 1;
+}
+
+.page-title {
+  font-family: $font-display;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: $text-primary;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-date {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $text-muted;
+  margin: 2px 0 0;
+}
+
+.header-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: #fef3c7;
+  border-radius: $radius-full;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $orange;
+
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+// ═══ TIMER ═══
+
+.timer-section {
+  margin: 20px 0 24px;
+}
+
+.timer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 24px;
+  background: $bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  transition: background $transition;
+
+  &--break {
+    background: linear-gradient(145deg, #fef3c7 0%, #fce7f3 100%);
+  }
+}
+
+.timer-ring-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 24px;
+}
+
+.timer-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-ring-bg {
+  fill: none;
+  stroke: darken($bg-page, 3%);
+  stroke-width: 2.5;
+}
+
+.timer-ring-fill {
+  fill: none;
+  stroke: $purple;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s linear;
+
+  &--break {
+    stroke: $orange;
+  }
+}
+
+.timer-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-display {
+  font-family: $font-display;
+  font-size: 3rem;
+  font-weight: 900;
+  color: $text-primary;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.timer-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $purple;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+
+  &--break {
+    color: $orange;
+  }
+}
+
+// Subject input
+.subject-input {
+  width: 100%;
+  max-width: 260px;
+  padding: 10px 16px;
+  background: $bg-page;
+  border: 1.5px solid transparent;
+  border-radius: $radius-full;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $text-primary;
+  text-align: center;
+  outline: none;
+  margin-bottom: 20px;
+  transition: border-color $transition;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: $purple;
+  }
+}
+
+// Controls
+.timer-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.timer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform $spring;
+
+  &:active {
+    transform: scale(0.93);
+  }
+
+  &--reset {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: $bg-page;
+
+    ion-icon {
+      font-size: 20px;
+      color: $text-secondary;
+    }
+  }
+
+  &--main {
+    padding: 14px 32px;
+    background: $purple;
+    color: #fff;
+    border-radius: $radius-full;
+    font-family: $font-body;
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+
+    ion-icon {
+      font-size: 20px;
+    }
+
+    &-break {
+      background: $orange;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    }
+  }
+}
+
+// Pomodoro dots
+.pomodoro-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.pomo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: darken($bg-page, 5%);
+  transition: all $spring;
+
+  &--filled {
+    background: $purple;
+    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+    transform: scale(1.1);
+  }
+}
+
+.pomo-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $text-muted;
+  margin-left: 4px;
+}
+
+// ═══ STATS STRIP ═══
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.stat-pill-icon {
+  font-size: 1.2rem;
+}
+
+.stat-pill-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.stat-pill-value {
+  font-family: $font-display;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: $text-primary;
+}
+
+.stat-pill-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $text-muted;
+}
+
+.stat-pill-bar {
+  width: 100%;
+  height: 6px;
+  background: darken($bg-page, 3%);
+  border-radius: $radius-full;
+  overflow: hidden;
+}
+
+.stat-pill-bar-fill {
+  height: 100%;
+  background: $purple;
+  border-radius: $radius-full;
+  transition: width 0.6s ease;
+  min-width: 2%;
+
+  &--green {
+    background: $green;
+  }
+}
+
+// ═══ SECTIONS ═══
+
+.section {
+  margin-bottom: 28px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: $font-display;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin: 0;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: $purple-light;
+  color: $purple;
+  border: none;
+  border-radius: $radius-full;
+  font-family: $font-body;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ═══ ADD GOAL FORM ═══
+
+.add-goal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: 14px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.goal-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: $bg-page;
+  border: 1.5px solid transparent;
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $text-primary;
+  outline: none;
+  transition: border-color $transition;
+
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: $purple;
+  }
+
+  &--small {
+    padding: 10px 16px;
+    font-size: 0.82rem;
+  }
+}
+
+.add-goal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: $radius-full;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform $transition;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &--cancel {
+    background: transparent;
+    color: $text-muted;
+  }
+
+  &--confirm {
+    background: $purple;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// ═══ GOALS LIST ═══
+
+.goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: $bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  transition: all $transition;
+  animation: cardFadeIn 0.3s ease-out both;
+
+  &--done {
+    opacity: 0.6;
+
+    .goal-text {
+      text-decoration: line-through;
+      color: $text-muted;
+    }
+  }
+}
+
+.goal-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform $spring;
+
+  ion-icon {
+    font-size: 24px;
+    color: darken($bg-page, 12%);
+  }
+
+  &:active {
+    transform: scale(0.85);
+  }
+
+  .goal-item--done & ion-icon {
+    color: $green;
+  }
+}
+
+.goal-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.goal-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-primary;
+  transition: all $transition;
+}
+
+.goal-subject {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $text-muted;
+}
+
+.goal-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.3;
+  transition: opacity $transition;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 18px;
+    color: $text-secondary;
+  }
+
+  &:active {
+    opacity: 1;
+  }
+}
+
+// ═══ EMPTY GOALS ═══
+
+.empty-goals {
+  text-align: center;
+  padding: 28px 16px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  p {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-secondary;
+    margin: 0 0 4px;
+  }
+}
+
+.empty-hint {
+  font-size: 0.78rem;
+  color: $text-muted;
+}
+
+// ═══ SESSIONS TIMELINE ═══
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: cardFadeIn 0.3s ease-out both;
+}
+
+.session-time {
+  width: 48px;
+  font-family: $font-display;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $text-muted;
+  padding-top: 2px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.session-dot-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.session-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $purple;
+  flex-shrink: 0;
+}
+
+.session-line {
+  width: 2px;
+  height: 32px;
+  background: darken($bg-page, 6%);
+}
+
+.session-info {
+  flex: 1;
+  padding-bottom: 20px;
+}
+
+.session-subject {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.session-duration {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text-muted;
+}
+
+// ═══ ANIMATIONS ═══
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

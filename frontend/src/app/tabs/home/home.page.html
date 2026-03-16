@@ -1,82 +1,189 @@
-<ion-content [fullscreen]="true" class="bg-content">
-  <div class="main-padding">
-    <section class="hero-card">
-      <div class="hero-text">
-        <p class="hero-kicker">BENTORNATA/O, {{ displayName }}</p>
-        <h2 *ngIf="nextExam as exam; else noExamTitle">
-          Il tuo prossimo esame
-          <span *ngIf="exam.daysLeft > 1">e tra {{ exam.daysLeft }} giorni.</span>
-          <span *ngIf="exam.daysLeft === 1">e domani.</span>
-          <span *ngIf="exam.daysLeft === 0">e oggi.</span>
-        </h2>
-        <ng-template #noExamTitle>
-          <h2>Aggiungi il tuo primo esame.</h2>
-        </ng-template>
-        <p>{{ getHeroSubtitle() }}</p>
-        <button type="button" class="btn-primary small" (click)="openPlanner()">
-          Vai al Planner
-          <ion-icon name="arrow-forward-outline"></ion-icon>
-        </button>
-      </div>
-      <div class="hero-img">
-        <img src="assets/images/students.png" alt="Studio collaborativo">
-      </div>
-    </section>
+<ion-content [fullscreen]="true" class="home-content" [scrollEvents]="true">
 
-    <section class="section-block">
-      <div class="section-header">
-        <h3>Prossimi esami</h3>
-        <button type="button" class="link-label" (click)="openPlanner()">
-          Apri planner
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </button>
-      </div>
-
-      <div class="exam-grid" *ngIf="upcomingExams.length > 0; else emptyExams">
-        <article class="exam-card" *ngFor="let exam of upcomingExams" (click)="openPlanner()">
-          <span class="exam-dot" [ngClass]="exam.accentClass"></span>
-          <h4>{{ exam.title }}</h4>
-          <p>{{ exam.dateLabel }}</p>
-          <strong [ngClass]="exam.accentClass">{{ exam.daysLeft }}gg</strong>
-        </article>
-      </div>
-      <ng-template #emptyExams>
-        <div class="empty-card">
-          <p>Nessun esame pianificato nel planner.</p>
-          <button type="button" class="btn-link" (click)="openPlanner()">Apri Planner</button>
-        </div>
-      </ng-template>
-    </section>
-
-    <section class="section-block">
-      <div class="section-header">
-        <h3>Appunti recenti</h3>
-        <button type="button" class="link-label" (click)="openAppunti()">
-          Vedi tutti
-          <ion-icon name="chevron-forward-outline"></ion-icon>
-        </button>
-      </div>
-
-      <div class="cards-list" *ngIf="recentNotes.length > 0; else emptyNotes">
-        <article class="note-card" *ngFor="let note of recentNotes" (click)="openAppunti()">
-          <div class="note-icon-box" [ngClass]="getNoteAccentClass(note)">
-            {{ getNoteFileLabel(note) }}
-          </div>
-          <div class="note-info">
-            <h4>{{ note.titolo }}</h4>
-            <p>{{ note.materia }} - {{ note.tempoUpload }}</p>
-          </div>
-          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
-        </article>
-      </div>
-      <ng-template #emptyNotes>
-        <div class="empty-card">
-          <p>Nessun appunto disponibile.</p>
-          <button type="button" class="btn-link" (click)="openAppunti()">Apri Appunti</button>
-        </div>
-      </ng-template>
-    </section>
-
-    <div class="spacer-bottom"></div>
+  <!-- HEADER -->
+  <div class="home-header">
+    <div class="header-left">
+      <p class="greeting-label">Ciao 👋</p>
+      <h1 class="greeting-name">{{ displayName }}</h1>
+    </div>
+    <button class="icon-btn" (click)="openPlanner()">
+      <ion-icon name="notifications-outline"></ion-icon>
+    </button>
   </div>
+
+  <!-- HERO CARD -->
+  <div
+    class="hero-card"
+    [class.hero-card--empty]="!nextExam"
+    (click)="openPlanner()"
+  >
+    <div class="hero-blob hero-blob--1"></div>
+    <div class="hero-blob hero-blob--2"></div>
+
+    <div class="hero-content">
+      <ng-container *ngIf="nextExam; else noExam">
+        <span class="hero-chip">📚 Prossimo esame</span>
+        <h2 class="hero-title">{{ nextExam.title }}</h2>
+        <p class="hero-subtitle">{{ nextExam.longDateLabel }}</p>
+        <div class="hero-countdown">
+          <div class="countdown-box">
+            <span class="countdown-number">{{ nextExam.daysLeft }}</span>
+            <span class="countdown-label">{{
+              nextExam.daysLeft === 1 ? 'giorno' : 'giorni'
+            }}</span>
+          </div>
+          <button class="hero-btn">
+            Apri Planner
+            <ion-icon name="arrow-forward"></ion-icon>
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #noExam>
+        <span class="hero-chip">🎯 Inizia ora</span>
+        <h2 class="hero-title">Nessun esame in vista</h2>
+        <p class="hero-subtitle">{{ getHeroSubtitle() }}</p>
+        <button class="hero-btn hero-btn--outline" style="margin-top: 16px">
+          Aggiungi esame
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </button>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- TODAY'S FOCUS -->
+  <div class="today-focus">
+    <div class="focus-header">
+      <h3 class="section-title">Oggi</h3>
+      <span class="today-date">{{ todayLabel }}</span>
+    </div>
+
+    <div class="focus-grid">
+      <!-- Pomodoro -->
+      <button class="focus-card focus-card--warm" (click)="openFocus()">
+        <span class="focus-emoji">🍅</span>
+        <span class="focus-label">Inizia a<br/>studiare</span>
+      </button>
+
+      <!-- Progresso (solo display) -->
+      <div class="focus-card focus-card--progress focus-card--static">
+        <div class="progress-ring">
+          <svg viewBox="0 0 36 36" class="circular-progress">
+            <path
+              class="progress-bg"
+              d="M18 2.0845
+                 a 15.9155 15.9155 0 0 1 0 31.831
+                 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <path
+              class="progress-fill"
+              [attr.stroke-dasharray]="dailyProgress + ', 100'"
+              d="M18 2.0845
+                 a 15.9155 15.9155 0 0 1 0 31.831
+                 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+          </svg>
+          <span class="progress-text">{{ dailyProgress }}%</span>
+        </div>
+        <span class="focus-label">Progresso<br/>di oggi</span>
+      </div>
+
+      <!-- Upload -->
+      <button class="focus-card focus-card--cool" (click)="uploadNote()">
+        <span class="focus-emoji">📤</span>
+        <span class="focus-label">Carica<br/>appunti</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- UPCOMING EXAMS -->
+  <section class="section" *ngIf="loadingExams || upcomingExams.length > 0">
+    <div class="section-header">
+      <h3 class="section-title">Prossimi esami</h3>
+      <button class="link-btn" (click)="openPlanner()">Vedi tutti</button>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="exams-scroll" *ngIf="loadingExams">
+      <div class="exam-card exam-card--skeleton" *ngFor="let s of [1, 2]">
+        <div class="skeleton skeleton--sm"></div>
+        <div class="skeleton skeleton--lg"></div>
+        <div class="skeleton skeleton--md"></div>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <div class="exams-scroll" *ngIf="!loadingExams">
+      <div
+        class="exam-card"
+        [ngClass]="exam.accentClass"
+        *ngFor="let exam of upcomingExams; let i = index"
+        [style.animation-delay]="i * 80 + 'ms'"
+        (click)="openPlanner()"
+      >
+        <div class="exam-date-badge">
+          <span class="exam-date-text">{{ exam.dateLabel }}</span>
+        </div>
+        <h4 class="exam-title">{{ exam.title }}</h4>
+        <div class="exam-days">
+          <ion-icon name="time-outline"></ion-icon>
+          <span *ngIf="exam.daysLeft === 0">Oggi!</span>
+          <span *ngIf="exam.daysLeft === 1">Domani</span>
+          <span *ngIf="exam.daysLeft > 1">tra {{ exam.daysLeft }} giorni</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECENT NOTES -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">Appunti recenti</h3>
+      <button class="link-btn" (click)="openAppunti()">Vedi tutti</button>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="notes-list" *ngIf="loadingNotes">
+      <div class="note-card note-card--skeleton" *ngFor="let s of [1, 2, 3]">
+        <div class="skeleton skeleton--icon"></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+          <div class="skeleton skeleton--lg"></div>
+          <div class="skeleton skeleton--sm"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="notes-list" *ngIf="!loadingNotes && recentNotes.length > 0">
+      <div
+        class="note-card"
+        *ngFor="let note of recentNotes; let i = index"
+        [style.animation-delay]="i * 60 + 'ms'"
+        (click)="openAppunti()"
+      >
+        <div class="note-icon-box" [ngClass]="getNoteAccentClass(note)">
+          <span class="note-icon-label">{{ getNoteFileLabel(note) }}</span>
+        </div>
+        <div class="note-info">
+          <span class="note-title">{{ note.titolo || 'Senza titolo' }}</span>
+          <span class="note-meta">{{ note.materia || 'Generale' }}</span>
+        </div>
+        <ion-icon name="chevron-forward" class="note-arrow"></ion-icon>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loadingNotes && recentNotes.length === 0">
+      <span class="empty-emoji">📄</span>
+      <p class="empty-text">Nessun appunto ancora</p>
+      <button class="hero-btn hero-btn--small" (click)="openAppunti()">
+        Esplora
+        <ion-icon name="arrow-forward"></ion-icon>
+      </button>
+    </div>
+  </section>
+
+  <!-- Bottom spacer -->
+  <div style="height: 100px"></div>
+
 </ion-content>

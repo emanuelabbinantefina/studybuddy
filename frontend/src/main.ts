@@ -9,18 +9,16 @@ import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { addIcons } from 'ionicons';
 
-// Registra la lingua italiana
 registerLocaleData(localeIt);
 
-// IMPORTA LE ICONE
 import {
   mailOutline, lockClosedOutline, personAddOutline, arrowBackOutline,
   personOutline, person, checkboxOutline, eyeOutline, eyeOffOutline,
   homeOutline, calendarOutline, peopleOutline, people, searchOutline,
   notificationsOutline, sparklesOutline, checkmarkCircleOutline, checkmarkCircle,
-  add, addCircleOutline, addCircle, // Aggiunto addCircle pieno
+  add, addCircleOutline, addCircle, 
   trashOutline, notificationsOffOutline, shieldCheckmarkOutline,
-  logOutOutline, cameraOutline, camera, // Aggiunto camera piena
+  logOutOutline, cameraOutline, camera, 
   chatboxEllipsesOutline, schoolOutline, school,
   arrowForwardOutline, chevronForward, bookmark, ellipse, magnet,
   codeSlash, language, triangle, flash, cloudUploadOutline,
@@ -29,10 +27,13 @@ import {
   cloudDownloadOutline, documentText, calculator, hardwareChip,
   arrowBack, chevronBack, ellipsisHorizontal, send,
   addOutline, folderOpenOutline, briefcaseOutline, downloadOutline,
-  image, document, close // Aggiunti per il menu allegati
+  image, document, close,
+  arrowForward, timeOutline,
+  documentTextOutline, ellipseOutline, pauseCircle, playCircle,
+  refreshOutline, closeOutline, trophyOutline, flameOutline,
+   listOutline, optionsOutline, chevronDown,
 } from 'ionicons/icons';
 
-// REGISTRAZIONE ICONE
 addIcons({
   'mail-outline': mailOutline,
   'lock-closed-outline': lockClosedOutline,
@@ -54,18 +55,18 @@ addIcons({
   'checkmark-circle': checkmarkCircle,
   'add': add,
   'add-circle-outline': addCircleOutline,
-  'add-circle': addCircle, // NUOVO
+  'add-circle': addCircle,
   'trash-outline': trashOutline,
-  'trash': trashOutline, // Alias
+  'trash': trashOutline,
   'notifications-off-outline': notificationsOffOutline,
-  'notifications-off': notificationsOffOutline, // Alias
+  'notifications-off': notificationsOffOutline,
   'shield-checkmark-outline': shieldCheckmarkOutline,
   'log-out-outline': logOutOutline,
   'camera-outline': cameraOutline,
-  'camera': camera, // NUOVO
+  'camera': camera,
   'chatbox-ellipses-outline': chatboxEllipsesOutline,
   'school-outline': schoolOutline,
-  'school': school, // Alias
+  'school': school,
   'arrow-forward-outline': arrowForwardOutline,
   'chevron-forward': chevronForward,
   'bookmark': bookmark,
@@ -96,15 +97,28 @@ addIcons({
   'folder-open-outline': folderOpenOutline,
   'briefcase-outline': briefcaseOutline,
   'download-outline': downloadOutline,
-  'image': image,     // NUOVO
-  'document': document, // NUOVO
-  'close': close      // NUOVO
+  'image': image,
+  'document': document,
+  'close': close,
+  'arrow-forward': arrowForward,
+  'time-outline': timeOutline,
+  'document-text-outline': documentTextOutline,
+  'ellipse-outline': ellipseOutline,
+  'pause-circle': pauseCircle,
+  'play-circle': playCircle,
+  'refresh-outline': refreshOutline,
+  'close-outline': closeOutline,
+  'trophy-outline': trophyOutline,
+  'flame-outline': flameOutline,
+  'list-outline': listOutline,
+  'options-outline': optionsOutline,
+  'chevron-down': chevronDown,
 });
 
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular(),
+    provideIonicAngular({ mode: 'ios' }), 
     provideRouter(routes),
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'it-IT' }

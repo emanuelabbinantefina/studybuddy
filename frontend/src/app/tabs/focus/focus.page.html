@@ -1,0 +1,216 @@
+<ion-content [fullscreen]="true" class="focus-content">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="focus-page-header">
+    <button class="back-btn" (click)="goBack()">
+      <ion-icon name="arrow-back"></ion-icon>
+    </button>
+    <div class="header-center">
+      <h1 class="page-title">Focus del giorno</h1>
+      <p class="page-date">{{ todayDateLabel }}</p>
+    </div>
+    <div class="header-streak">
+      <ion-icon name="flame-outline"></ion-icon>
+      <span>{{ completedPomodoros }}</span>
+    </div>
+  </div>
+
+  <!-- ═══ POMODORO TIMER ═══ -->
+  <div class="timer-section">
+    <div class="timer-card" [class.timer-card--break]="isBreak">
+
+      <div class="timer-ring-wrapper">
+        <svg viewBox="0 0 36 36" class="timer-ring">
+          <path
+            class="timer-ring-bg"
+            d="M18 2.0845
+               a 15.9155 15.9155 0 0 1 0 31.831
+               a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+          <path
+            class="timer-ring-fill"
+            [class.timer-ring-fill--break]="isBreak"
+            [attr.stroke-dasharray]="timerStrokeDasharray"
+            d="M18 2.0845
+               a 15.9155 15.9155 0 0 1 0 31.831
+               a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <div class="timer-center">
+          <span class="timer-display">{{ timerDisplay }}</span>
+          <span class="timer-label" *ngIf="!isBreak">Focus</span>
+          <span class="timer-label timer-label--break" *ngIf="isBreak">Pausa</span>
+        </div>
+      </div>
+
+      <input
+        class="subject-input"
+        type="text"
+        placeholder="Cosa studi? (opzionale)"
+        [(ngModel)]="currentSessionSubject"
+        [disabled]="timerState === 'running'"
+        *ngIf="!isBreak"
+      />
+
+      <div class="timer-controls">
+        <button
+          class="timer-btn timer-btn--reset"
+          (click)="resetTimer()"
+          *ngIf="timerState !== 'idle'"
+        >
+          <ion-icon name="refresh-outline"></ion-icon>
+        </button>
+
+        <button
+          class="timer-btn timer-btn--main"
+          [class.timer-btn--main-break]="isBreak"
+          (click)="timerState === 'running' ? pauseTimer() : startTimer()"
+        >
+          <ion-icon
+            [name]="timerState === 'running' ? 'pause-circle' : 'play-circle'"
+          ></ion-icon>
+          <span *ngIf="timerState === 'idle'">Inizia</span>
+          <span *ngIf="timerState === 'running'">Pausa</span>
+          <span *ngIf="timerState === 'paused'">Riprendi</span>
+          <span *ngIf="timerState === 'break'">Avvia pausa</span>
+        </button>
+      </div>
+
+      <div class="pomodoro-dots">
+        <span
+          class="pomo-dot"
+          [class.pomo-dot--filled]="i < completedPomodoros"
+          *ngFor="let dot of [0,1,2,3]; let i = index"
+        ></span>
+        <span class="pomo-count">{{ completedPomodoros }} / 4 pomodori</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DAILY STATS ═══ -->
+  <div class="stats-strip">
+    <div class="stat-pill">
+      <span class="stat-pill-icon">⏱️</span>
+      <div class="stat-pill-info">
+        <span class="stat-pill-value">{{ studyProgressLabel }}</span>
+        <span class="stat-pill-label">su {{ targetLabel }}</span>
+      </div>
+      <div class="stat-pill-bar">
+        <div
+          class="stat-pill-bar-fill"
+          [style.width.%]="studyProgress"
+        ></div>
+      </div>
+    </div>
+
+    <div class="stat-pill">
+      <span class="stat-pill-icon">✅</span>
+      <div class="stat-pill-info">
+        <span class="stat-pill-value">{{ completedGoals }}/{{ goals.length }}</span>
+        <span class="stat-pill-label">obiettivi</span>
+      </div>
+      <div class="stat-pill-bar">
+        <div
+          class="stat-pill-bar-fill stat-pill-bar-fill--green"
+          [style.width.%]="goalsProgress"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DAILY GOALS ═══ -->
+  <section class="section">
+    <div class="section-header">
+      <h3 class="section-title">🎯 Obiettivi di oggi</h3>
+      <button class="add-btn" (click)="openAddGoal()">
+        <ion-icon name="add-outline"></ion-icon>
+        Aggiungi
+      </button>
+    </div>
+
+    <div class="add-goal-form" *ngIf="showAddGoal">
+      <input
+        class="goal-input"
+        type="text"
+        placeholder="es. Studiare cap. 3 di Diritto"
+        [(ngModel)]="newGoalText"
+        (keyup.enter)="addGoal()"
+      />
+      <input
+        class="goal-input goal-input--small"
+        type="text"
+        placeholder="Materia (opzionale)"
+        [(ngModel)]="newGoalSubject"
+        (keyup.enter)="addGoal()"
+      />
+      <div class="add-goal-actions">
+        <button class="action-btn action-btn--cancel" (click)="cancelAddGoal()">
+          Annulla
+        </button>
+        <button
+          class="action-btn action-btn--confirm"
+          (click)="addGoal()"
+          [disabled]="!newGoalText.trim()"
+        >
+          Aggiungi
+        </button>
+      </div>
+    </div>
+
+    <div class="goals-list" *ngIf="goals.length > 0">
+      <div
+        class="goal-item"
+        [class.goal-item--done]="goal.completed"
+        *ngFor="let goal of goals; let i = index"
+        [style.animation-delay]="i * 50 + 'ms'"
+      >
+        <button class="goal-check" (click)="toggleGoal(goal)">
+          <ion-icon
+            [name]="goal.completed ? 'checkmark-circle' : 'ellipse-outline'"
+          ></ion-icon>
+        </button>
+        <div class="goal-info">
+          <span class="goal-text">{{ goal.text }}</span>
+          <span class="goal-subject" *ngIf="goal.subject">{{ goal.subject }}</span>
+        </div>
+        <button class="goal-remove" (click)="removeGoal(goal)">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-goals" *ngIf="goals.length === 0 && !showAddGoal">
+      <p>Nessun obiettivo per oggi</p>
+      <span class="empty-hint">Tocca "Aggiungi" per iniziare 💪</span>
+    </div>
+  </section>
+
+  <!-- ═══ TODAY'S SESSIONS ═══ -->
+  <section class="section" *ngIf="todaySessions.length > 0">
+    <div class="section-header">
+      <h3 class="section-title">📖 Sessioni di oggi</h3>
+    </div>
+
+    <div class="sessions-list">
+      <div
+        class="session-item"
+        *ngFor="let session of todaySessions; let i = index"
+        [style.animation-delay]="i * 50 + 'ms'"
+      >
+        <div class="session-time">
+          {{ formatSessionTime(session.completedAt) }}
+        </div>
+        <div class="session-dot-line">
+          <div class="session-dot"></div>
+          <div class="session-line" *ngIf="i < todaySessions.length - 1"></div>
+        </div>
+        <div class="session-info">
+          <span class="session-subject">{{ session.subject }}</span>
+          <span class="session-duration">{{ session.duration }} min</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height: 120px"></div>
+</ion-content>

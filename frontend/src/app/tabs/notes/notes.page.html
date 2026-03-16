@@ -1,0 +1,459 @@
+<ion-content [fullscreen]="true" class="notes-content">
+
+  <!-- PULL TO REFRESH -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down"
+      refreshingSpinner="crescent"
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="notes-header">
+    <h1 class="page-title">Appunti</h1>
+    <div class="header-actions">
+      <button
+        class="view-toggle"
+        (click)="toggleViewMode()"
+      >
+        <ion-icon [name]="viewMode === 'grid' ? 'list-outline' : 'grid-outline'"></ion-icon>
+      </button>
+      <button class="upload-btn" (click)="toggleUploadPanel()">
+        <ion-icon name="add-outline"></ion-icon>
+        Carica
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ MINI STATS ═══ -->
+  <div class="mini-stats">
+    <div class="mini-stat">
+      <span class="mini-stat-emoji">📤</span>
+      <span class="mini-stat-value">{{ totalUploaded }}</span>
+      <span class="mini-stat-label">Caricati</span>
+    </div>
+    <div class="mini-stat-divider"></div>
+    <div class="mini-stat">
+      <span class="mini-stat-emoji">📥</span>
+      <span class="mini-stat-value">{{ totalDownloaded }}</span>
+      <span class="mini-stat-label">Scaricati</span>
+    </div>
+    <div class="mini-stat-divider"></div>
+    <div class="mini-stat">
+      <span class="mini-stat-emoji">🔖</span>
+      <span class="mini-stat-value">{{ totalSaved }}</span>
+      <span class="mini-stat-label">Salvati</span>
+    </div>
+  </div>
+
+  <!-- ═══ SEARCH BAR ═══ -->
+  <div class="search-bar">
+    <ion-icon name="search-outline" class="search-icon"></ion-icon>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Cerca appunti..."
+      [(ngModel)]="query"
+      (input)="onSearchChange($event)"
+    />
+    <button
+      class="filter-toggle"
+      [class.filter-toggle--active]="showFilters || activeFilterCount > 0"
+      (click)="toggleFilters()"
+    >
+      <ion-icon name="options-outline"></ion-icon>
+      <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+    </button>
+  </div>
+
+  <!-- ═══ TABS ═══ -->
+  <div class="tabs-row">
+    <button
+      class="tab-chip"
+      [class.tab-chip--active]="activeTab === 'all'"
+      (click)="setTab('all')"
+    >
+      Tutti
+    </button>
+    <button
+      class="tab-chip"
+      [class.tab-chip--active]="activeTab === 'mine'"
+      (click)="setTab('mine')"
+    >
+      🗂️ I miei
+    </button>
+    <button
+      class="tab-chip"
+      [class.tab-chip--active]="activeTab === 'saved'"
+      (click)="setTab('saved')"
+    >
+      🔖 Salvati
+    </button>
+  </div>
+
+  <!-- ═══ FILTERS PANEL ═══ -->
+  <div class="filters-panel" *ngIf="showFilters">
+
+    <!-- File type -->
+    <div class="filter-section">
+      <span class="filter-label">Tipo file</span>
+      <div class="filter-chips">
+        <button
+          class="f-chip"
+          [class.f-chip--active]="activeFileFilter === ''"
+          (click)="setFileFilter('')"
+        >
+          Tutti
+        </button>
+        <button
+          class="f-chip f-chip--pdf"
+          [class.f-chip--active]="activeFileFilter === 'pdf'"
+          (click)="setFileFilter('pdf')"
+        >
+          PDF
+        </button>
+        <button
+          class="f-chip f-chip--doc"
+          [class.f-chip--active]="activeFileFilter === 'doc'"
+          (click)="setFileFilter('doc')"
+        >
+          DOC
+        </button>
+        <button
+          class="f-chip f-chip--img"
+          [class.f-chip--active]="activeFileFilter === 'img'"
+          (click)="setFileFilter('img')"
+        >
+          IMG
+        </button>
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="filter-section" *ngIf="subjectOptions.length > 0">
+      <span class="filter-label">Materia</span>
+      <div class="filter-chips filter-chips--wrap">
+        <button
+          class="f-chip"
+          [class.f-chip--active]="activeSubjectFilter === ''"
+          (click)="setSubjectFilter('')"
+        >
+          Tutte
+        </button>
+        <button
+          class="f-chip"
+          *ngFor="let s of subjectOptions"
+          [class.f-chip--active]="activeSubjectFilter === s"
+          (click)="setSubjectFilter(s)"
+        >
+          {{ s }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Sort -->
+    <div class="filter-section">
+      <span class="filter-label">Ordina per</span>
+      <div class="filter-chips">
+        <button
+          class="f-chip"
+          [class.f-chip--active]="sortMode === 'newest'"
+          (click)="setSortMode('newest')"
+        >
+          ⬇️ Più recenti
+        </button>
+        <button
+          class="f-chip"
+          [class.f-chip--active]="sortMode === 'oldest'"
+          (click)="setSortMode('oldest')"
+        >
+          ⬆️ Più vecchi
+        </button>
+      </div>
+    </div>
+
+    <!-- Clear -->
+    <button
+      class="clear-filters"
+      *ngIf="activeFilterCount > 0"
+      (click)="clearAllFilters()"
+    >
+      Resetta filtri
+    </button>
+  </div>
+
+  <!-- ═══ FACULTY SCOPE ═══ -->
+  <div class="scope-card" *ngIf="myFacultyLabel">
+    <div class="scope-toggle">
+      <button
+        class="scope-btn"
+        [class.scope-btn--active]="!showAllFaculties"
+        (click)="onFacultyScopeChange(false)"
+      >
+        La mia facoltà
+      </button>
+      <button
+        class="scope-btn"
+        [class.scope-btn--active]="showAllFaculties"
+        (click)="onFacultyScopeChange(true)"
+      >
+        Tutti
+      </button>
+    </div>
+    <div class="scope-info">
+      <span class="scope-title">{{ facultyScopeTitle }}</span>
+      <span class="scope-desc">{{ facultyScopeDescription }}</span>
+    </div>
+  </div>
+
+  <!-- ═══ UPLOAD PANEL ═══ -->
+  <div class="upload-panel" *ngIf="showUploadPanel">
+    <div class="upload-panel-head">
+      <h3>Carica Appunti</h3>
+      <p>Trascina o seleziona un file</p>
+    </div>
+
+    <div
+      class="dropzone"
+      [class.dropzone--active]="dragActive"
+      (click)="openFilePicker()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <input
+        #fileInput
+        type="file"
+        [attr.accept]="fileAccept"
+        (change)="onFileSelected($event)"
+        hidden
+      />
+      <div class="dropzone-icon-wrap">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+      </div>
+      <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
+      <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
+      <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
+      <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
+      <div class="format-tags">
+        <span class="format-tag" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
+      </div>
+    </div>
+
+    <div class="upload-fields">
+      <input
+        type="text"
+        class="field-input"
+        placeholder="Titolo appunto"
+        [(ngModel)]="uploadTitle"
+      />
+      <select
+        *ngIf="subjectOptions.length > 0; else freeSubjectInput"
+        class="field-input field-select"
+        [(ngModel)]="uploadSubject"
+      >
+        <option value="">Seleziona materia</option>
+        <option *ngFor="let subject of subjectOptions" [value]="subject">
+          {{ subject }}
+        </option>
+      </select>
+      <ng-template #freeSubjectInput>
+        <input
+          type="text"
+          class="field-input"
+          placeholder="Materia"
+          [(ngModel)]="uploadSubject"
+        />
+      </ng-template>
+    </div>
+
+    <div class="upload-actions">
+      <button class="btn-ghost" (click)="resetUploadForm()">Annulla</button>
+      <button
+        class="btn-primary"
+        [disabled]="uploading"
+        (click)="submitUpload()"
+      >
+        {{ uploading ? 'Caricamento...' : 'Carica' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ RESULT COUNT ═══ -->
+  <div class="result-bar" *ngIf="!loading">
+    <span class="result-count">{{ resultCountLabel }}</span>
+  </div>
+
+  <!-- ═══ SKELETON LOADING ═══ -->
+  <div [ngClass]="viewMode === 'grid' ? 'notes-grid' : 'notes-list-view'" *ngIf="loading">
+    <div
+      class="skeleton-card"
+      [class.skeleton-card--list]="viewMode === 'list'"
+      *ngFor="let s of [1, 2, 3, 4, 5, 6]"
+    >
+      <div class="skeleton skeleton--badge"></div>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--meta"></div>
+    </div>
+  </div>
+
+  <!-- ═══ NOTES — GRID VIEW ═══ -->
+  <div
+    class="notes-grid"
+    *ngIf="!loading && filteredNotes.length > 0 && viewMode === 'grid'"
+  >
+    <div
+      class="note-card"
+      [ngClass]="getNoteAccent(n.tipoFile)"
+      *ngFor="let n of filteredNotes; let i = index"
+      [style.animation-delay]="i * 40 + 'ms'"
+      (click)="openNoteDetail(n)"
+    >
+      <div class="note-card-top">
+        <span class="note-badge" [ngClass]="getNoteAccent(n.tipoFile)">
+          {{ getFileLabel(n.tipoFile) }}
+        </span>
+        <span class="note-time">{{ n.tempoUpload }}</span>
+      </div>
+      <h4 class="note-card-title">{{ n.titolo }}</h4>
+      <p class="note-card-meta">
+        di {{ getUploaderName(n) }}
+        <span *ngIf="getNoteFaculty(n)"> · {{ getNoteFaculty(n) }}</span>
+        <span> · {{ n.materia }}</span>
+      </p>
+      <div class="note-card-footer">
+        <span class="note-saved-dot" *ngIf="n.isSaved">🔖</span>
+        <span class="note-mine-dot" *ngIf="n.canDelete">✏️</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NOTES — LIST VIEW ═══ -->
+  <div
+    class="notes-list-view"
+    *ngIf="!loading && filteredNotes.length > 0 && viewMode === 'list'"
+  >
+    <div
+      class="note-list-item"
+      *ngFor="let n of filteredNotes; let i = index"
+      [style.animation-delay]="i * 30 + 'ms'"
+      (click)="openNoteDetail(n)"
+    >
+      <div class="note-list-icon" [ngClass]="getNoteAccent(n.tipoFile)">
+        <span>{{ getFileLabel(n.tipoFile) }}</span>
+      </div>
+      <div class="note-list-info">
+        <span class="note-list-title">{{ n.titolo }}</span>
+        <span class="note-list-meta">
+          {{ n.materia }} · {{ getUploaderName(n) }}
+          <span *ngIf="n.isSaved"> · 🔖</span>
+        </span>
+      </div>
+      <span class="note-list-time">{{ n.tempoUpload }}</span>
+      <ion-icon name="chevron-forward" class="note-list-arrow"></ion-icon>
+    </div>
+  </div>
+
+  <!-- ═══ EMPTY STATE ═══ -->
+  <div
+    class="empty-state"
+    *ngIf="!loading && filteredNotes.length === 0"
+  >
+    <span class="empty-emoji" *ngIf="activeTab === 'all'">📄</span>
+    <span class="empty-emoji" *ngIf="activeTab === 'mine'">🗂️</span>
+    <span class="empty-emoji" *ngIf="activeTab === 'saved'">🔖</span>
+
+    <p class="empty-text" *ngIf="activeTab === 'all'">Nessun appunto trovato</p>
+    <p class="empty-text" *ngIf="activeTab === 'mine'">Non hai ancora caricato appunti</p>
+    <p class="empty-text" *ngIf="activeTab === 'saved'">Nessun appunto salvato</p>
+
+    <span class="empty-hint" *ngIf="activeTab === 'all' && activeFilterCount > 0">
+      Prova a rimuovere qualche filtro
+    </span>
+    <span class="empty-hint" *ngIf="activeTab === 'all' && activeFilterCount === 0">
+      Prova a cercare qualcos'altro o carica i tuoi
+    </span>
+    <span class="empty-hint" *ngIf="activeTab === 'mine'">
+      Tocca "Carica" per condividere i tuoi appunti
+    </span>
+    <span class="empty-hint" *ngIf="activeTab === 'saved'">
+      Salva gli appunti che ti interessano con il 🔖
+    </span>
+
+    <button
+      class="empty-action"
+      *ngIf="activeTab === 'mine'"
+      (click)="toggleUploadPanel()"
+    >
+      <ion-icon name="add-outline"></ion-icon>
+      Carica il primo
+    </button>
+  </div>
+
+  <!-- ═══ DETAIL OVERLAY ═══ -->
+  <div
+    class="detail-overlay"
+    *ngIf="selectedNote"
+    (click)="closeNoteDetail()"
+  >
+    <div
+      class="detail-card"
+      [ngClass]="getNoteAccent(selectedNote.tipoFile)"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="detail-handle"></div>
+
+      <div class="detail-top">
+        <span class="note-badge" [ngClass]="getNoteAccent(selectedNote.tipoFile)">
+          {{ getFileLabel(selectedNote.tipoFile) }}
+        </span>
+        <button class="detail-close" (click)="closeNoteDetail()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+
+      <h3 class="detail-title">{{ selectedNote.titolo }}</h3>
+
+      <p class="detail-meta">
+        {{ selectedNote.materia }}
+        <span *ngIf="getNoteFaculty(selectedNote)"> · {{ getNoteFaculty(selectedNote) }}</span>
+        · {{ getUploaderName(selectedNote) }}
+      </p>
+
+      <div class="detail-actions">
+        <button
+          class="detail-btn detail-btn--primary"
+          [disabled]="downloadingNoteId === selectedNote.id"
+          (click)="downloadNote(selectedNote, $event)"
+        >
+          <ion-icon name="download-outline"></ion-icon>
+          {{ downloadingNoteId === selectedNote.id ? '...' : 'Scarica' }}
+        </button>
+
+        <button
+          *ngIf="!selectedNote.canDelete"
+          class="detail-btn"
+          [class.detail-btn--saved]="selectedNote.isSaved"
+          [disabled]="savingNoteId === selectedNote.id"
+          (click)="toggleBookmark(selectedNote, $event)"
+        >
+          <ion-icon [name]="selectedNote.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+          {{ savingNoteId === selectedNote.id ? '...' : (selectedNote.isSaved ? 'Salvato' : 'Salva') }}
+        </button>
+
+        <button
+          *ngIf="selectedNote.canDelete"
+          class="detail-btn detail-btn--danger"
+          [disabled]="deletingNoteId === selectedNote.id"
+          (click)="deleteNote(selectedNote, $event)"
+        >
+          <ion-icon name="trash-outline"></ion-icon>
+          {{ deletingNoteId === selectedNote.id ? '...' : 'Elimina' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 100px"></div>
+
+</ion-content>

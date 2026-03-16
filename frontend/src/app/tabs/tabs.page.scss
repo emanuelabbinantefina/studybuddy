@@ -1,179 +1,197 @@
-:host {
-  display: block;
-  height: 100%;
-}
+$bg-page: #f2f2f7;
+$bg-card: #ffffff;
 
-.tabs-shell {
-  --topbar-height: calc(env(safe-area-inset-top) + 64px);
-  --search-overlay-bottom: calc(env(safe-area-inset-bottom) + 78px);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #f8fafc;
-}
+$text-primary: #1a1a2e;
+$text-secondary: #6b6b80;
+$text-muted: #a0a0b2;
+
+$purple: #8b5cf6;
+$purple-light: #ede9fe;
+$pink: #ec4899;
+
+$radius-xl: 28px;
+$radius-full: 9999px;
+
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// TOP BAR
 
 .global-topbar {
-  min-height: var(--topbar-height);
-  box-sizing: border-box;
-  padding: calc(env(safe-area-inset-top) + 8px) 0 10px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba($bg-page, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .global-topbar-inner {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 0 clamp(16px, 2.6vw, 32px);
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-
-.brand-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  color: #2563eb;
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  font-size: clamp(1.5rem, 1.18rem + 0.9vw, 1.95rem);
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  white-space: nowrap;
+  padding: 12px 20px;
 }
 
 .topbar-spacer {
   flex: 1;
 }
 
-.search-btn {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #64748b;
-  border-radius: 14px;
-  padding: 0 12px;
+.brand-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform $transition;
 
-  &.active {
-    border-color: #2563eb;
-    color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+  &:active {
+    transform: scale(0.96);
   }
+}
 
-  ion-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
+.brand-text {
+  font-family: $font-display;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: $text-primary;
+  letter-spacing: -0.03em;
+}
 
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.brand-accent {
+  font-family: $font-display;
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, $purple 0%, $pink 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.03em;
 }
 
 .avatar-btn {
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 50%;
-  padding: 2px;
-  background: #e2e8f0;
-  display: inline-flex;
+  position: relative;
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform $spring;
+
+  &:active {
+    transform: scale(0.9);
+  }
 
   img {
-    width: 100%;
-    height: 100%;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
   }
 }
 
-@media (min-width: 1280px) {
-  .global-topbar {
-    padding-bottom: 12px;
-  }
-
-  .global-topbar-inner {
-    padding-inline: clamp(24px, 3.2vw, 42px);
-  }
+.avatar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $purple, $pink);
+  z-index: 0;
 }
 
-@media (max-width: 480px) {
-  .global-topbar-inner {
-    padding: 0 12px;
-  }
-
-  .brand-btn {
-    font-size: 1.8rem;
-  }
-}
-
-ion-tabs {
-  flex: 1;
-  min-height: 0;
-}
+// TAB BAR
 
 .custom-tab-bar {
-  --background: #ffffff;
-  --border: transparent;
-  --color: #64748b;
-  --color-selected: #2563eb;
-  padding: 6px 4px calc(env(safe-area-inset-bottom) + 6px);
-  border-top: 1px solid #e2e8f0;
-  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
-  position: relative;
-  z-index: 140;
+  --background: #{$bg-card};
+  --border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.04);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .custom-tab-btn {
-  min-height: 56px;
-  position: relative;
-  font-size: 12px;
-  font-weight: 500;
+  --color: #{$text-muted};
+  --color-selected: #{$purple};
+  --ripple-color: transparent;
 
   ion-icon {
-    font-size: 1.2rem;
+    font-size: 22px;
+    transition: all $spring;
   }
 
   ion-label {
-    margin-top: 4px;
-    font-size: 0.75rem;
-    line-height: 1;
+    font-family: $font-body;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all $transition;
   }
 
-  &::after {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    margin-top: 4px;
-    background: transparent;
+  &[aria-selected='true'] {
+    ion-icon {
+      color: $purple;
+      transform: scale(1.08);
+    }
+
+    ion-label {
+      color: $purple;
+      font-weight: 700;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 3px;
+      background: $purple;
+      border-radius: $radius-full;
+      box-shadow: 0 0 8px rgba($purple, 0.4);
+      animation: indicatorIn 0.3s $spring both;
+    }
+  }
+}
+
+@keyframes indicatorIn {
+  from {
+    width: 4px;
+    opacity: 0;
+  }
+  to {
+    width: 16px;
+    opacity: 1;
+  }
+}
+
+.tabs-shell.search-open {
+  .custom-tab-bar {
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+}
+
+@media (min-width: 768px) {
+  .global-topbar-inner {
+    padding: 14px 24px;
   }
 
-  &.tab-selected::after {
-    background: #2563eb;
-  }
-
-  &.tab-selected ion-icon,
-  &.tab-selected ion-label {
-    color: #2563eb;
+  .brand-text,
+  .brand-accent {
+    font-size: 1.4rem;
   }
 }

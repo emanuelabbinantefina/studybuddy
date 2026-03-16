@@ -1,102 +1,216 @@
 <ion-content [fullscreen]="true" class="planner-content">
-  <div class="planner-shell">
-    <header class="planner-header">
-      <div class="planner-title">
-        <h1>Planner</h1>
-        <p>Solo esami</p>
+
+  <!-- HEADER -->
+  <div class="planner-header">
+    <div class="header-left">
+      <h1 class="page-title">Planner</h1>
+      <p class="page-subtitle">{{ headerSubtitle }}</p>
+
+      <div class="faculty-tag" *ngIf="myFacultyLabel">
+        <ion-icon name="school-outline"></ion-icon>
+        {{ myFacultyLabel }}
       </div>
-
-      <ion-button fill="outline" class="add-trigger" (click)="openAddModal()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
-        Aggiungi
-      </ion-button>
-    </header>
-
-    <div class="faculty-chip" *ngIf="myFacultyLabel">
-      <ion-icon name="school-outline"></ion-icon>
-      <span>{{ myFacultyLabel }}</span>
     </div>
 
-    <div class="status-row" *ngIf="loading">Caricamento esami...</div>
-    <div class="status-row error" *ngIf="!loading && errorMessage">{{ errorMessage }}</div>
-
-    <ng-container *ngIf="!loading && groupedExams.length > 0">
-      <section class="exam-group" *ngFor="let group of groupedExams">
-        <h3>{{ group.dateLabel }}</h3>
-
-        <article class="exam-card" *ngFor="let exam of group.exams" [ngClass]="exam.accentClass">
-          <div class="day-box">{{ exam.dayNumber }}</div>
-
-          <div class="exam-content">
-            <span class="exam-badge">ESAME</span>
-            <h4>{{ exam.title }}</h4>
-            <p>{{ exam.daysLabel }}</p>
-          </div>
-        </article>
-      </section>
-    </ng-container>
-
-    <section class="empty-state" *ngIf="!loading && groupedExams.length === 0">
-      <h3>Nessun esame pianificato</h3>
-      <p>Aggiungi il primo esame per vedere il countdown nel planner e in home.</p>
-      <ion-button class="empty-btn" (click)="openAddModal()">Aggiungi esame</ion-button>
-    </section>
+    <button class="add-btn" (click)="openAddModal()">
+      <ion-icon name="add-outline"></ion-icon>
+      Nuovo
+    </button>
   </div>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="planner-fab">
-    <ion-fab-button (click)="openAddModal()" aria-label="Aggiungi esame">
+  <!-- LOADING -->
+  <div class="skeleton-stack" *ngIf="loading">
+    <div class="skeleton-big-card">
+      <div class="skeleton skeleton--emoji"></div>
+      <div class="skeleton skeleton--big-num"></div>
+      <div class="skeleton skeleton--big-title"></div>
+      <div class="skeleton skeleton--big-date"></div>
+    </div>
+    <div class="skeleton-list">
+      <div class="skeleton-row" *ngFor="let s of [1,2]">
+        <div class="skeleton skeleton--sm-box"></div>
+        <div class="skeleton skeleton--sm-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-card" *ngIf="!loading && errorMessage">
+    <span class="error-emoji">⚠️</span>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="loadItems()">Riprova</button>
+  </div>
+
+  <!-- CARD STACK -->
+  <ng-container *ngIf="!loading && items.length > 0">
+
+    <p class="swipe-hint" *ngIf="items.length > 1">
+      ← Swipa per vedere gli altri impegni →
+    </p>
+
+    <div class="card-stack" #cardScroller>
+      <div
+        class="hero-card"
+        *ngFor="let item of items; let i = index"
+        [style.background]="item.gradient"
+      >
+        <div class="hero-blob hero-blob--1"></div>
+        <div class="hero-blob hero-blob--2"></div>
+        <div class="hero-blob hero-blob--3"></div>
+
+        <div class="hero-inner">
+
+          <div class="hero-top">
+            <span class="hero-emoji">{{ item.emoji }}</span>
+
+            <span
+              class="hero-urgency"
+              [class.hero-urgency--critical]="item.urgency === 'critical'"
+              [class.hero-urgency--soon]="item.urgency === 'soon'"
+            >
+              <span *ngIf="item.urgency === 'critical'">🔴</span>
+              <span *ngIf="item.urgency === 'soon'">🟡</span>
+              <span *ngIf="item.urgency === 'normal'">🟢</span>
+              {{ item.daysLabel }}
+            </span>
+
+            <!-- DELETE ICON RIGHT -->
+            <button class="hero-trash" (click)="confirmDelete(item, $event)" aria-label="Elimina impegno">
+              <ion-icon name="trash-outline"></ion-icon>
+            </button>
+          </div>
+
+          <div class="hero-countdown">
+            <span class="hero-big-number">{{ item.daysLeft }}</span>
+            <span class="hero-big-unit">{{ item.daysLeft === 1 ? 'giorno' : 'giorni' }}</span>
+          </div>
+
+          <div class="hero-type">
+            <span class="type-chip" [class.type-chip--exam]="item.type === 'exam'"
+                                  [class.type-chip--group]="item.type === 'group'"
+                                  [class.type-chip--personal]="item.type === 'personal'">
+              <span *ngIf="item.type === 'exam'">ESAME</span>
+              <span *ngIf="item.type === 'group'">GRUPPO</span>
+              <span *ngIf="item.type === 'personal'">IMPEGNO</span>
+            </span>
+          </div>
+
+          <h2 class="hero-title">{{ item.title }}</h2>
+          <p class="hero-date">{{ item.fullDateLabel }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dots" *ngIf="items.length > 1">
+      <span
+        class="dot"
+        [class.dot--active]="i === currentCardIndex"
+        *ngFor="let it of items; let i = index"
+        (click)="scrollToCard(i)"
+      ></span>
+    </div>
+
+    <!-- Compact list -->
+    <section class="compact-section">
+      <div class="section-header">
+        <h3 class="section-title">Tutti</h3>
+        <span class="count-pill">{{ totalCount }}</span>
+      </div>
+
+      <div class="compact-item" *ngFor="let item of items; let i = index" (click)="scrollToCard(i)">
+        <div class="compact-left">
+          <span class="compact-emoji">{{ item.emoji }}</span>
+          <div class="compact-info">
+            <span class="compact-title">{{ item.title }}</span>
+            <span class="compact-meta">{{ item.daysLabel }}</span>
+          </div>
+        </div>
+
+        <button class="compact-trash" (click)="confirmDelete(item, $event)" aria-label="Elimina">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- EMPTY -->
+  <div class="empty-state" *ngIf="!loading && !errorMessage && items.length === 0">
+    <div class="empty-card-preview">
+      <div class="empty-card-fake"></div>
+      <div class="empty-card-fake empty-card-fake--2"></div>
+      <div class="empty-card-fake empty-card-fake--3">
+        <span class="empty-card-icon">📅</span>
+        <span class="empty-card-text">Nessun impegno</span>
+      </div>
+    </div>
+    <h3 class="empty-title">Il tuo planner è vuoto</h3>
+    <p class="empty-desc">Crea il primo impegno (esame, gruppo studio, ecc.)</p>
+    <button class="empty-btn" (click)="openAddModal()">
       <ion-icon name="add-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+      Aggiungi
+    </button>
+  </div>
+
+  <div style="height: 120px"></div>
 </ion-content>
 
+<!-- ADD MODAL -->
 <ion-modal [isOpen]="isAddModalOpen" (didDismiss)="closeAddModal()">
   <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Nuovo esame</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeAddModal()">Chiudi</ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
+    <ion-content class="modal-content">
+      <div class="modal-inner">
+        <div class="modal-handle"></div>
 
-    <ion-content class="add-modal-content">
-      <div class="form-wrap">
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked">Materia</ion-label>
-          <ion-select
-            interface="popover"
-            placeholder="Seleziona materia"
-            [(ngModel)]="newExamSubject"
-            [disabled]="subjectOptions.length === 0">
-            <ion-select-option *ngFor="let subject of subjectOptions" [value]="subject">
-              {{ subject }}
-            </ion-select-option>
-          </ion-select>
-        </ion-item>
+        <h2 class="modal-title">Nuovo impegno</h2>
+        <p class="modal-subtitle">Esame, gruppo studio o altro</p>
 
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked">Data esame</ion-label>
-          <ion-input type="date" [min]="minExamDate" [(ngModel)]="newExamDate"></ion-input>
-        </ion-item>
+        <!-- TYPE -->
+        <div class="field-group">
+          <label class="field-label">Tipo</label>
+          <select class="custom-select" [(ngModel)]="newType" (ngModelChange)="onTypeChange()">
+            <option value="exam">Esame</option>
+            <option value="group">Gruppo studio</option>
+            <option value="personal">Altro</option>
+          </select>
+        </div>
 
-        <ion-item lines="none" class="form-item">
-          <ion-label position="stacked">Note (opzionale)</ion-label>
-          <ion-textarea rows="3" [autoGrow]="true" [(ngModel)]="newExamNotes"></ion-textarea>
-        </ion-item>
+        <!-- SUBJECT for EXAM -->
+        <div class="field-group" *ngIf="newType === 'exam'">
+          <label class="field-label">Materia</label>
+          <select class="custom-select" [(ngModel)]="newSubject" [disabled]="subjectOptions.length === 0">
+            <option value="" disabled>Seleziona materia</option>
+            <option *ngFor="let s of subjectOptions" [value]="s">{{ s }}</option>
+          </select>
+          <p class="field-hint field-hint--warn" *ngIf="subjectOptions.length === 0">
+            Nessuna materia disponibile.
+          </p>
+        </div>
 
-        <p class="form-help" *ngIf="subjectOptions.length === 0">
-          Nessuna materia disponibile al momento.
-        </p>
+        <!-- TITLE for GROUP/PERSONAL -->
+        <div class="field-group" *ngIf="newType !== 'exam'">
+          <label class="field-label">Titolo</label>
+          <input class="custom-input" type="text" placeholder="es. Studio in biblioteca" [(ngModel)]="newTitle" />
+        </div>
 
-        <ion-button
-          expand="block"
-          class="save-btn"
-          [disabled]="!canSaveExam()"
-          (click)="saveExam()">
-          {{ savingExam ? 'Salvataggio...' : 'Salva esame' }}
-        </ion-button>
+        <!-- DATE -->
+        <div class="field-group">
+          <label class="field-label">Data</label>
+          <input class="custom-input" type="date" [min]="minDate" [(ngModel)]="newDate" />
+        </div>
+
+        <!-- NOTES -->
+        <div class="field-group">
+          <label class="field-label">Note <span class="optional">(opzionale)</span></label>
+          <textarea class="custom-textarea" rows="3" placeholder="Aggiungi dettagli..." [(ngModel)]="newNotes"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button class="modal-btn-ghost" (click)="closeAddModal()">Annulla</button>
+          <button class="modal-btn-primary" [disabled]="!canSave()" (click)="save()">
+            {{ savingEvent ? 'Salvataggio...' : 'Salva' }}
+          </button>
+        </div>
       </div>
     </ion-content>
   </ng-template>

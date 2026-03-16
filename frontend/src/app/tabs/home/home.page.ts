@@ -33,6 +33,9 @@ export class HomePage implements OnInit, OnDestroy {
   loadingExams = false;
   loadingNotes = false;
 
+  todayLabel = '';
+  dailyProgress = 0;
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -43,6 +46,8 @@ export class HomePage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.todayLabel = this.formatTodayLabel();
+    this.dailyProgress = this.loadDailyProgress();
     this.loadProfile();
     this.loadHomeData();
   }
@@ -53,6 +58,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter(): void {
+    this.todayLabel = this.formatTodayLabel();
+    this.dailyProgress = this.loadDailyProgress();
     this.loadHomeData();
   }
 
@@ -61,7 +68,15 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   openAppunti(): void {
-    this.router.navigate(['/tabs/search']);
+    this.router.navigate(['/tabs/notes']);
+  }
+
+  openFocus(): void {
+    this.router.navigate(['/tabs/focus']);
+  }
+
+  uploadNote(): void {
+    this.router.navigate(['/tabs/notes']);
   }
 
   getHeroSubtitle(): string {
@@ -151,16 +166,37 @@ export class HomePage implements OnInit, OnDestroy {
     }
   }
 
+  private formatTodayLabel(): string {
+    const now = new Date();
+    const formatted = now.toLocaleDateString('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  }
+
+  private loadDailyProgress(): number {
+    const raw = localStorage.getItem('daily_progress');
+    if (!raw) return 0;
+    const val = parseInt(raw, 10);
+    return Number.isNaN(val) ? 0 : Math.min(val, 100);
+  }
+
   private toUpcomingExams(events: EventItem[]): UpcomingExam[] {
     const today = this.startOfDay(new Date());
 
     return (Array.isArray(events) ? events : [])
-      .filter((event) => event?.type === 'exam' && typeof event?.date === 'string')
+      .filter(
+        (event) => event?.type === 'exam' && typeof event?.date === 'string'
+      )
       .map((event, index) => {
         const examDate = this.parseDate(event.date);
         if (!examDate) return null;
 
-        const daysLeft = Math.floor((examDate.getTime() - today.getTime()) / 86400000);
+        const daysLeft = Math.floor(
+          (examDate.getTime() - today.getTime()) / 86400000
+        );
         if (daysLeft < 0) return null;
 
         return {
@@ -175,7 +211,10 @@ export class HomePage implements OnInit, OnDestroy {
       .filter((exam): exam is UpcomingExam => !!exam)
       .sort((a, b) => a.daysLeft - b.daysLeft)
       .slice(0, 3)
-      .map((exam, index) => ({ ...exam, accentClass: this.getExamAccent(index) }));
+      .map((exam, index) => ({
+        ...exam,
+        accentClass: this.getExamAccent(index),
+      }));
   }
 
   private parseDate(raw: string): Date | null {
@@ -191,13 +230,19 @@ export class HomePage implements OnInit, OnDestroy {
 
   private formatExamDate(date: Date): string {
     const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleDateString('it-IT', { month: 'short' }).replace('.', '');
+    const month = date
+      .toLocaleDateString('it-IT', { month: 'short' })
+      .replace('.', '');
     return `${day} ${month}`;
   }
 
   private formatExamDateLong(date: Date): string {
     const formatted = date
-      .toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' })
+      .toLocaleDateString('it-IT', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      })
       .replace('.', '');
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }

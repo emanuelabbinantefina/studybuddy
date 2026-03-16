@@ -34,6 +34,14 @@ export interface GroupItem {
   description: string;
 }
 
+export interface CreateEventPayload {
+  type: 'exam' | 'group' | 'personal';
+  title: string;
+  subject: string;
+  date: string;       // YYYY-MM-DD
+  notes?: string;
+}
+
 export interface UserProfile {
   id: number;
   name: string;
@@ -126,8 +134,8 @@ export class DataService {
         faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
         subjects: Array.isArray(raw?.subjects)
           ? raw.subjects
-              .map((value: unknown) => String(value || '').trim())
-              .filter((value: string) => !!value)
+            .map((value: unknown) => String(value || '').trim())
+            .filter((value: string) => !!value)
           : []
       }))
     );
@@ -167,5 +175,48 @@ export class DataService {
   }
   getNotes(): Observable<any[]> {
     return this.http.get<any[]>('/assets/data/appunti.json');
+  }
+
+  deleteEvent(eventId: number): Observable<any> {
+    return this.http.delete(`${this.apiBaseUrl}/events/${eventId}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getAllEvents(): Observable<EventItem[]> {
+    if (!this.hasToken()) return of([]);
+
+    return this.http.get<any[]>(`${this.apiBaseUrl}/events`, {
+      headers: this.authHeaders(),
+    }).pipe(
+      map((rows) =>
+        (Array.isArray(rows) ? rows : [])
+          .map((row) => this.mapBackendEvent(row))
+      )
+    );
+  }
+
+  createEvent(payload: CreateEventPayload): Observable<{ id: number }> {
+    const type = payload.type;
+    const title = String(payload.title || '').trim();
+    const subject = String(payload.subject || title || '').trim();
+    const date = String(payload.date || '').trim();
+    const notes = typeof payload.notes === 'string' ? payload.notes.trim() : '';
+
+    const startAt = `${date}T09:00:00`;
+    const endAt = `${date}T10:00:00`;
+
+    return this.http.post<{ id: number }>(
+      `${this.apiBaseUrl}/events`,
+      {
+        title,
+        type,
+        subject,
+        startAt,
+        endAt,
+        notes: notes || null
+      },
+      { headers: this.authHeaders() }
+    );
   }
 }
