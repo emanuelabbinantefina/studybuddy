@@ -45,7 +45,19 @@ ion-content::part(background) {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 76px 16px 32px;
+  padding: 80px 16px 32px;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.title-wrap ion-icon {
+  font-size: 1.18rem;
+  color: var(--app-primary);
 }
 
 .groups-head {
@@ -56,24 +68,13 @@ ion-content::part(background) {
   margin-bottom: 18px;
 }
 
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.title-wrap ion-icon {
-  font-size: 1.24rem;
-  color: var(--app-primary);
-}
-
 .title-wrap h1 {
   margin: 0;
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
   color: var(--app-text);
-  font-size: 1.9rem;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
@@ -432,8 +433,8 @@ ion-content::part(background) {
     padding: 74px 12px 88px;
   }
 
-  .title-wrap h1 {
-    font-size: 1.72rem;
+   .title-wrap h1 {
+    font-size: 1.65rem;
   }
 
   .create-btn {
