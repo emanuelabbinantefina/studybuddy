@@ -1,27 +1,36 @@
-<ion-content class="detail-page">
+<ion-content class="detail-page" [fullscreen]="true">
   <div class="main-wrapper">
+
+    <!-- TOP BAR -->
     <div class="top-bar">
       <button type="button" class="back-btn" (click)="goBack()" aria-label="Torna indietro">
         <ion-icon name="arrow-back-outline"></ion-icon>
       </button>
-      <span class="page-title">Dettaglio Gruppo</span>
+      <span class="page-title">Dettaglio gruppo</span>
       <div class="spacer" aria-hidden="true"></div>
     </div>
 
+    <!-- HERO -->
     <div class="group-hero" *ngIf="gruppo">
-      <div class="big-avatar" [class]="gruppo.colorClass || 'bg-blue'">
-        {{ gruppo.nome ? gruppo.nome.charAt(0).toUpperCase() : 'G' }}
-      </div>
-      <h2>{{ gruppo.nome }}</h2>
+      <div class="hero-main">
+        <div class="big-avatar" [class]="gruppo.colorClass || 'bg-blue'">
+          {{ gruppo.nome ? gruppo.nome.charAt(0).toUpperCase() : 'G' }}
+        </div>
 
-      <div class="hero-meta">
-        <span class="meta-chip">
-          {{ gruppo.materia }}
-        </span>
-        <span class="meta-chip">
-          <ion-icon name="people"></ion-icon>
-          {{ gruppo.membersCount || 1 }} membri
-        </span>
+        <div class="hero-copy">
+          <h2>{{ gruppo.nome }}</h2>
+
+          <div class="hero-meta">
+            <span class="meta-chip">
+              {{ gruppo.materia }}
+            </span>
+
+            <span class="meta-chip">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ gruppo.membersCount || 1 }} membri
+            </span>
+          </div>
+        </div>
       </div>
 
       <div class="exam-box" *ngIf="gruppo.isMember">
@@ -38,7 +47,7 @@
         </div>
 
         <div class="exam-editor" *ngIf="editingExamDate">
-          <input type="date" [(ngModel)]="examDateDraft">
+          <input type="date" [(ngModel)]="examDateDraft" />
 
           <div class="exam-editor-actions">
             <button type="button" class="ghost-action" (click)="cancelExamDateEditor()">Annulla</button>
@@ -46,7 +55,8 @@
               type="button"
               class="primary-action"
               [disabled]="savingExamDate"
-              (click)="saveExamDate()">
+              (click)="saveExamDate()"
+            >
               {{ savingExamDate ? 'Salvataggio...' : 'Salva data' }}
             </button>
           </div>
@@ -54,6 +64,7 @@
       </div>
     </div>
 
+    <!-- SEGMENT -->
     <div class="custom-segment" role="tablist" aria-label="Sezioni gruppo">
       <button
         type="button"
@@ -65,6 +76,7 @@
       >
         <span>Appunti</span>
       </button>
+
       <button
         type="button"
         class="seg-btn"
@@ -75,6 +87,7 @@
       >
         <span>Bacheca</span>
       </button>
+
       <button
         type="button"
         class="seg-btn"
@@ -88,34 +101,39 @@
     </div>
 
     <div class="content-area">
+
+      <!-- APPUNTI -->
       <div class="tab-panel" *ngIf="currentTab === 'appunti'">
         <div class="appunti-list" *ngIf="appunti.length > 0">
           <div class="appunto-item" *ngFor="let a of appunti" (click)="scaricaFile(a.id)">
             <div class="file-icon-wrap" [class]="a.tipoFile">
-              <ion-icon [name]="a.tipoFile === 'pdf' ? 'document-text' : 'image'"></ion-icon>
+              <ion-icon [name]="a.tipoFile === 'pdf' ? 'document-text-outline' : 'image-outline'"></ion-icon>
             </div>
+
             <div class="file-info">
               <h4>{{ a.titolo }}</h4>
-              <p>{{ a.autoreNome || 'Studente' }} &bull; {{ a.tempoUpload }}</p>
+              <p>{{ a.autoreNome || 'Studente' }} · {{ a.tempoUpload }}</p>
             </div>
+
             <ion-icon name="chevron-forward-outline" class="item-arrow"></ion-icon>
           </div>
         </div>
 
-        <div class="empty-state" *ngIf="appunti.length === 0">
+        <div class="empty-state empty-state--compact" *ngIf="appunti.length === 0">
           <div class="icon-circle">
             <ion-icon name="cloud-upload-outline"></ion-icon>
           </div>
           <h3>Ancora nessun file</h3>
-          <p>Sii il primo a caricare del materiale per questo gruppo!</p>
+          <p>Sii il primo a caricare del materiale per questo gruppo.</p>
         </div>
 
-        <button type="button" class="action-btn">
+        <button type="button" class="action-btn action-btn--compact">
           <ion-icon name="add-circle-outline"></ion-icon>
           <span>Carica appunto</span>
         </button>
       </div>
 
+      <!-- BACHECA -->
       <div class="tab-panel" *ngIf="currentTab === 'bacheca'">
         <div class="loading-card" *ngIf="loadingMessages">
           <ion-icon name="sync-outline"></ion-icon>
@@ -137,8 +155,8 @@
             rows="4"
             maxlength="1000"
             [(ngModel)]="boardDraft"
-            placeholder="Scrivi un aggiornamento o una risposta...">
-          </textarea>
+            placeholder="Scrivi un aggiornamento o una risposta..."
+          ></textarea>
 
           <div class="composer-actions">
             <button type="button" class="ghost-action" *ngIf="replyingTo" (click)="cancelReply()">Cancella risposta</button>
@@ -146,7 +164,8 @@
               type="button"
               class="primary-action"
               [disabled]="!boardDraft.trim() || sendingMessage"
-              (click)="submitMessage()">
+              (click)="submitMessage()"
+            >
               {{ sendingMessage ? 'Pubblicazione...' : 'Pubblica' }}
             </button>
           </div>
@@ -174,7 +193,8 @@
                     class="delete-link"
                     *ngIf="message.isOwn"
                     [disabled]="deletingMessageId === message.id"
-                    (click)="deleteMessage(message)">
+                    (click)="deleteMessage(message)"
+                  >
                     {{ deletingMessageId === message.id ? 'Eliminazione...' : 'Elimina' }}
                   </button>
                 </div>
@@ -203,7 +223,8 @@
                           class="delete-link"
                           *ngIf="reply.isOwn"
                           [disabled]="deletingMessageId === reply.id"
-                          (click)="deleteMessage(reply)">
+                          (click)="deleteMessage(reply)"
+                        >
                           {{ deletingMessageId === reply.id ? 'Eliminazione...' : 'Elimina' }}
                         </button>
                       </div>
@@ -215,11 +236,11 @@
           </article>
         </div>
 
-        <div class="empty-state" *ngIf="!loadingMessages && threadMessages.length === 0">
+        <div class="empty-state empty-state--compact" *ngIf="!loadingMessages && threadMessages.length === 0">
           <div class="icon-circle">
             <ion-icon name="chatbubbles-outline"></ion-icon>
           </div>
-          <h3>La bacheca &egrave; vuota</h3>
+          <h3>La bacheca è vuota</h3>
           <p>Inizia una conversazione con gli altri studenti.</p>
         </div>
 
@@ -227,11 +248,13 @@
           type="button"
           class="outline-action"
           *ngIf="!showMessageComposer"
-          (click)="openMessageComposer()">
+          (click)="openMessageComposer()"
+        >
           + Scrivi nella bacheca
         </button>
       </div>
 
+      <!-- DOMANDE -->
       <div class="tab-panel" *ngIf="currentTab === 'domande'">
         <div class="loading-card" *ngIf="loadingQuestions">
           <ion-icon name="sync-outline"></ion-icon>
@@ -248,13 +271,15 @@
             rows="4"
             maxlength="500"
             [(ngModel)]="questionDraft"
-            placeholder="Scrivi qui la domanda uscita all'esame...">
-          </textarea>
+            placeholder="Scrivi qui la domanda uscita all'esame..."
+          ></textarea>
 
           <div class="question-form-row">
             <select [(ngModel)]="questionSessionDraft">
               <option value="">Sessione (opzionale)</option>
-              <option *ngFor="let session of questionSessionOptions" [value]="session">{{ session }}</option>
+              <option *ngFor="let session of questionSessionOptions" [value]="session">
+                {{ session }}
+              </option>
             </select>
 
             <input
@@ -263,7 +288,8 @@
               maxlength="4"
               [ngModel]="questionYearDraft"
               (ngModelChange)="onQuestionYearChange($event)"
-              placeholder="Anno">
+              placeholder="Anno"
+            />
           </div>
 
           <div class="composer-actions">
@@ -271,7 +297,8 @@
               type="button"
               class="primary-action"
               [disabled]="!questionDraft.trim() || sendingQuestion"
-              (click)="submitQuestion()">
+              (click)="submitQuestion()"
+            >
               {{ sendingQuestion ? 'Salvataggio...' : 'Salva domanda' }}
             </button>
           </div>
@@ -286,7 +313,7 @@
           </article>
         </div>
 
-        <div class="empty-state" *ngIf="!loadingQuestions && domande.length === 0">
+        <div class="empty-state empty-state--compact" *ngIf="!loadingQuestions && domande.length === 0">
           <div class="icon-circle">
             <ion-icon name="help-circle-outline"></ion-icon>
           </div>
@@ -298,7 +325,8 @@
           type="button"
           class="outline-action"
           *ngIf="!showQuestionComposer"
-          (click)="openQuestionComposer()">
+          (click)="openQuestionComposer()"
+        >
           + Aggiungi domanda d'esame
         </button>
       </div>

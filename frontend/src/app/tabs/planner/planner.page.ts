@@ -70,10 +70,10 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   private readonly destroy$ = new Subject<void>();
 
   private readonly gradients = [
-    'linear-gradient(135deg, #8B5CF6 0%, #C084FC 50%, #EC4899 100%)',
-    'linear-gradient(135deg, #3B82F6 0%, #6366F1 50%, #8B5CF6 100%)',
-    'linear-gradient(135deg, #10B981 0%, #06B6D4 50%, #3B82F6 100%)',
-    'linear-gradient(135deg, #F59E0B 0%, #F97316 50%, #EF4444 100%)',
+    'linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%)',
+    'linear-gradient(135deg, #3B82F6 0%, #60A5FA 50%, #4F6BFF 100%)',
+    'linear-gradient(135deg, #23b38a 0%, #4FD1B2 55%, #6ea8ff 100%)',
+    'linear-gradient(135deg, #f4b740 0%, #ff9f6e 55%, #ef6b73 100%)',
   ];
 
   constructor(
@@ -82,7 +82,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     private readonly userService: UserService,
     private readonly router: Router,
     private readonly alertCtrl: AlertController
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.userService.reloadProfile();
@@ -346,8 +346,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
 
         const emoji =
           type === 'exam' ? '🎓' :
-          type === 'group' ? '👥' :
-          '📌';
+            type === 'group' ? '👥' :
+              '📌';
 
         const title =
           type === 'exam'

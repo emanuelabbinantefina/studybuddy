@@ -5,8 +5,8 @@ $text-primary: #1a1a2e;
 $text-secondary: #6b6b80;
 $text-muted: #a0a0b2;
 
-$purple: #8b5cf6;
-$purple-light: #ede9fe;
+$primary: #4f6bff;
+$primary-light: #e8edff;
 
 $pink: #ec4899;
 $pink-light: #fce7f3;
@@ -97,22 +97,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin: 2px 0 0;
 }
 
-.header-streak {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: #fef3c7;
-  border-radius: $radius-full;
-  font-family: $font-display;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: $orange;
-
-  ion-icon {
-    font-size: 16px;
-  }
-}
 
 // ═══ TIMER ═══
 
@@ -150,13 +134,13 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .timer-ring-bg {
   fill: none;
-  stroke: darken($bg-page, 3%);
+  stroke: #e6e6eb;
   stroke-width: 2.5;
 }
 
 .timer-ring-fill {
   fill: none;
-  stroke: $purple;
+  stroke: $primary;
   stroke-width: 2.5;
   stroke-linecap: round;
   transition: stroke-dasharray 1s linear;
@@ -187,7 +171,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .timer-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: $purple;
+  color: $primary;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-top: 6px;
@@ -219,7 +203,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &:focus {
-    border-color: $purple;
+    border-color: $primary;
   }
 }
 
@@ -257,7 +241,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &--main {
     padding: 14px 32px;
-    background: $purple;
+    background: $primary;
     color: #fff;
     border-radius: $radius-full;
     font-family: $font-body;
@@ -288,11 +272,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: darken($bg-page, 5%);
+  background: #dcdce1;
   transition: all $spring;
 
   &--filled {
-    background: $purple;
+    background: $primary;
     box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
     transform: scale(1.1);
   }
@@ -350,14 +334,14 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .stat-pill-bar {
   width: 100%;
   height: 6px;
-  background: darken($bg-page, 3%);
+  background: #e6e6eb;
   border-radius: $radius-full;
   overflow: hidden;
 }
 
 .stat-pill-bar-fill {
   height: 100%;
-  background: $purple;
+  background: $primary;
   border-radius: $radius-full;
   transition: width 0.6s ease;
   min-width: 2%;
@@ -393,8 +377,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   gap: 4px;
   padding: 6px 14px;
-  background: $purple-light;
-  color: $purple;
+  background: $primary-light;
+  color: $primary;
   border: none;
   border-radius: $radius-full;
   font-family: $font-body;
@@ -444,7 +428,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &:focus {
-    border-color: $purple;
+    border-color: $primary;
   }
 
   &--small {
@@ -479,7 +463,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &--confirm {
-    background: $purple;
+    background: $primary;
     color: #fff;
     box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
 
@@ -533,7 +517,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   ion-icon {
     font-size: 24px;
-    color: darken($bg-page, 12%);
+    color: #b9b9be;
   }
 
   &:active {
@@ -647,14 +631,14 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: $purple;
+  background: $primary;
   flex-shrink: 0;
 }
 
 .session-line {
   width: 2px;
   height: 32px;
-  background: darken($bg-page, 6%);
+  background: #d7d7dc;
 }
 
 .session-info {
@@ -682,6 +666,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -693,6 +678,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

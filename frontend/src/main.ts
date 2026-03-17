@@ -16,9 +16,9 @@ import {
   personOutline, person, checkboxOutline, eyeOutline, eyeOffOutline,
   homeOutline, calendarOutline, peopleOutline, people, searchOutline,
   notificationsOutline, sparklesOutline, checkmarkCircleOutline, checkmarkCircle,
-  add, addCircleOutline, addCircle, 
+  add, addCircleOutline, addCircle,
   trashOutline, notificationsOffOutline, shieldCheckmarkOutline,
-  logOutOutline, cameraOutline, camera, 
+  logOutOutline, cameraOutline, camera,
   chatboxEllipsesOutline, schoolOutline, school,
   arrowForwardOutline, chevronForward, bookmark, ellipse, magnet,
   codeSlash, language, triangle, flash, cloudUploadOutline,
@@ -31,7 +31,9 @@ import {
   arrowForward, timeOutline,
   documentTextOutline, ellipseOutline, pauseCircle, playCircle,
   refreshOutline, closeOutline, trophyOutline, flameOutline,
-   listOutline, optionsOutline, chevronDown,
+  listOutline, optionsOutline, chevronDown, warningOutline,
+  checkmarkDoneOutline, calendarClearOutline, contrastOutline,
+  alertCircleOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -113,12 +115,17 @@ addIcons({
   'list-outline': listOutline,
   'options-outline': optionsOutline,
   'chevron-down': chevronDown,
+  'warning-outline': warningOutline,
+  'checkmark-done-outline': checkmarkDoneOutline,
+  'calendar-clear-outline': calendarClearOutline,
+  'contrast-outline': contrastOutline,
+  'alertCircleOutline,': alertCircleOutline,
 });
 
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular({ mode: 'ios' }), 
+    provideIonicAngular({ mode: 'ios' }),
     provideRouter(routes),
     provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'it-IT' }

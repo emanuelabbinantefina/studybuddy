@@ -1,261 +1,230 @@
-<ion-content [fullscreen]="true" class="profile-page">
+<ion-content [fullscreen]="true" class="profile-content">
   <div class="profile-shell">
-    <section class="hero-card">
-      <div class="hero-top">
-        <div class="avatar-frame" (click)="openEditProfile()">
-          <img [src]="user?.avatar || fallbackAvatar" (error)="onAvatarError($event)" alt="Avatar profilo">
+
+    <!-- HERO -->
+    <div class="profile-hero">
+      <div class="hero-gradient"></div>
+
+      <div class="hero-inner">
+        <div class="avatar-wrap" (click)="openEditProfile()">
+          <img
+            [src]="user?.avatar || fallbackAvatar"
+            (error)="onAvatarError($event)"
+            alt="Avatar"
+          />
+          <span class="avatar-badge">✏️</span>
         </div>
 
-        <button type="button" class="edit-btn" (click)="openEditProfile()">
-          Modifica
+        <h1 class="hero-name">{{ displayName }}</h1>
+        <p class="hero-username" *ngIf="displayUsername">{{ displayUsername }}</p>
+
+        <div class="hero-chips">
+          <span class="chip" *ngIf="user?.corso">
+            <ion-icon name="school-outline"></ion-icon>
+            {{ user?.corso }}
+          </span>
+          <span class="chip chip--green" *ngIf="user?.courseYear">
+            {{ user?.courseYear }}
+          </span>
+        </div>
+
+        <p class="hero-member" *ngIf="memberSinceLabel">{{ memberSinceLabel }}</p>
+        <p class="hero-bio" *ngIf="user?.bio">{{ user?.bio }}</p>
+
+        <button class="edit-pill" (click)="openEditProfile()">
+          <ion-icon name="pencil-outline"></ion-icon>
+          Modifica profilo
         </button>
       </div>
+    </div>
 
-      <div class="hero-copy">
-        <h1>{{ displayName }}</h1>
-        <p class="username" *ngIf="displayUsername">{{ displayUsername }}</p>
-
-        <div class="chips-row">
-          <span class="info-chip" *ngIf="user?.corso">{{ user?.corso }}</span>
-          <span class="info-chip info-chip--secondary" *ngIf="user?.courseYear">{{ user?.courseYear }}</span>
+    <!-- ACTIVITY -->
+    <div class="activity-card">
+      <h3 class="activity-title">🔥 Attività</h3>
+      <div class="activity-grid">
+        <div class="activity-item">
+          <span class="activity-value">{{ studyStreak }}</span>
+          <span class="activity-label">Streak giorni</span>
         </div>
 
-        <p class="bio" *ngIf="user?.bio">{{ user?.bio }}</p>
-      </div>
-    </section>
-
-    <section class="switcher switcher--summary">
-      <div class="switcher-btn switcher-btn--summary">
-        <span>Appunti</span>
-        <small>{{ totalNotesCount }}</small>
-      </div>
-
-      <div class="switcher-btn switcher-btn--summary">
-        <span>Gruppi</span>
-        <small>{{ groupsCount }}</small>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <div class="section-head">
-        <h2>I miei appunti</h2>
-        <span class="section-meta">{{ uploadedNotesCount }}</span>
-      </div>
-
-      <ng-container *ngIf="myNotes.length > 0; else emptyUploads">
-        <article class="note-card note-card--summary" *ngFor="let note of myNotes; trackBy: trackById">
-          <div class="note-icon">{{ noteFileLabel(note) }}</div>
-
-          <div class="note-copy">
-            <h3>{{ note.titolo }}</h3>
-            <p>{{ note.materia }} <span class="dot"></span> {{ note.tempoUpload }}</p>
-          </div>
-
-          <div class="note-actions">
-            <span class="file-badge">{{ noteFileLabel(note) }}</span>
-          </div>
-        </article>
-      </ng-container>
-
-      <ng-template #emptyUploads>
-        <div class="empty-card">
-          <h3>Nessun appunto caricato</h3>
-          <p>Appena carichi i tuoi file li vedrai qui.</p>
+        <div class="activity-item">
+          <span class="activity-value">{{ pomodorosToday }}</span>
+          <span class="activity-label">Pomodori oggi</span>
         </div>
-      </ng-template>
-    </section>
 
-    <section class="content-section">
-      <div class="section-head">
-        <h2>Appunti salvati</h2>
-        <span class="section-meta">{{ savedNotesCount }}</span>
+        <div class="activity-item">
+          <span class="activity-value-text">{{ lastStudyLabel }}</span>
+          <span class="activity-label">Ultimo studio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <section class="section" *ngIf="achievements.length > 0">
+      <div class="section-header">
+        <h3 class="section-title">🏆 Traguardi</h3>
+        <span class="section-subtle">{{ unlockedAchievements.length }} sbloccati</span>
       </div>
 
-      <ng-container *ngIf="savedNotes.length > 0; else emptySaved">
-        <article class="note-card note-card--summary" *ngFor="let note of savedNotes; trackBy: trackById">
-          <div class="note-icon note-icon--saved">{{ noteFileLabel(note) }}</div>
-
-          <div class="note-copy">
-            <h3>{{ note.titolo }}</h3>
-            <p>{{ note.autoreNome || 'Studente' }} <span class="dot"></span> {{ note.tempoUpload }}</p>
-          </div>
-
-          <div class="note-actions">
-            <span class="file-badge">{{ noteFileLabel(note) }}</span>
-          </div>
-        </article>
-      </ng-container>
-
-      <ng-template #emptySaved>
-        <div class="empty-card">
-          <h3>Nessun appunto salvato</h3>
-          <p>Salva gli appunti interessanti dalla ricerca per ritrovarli qui.</p>
+      <div class="achievements-grid">
+        <div
+          class="achievement"
+          [class.achievement--locked]="!a.unlocked"
+          *ngFor="let a of achievements"
+        >
+          <span class="achievement-emoji">{{ a.emoji }}</span>
+          <span class="achievement-label">{{ a.label }}</span>
         </div>
-      </ng-template>
+      </div>
     </section>
 
-    <section class="content-section">
-      <div class="section-head">
-        <h2>I tuoi gruppi</h2>
-        <span class="section-meta">{{ groupsCount }}</span>
+    <!-- SETTINGS -->
+    <section class="section">
+      <div class="section-header">
+        <h3 class="section-title">⚙️ Impostazioni</h3>
       </div>
 
-      <ng-container *ngIf="myGroups.length > 0; else emptyGroups">
-        <article class="group-card group-card--summary" *ngFor="let group of myGroups; trackBy: trackById">
-          <div class="group-mark" [ngClass]="group.colorClass || 'bg-blue'"></div>
-
-          <div class="group-copy">
-            <h3>{{ group.nome }}</h3>
-            <p>{{ groupMeta(group) }}</p>
+      <div class="settings-card">
+        <div class="setting-row">
+          <div class="setting-info">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <span>Notifiche</span>
           </div>
-
-          <div class="group-side">
-            <strong>{{ group.membersCount || 0 }}</strong>
-            <span>membri</span>
-          </div>
-        </article>
-      </ng-container>
-
-      <ng-template #emptyGroups>
-        <div class="empty-card">
-          <h3>Nessun gruppo attivo</h3>
-          <p>Quando entri in un gruppo o ne crei uno, lo vedrai in questa sezione.</p>
+          <button
+            class="toggle-btn"
+            [class.toggle-btn--on]="notificationsEnabled"
+            (click)="toggleNotifications()"
+          >
+            <span class="toggle-dot"></span>
+          </button>
         </div>
-      </ng-template>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <ion-icon name="contrast-outline"></ion-icon>
+            <span>Tema</span>
+          </div>
+          <span class="setting-value">Light</span>
+        </div>
+      </div>
     </section>
 
-    <button type="button" class="logout-btn" (click)="onLogout()">
-      <ion-icon name="log-out-outline"></ion-icon>
-      <span>Esci dall&apos;account</span>
-    </button>
+    <!-- ACCOUNT -->
+    <section class="account-section">
+      <button class="logout-btn" (click)="onLogout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+        Esci dall'account
+      </button>
 
-    <section class="danger-zone">
-      <div class="danger-zone__label">Zona pericolosa</div>
-
-      <button type="button" class="danger-btn" (click)="openDeleteAccount()">
+      <button class="delete-btn" (click)="openDeleteAccount()">
         <ion-icon name="trash-outline"></ion-icon>
-        <span>Elimina account</span>
+        Elimina account
       </button>
     </section>
+
+    <div style="height: 140px"></div>
   </div>
-
-  <ion-modal
-    class="delete-account-modal"
-    [isOpen]="isDeleteModalOpen"
-    [canDismiss]="!isDeletingAccount"
-    [backdropDismiss]="!isDeletingAccount"
-    [breakpoints]="[0, 0.92]"
-    [initialBreakpoint]="0.92"
-    (didDismiss)="closeDeleteAccount()">
-    <ng-template>
-      <ion-content class="delete-account-content">
-        <div class="delete-sheet">
-          <div class="delete-sheet__handle"></div>
-
-          <ng-container [ngSwitch]="deleteFlowStep">
-            <ng-container *ngSwitchCase="'impact'">
-              <div class="delete-sheet__icon delete-sheet__icon--soft">
-                <ion-icon name="trash-outline"></ion-icon>
-              </div>
-
-              <h2>Eliminare l&apos;account?</h2>
-              <p class="delete-sheet__subtitle">
-                Questa azione &egrave; <strong>irreversibile</strong>. Verranno eliminati permanentemente:
-              </p>
-
-              <div class="danger-list">
-                <article class="danger-item" *ngFor="let item of deletionImpactSummary">
-                  <ion-icon [name]="item.icon"></ion-icon>
-                  <div>
-                    <strong>{{ item.title }}</strong>
-                    <span>{{ item.detail }}</span>
-                  </div>
-                </article>
-              </div>
-
-              <div class="delete-actions">
-                <button type="button" class="sheet-btn sheet-btn--primary" (click)="closeDeleteAccount()">
-                  Annulla, torna indietro
-                </button>
-                <button type="button" class="sheet-btn sheet-btn--danger-ghost" (click)="goToDeleteConfirmation()">
-                  Continua
-                </button>
-              </div>
-            </ng-container>
-
-            <ng-container *ngSwitchCase="'confirm'">
-              <div class="delete-sheet__icon delete-sheet__icon--warning">
-                <ion-icon name="warning-outline"></ion-icon>
-              </div>
-
-              <h2>Sei assolutamente sicura?</h2>
-              <p class="delete-sheet__subtitle">
-                Per confermare, scrivi <strong>ELIMINA</strong> nel campo qui sotto.
-              </p>
-
-              <label class="confirm-box">
-                <input
-                  type="text"
-                  [(ngModel)]="deleteConfirmation"
-                  [disabled]="isDeletingAccount"
-                  autocomplete="off"
-                  autocapitalize="characters"
-                  placeholder="Scrivi ELIMINA per confermare">
-              </label>
-
-              <div class="delete-actions delete-actions--split">
-                <button type="button" class="sheet-btn sheet-btn--secondary" (click)="backToDeleteImpact()">
-                  Indietro
-                </button>
-                <button
-                  type="button"
-                  class="sheet-btn sheet-btn--danger"
-                  [disabled]="!deleteConfirmationValid || isDeletingAccount"
-                  (click)="confirmDeleteAccount()">
-                  {{ isDeletingAccount ? 'Eliminazione...' : 'Elimina definitivamente' }}
-                </button>
-              </div>
-            </ng-container>
-
-            <ng-container *ngSwitchCase="'success'">
-              <div class="delete-sheet__icon delete-sheet__icon--success">
-                <ion-icon name="checkmark-done-outline"></ion-icon>
-              </div>
-
-              <h2>Account eliminato</h2>
-              <p class="delete-sheet__subtitle">
-                Il tuo account &egrave; stato eliminato definitivamente.
-                Ci dispiace vederti andare.
-              </p>
-
-              <div class="delete-actions delete-actions--full">
-                <button type="button" class="sheet-btn sheet-btn--primary" (click)="finishDeleteAccount()">
-                  Chiudi
-                </button>
-              </div>
-            </ng-container>
-          </ng-container>
-        </div>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
-
-  <ion-modal
-    class="profile-editor-modal"
-    [isOpen]="isEditModalOpen"
-    [breakpoints]="[0, 0.92]"
-    [initialBreakpoint]="0.92"
-    (didDismiss)="closeEditProfile()">
-    <ng-template>
-      <ion-content class="profile-editor-content">
-        <app-profile-editor
-          variant="sheet"
-          title="Modifica profilo"
-          submitLabel="Salva"
-          (saved)="onProfileSaved($event)"
-          (closed)="closeEditProfile()">
-        </app-profile-editor>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 </ion-content>
+
+<!-- DELETE MODAL -->
+<ion-modal
+  class="delete-account-modal"
+  [isOpen]="isDeleteModalOpen"
+  [canDismiss]="!isDeletingAccount"
+  [backdropDismiss]="!isDeletingAccount"
+  [breakpoints]="[0, 0.92]"
+  [initialBreakpoint]="0.92"
+  (didDismiss)="closeDeleteAccount()"
+>
+  <ng-template>
+    <ion-content class="modal-content">
+      <div class="delete-sheet">
+        <div class="modal-handle"></div>
+
+        <ng-container [ngSwitch]="deleteFlowStep">
+
+          <ng-container *ngSwitchCase="'impact'">
+            <span class="delete-icon">🗑️</span>
+            <h2 class="delete-title">Eliminare l'account?</h2>
+            <p class="delete-desc">
+              Azione <strong>irreversibile</strong>. Verranno eliminati:
+            </p>
+
+            <div class="impact-list">
+              <div class="impact-item" *ngFor="let item of deletionImpactSummary">
+                <ion-icon [name]="item.icon"></ion-icon>
+                <div class="impact-info">
+                  <span class="impact-title">{{ item.title }}</span>
+                  <span class="impact-detail">{{ item.detail }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="delete-actions">
+              <button class="modal-btn-primary" (click)="closeDeleteAccount()">Annulla</button>
+              <button class="modal-btn-danger-ghost" (click)="goToDeleteConfirmation()">Continua</button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'confirm'">
+            <span class="delete-icon">⚠️</span>
+            <h2 class="delete-title">Sei sicuro?</h2>
+            <p class="delete-desc">Scrivi <strong>ELIMINA</strong> per confermare.</p>
+
+            <input
+              type="text"
+              class="confirm-input"
+              [(ngModel)]="deleteConfirmation"
+              [disabled]="isDeletingAccount"
+              autocomplete="off"
+              autocapitalize="characters"
+              placeholder="Scrivi ELIMINA"
+            />
+
+            <div class="delete-actions delete-actions--row">
+              <button class="modal-btn-ghost" (click)="backToDeleteImpact()">Indietro</button>
+              <button
+                class="modal-btn-danger"
+                [disabled]="!deleteConfirmationValid || isDeletingAccount"
+                (click)="confirmDeleteAccount()"
+              >
+                {{ isDeletingAccount ? 'Eliminazione...' : 'Elimina' }}
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'success'">
+            <span class="delete-icon">✅</span>
+            <h2 class="delete-title">Account eliminato</h2>
+            <p class="delete-desc">Ci dispiace vederti andare.</p>
+            <div class="delete-actions">
+              <button class="modal-btn-primary" (click)="finishDeleteAccount()">Chiudi</button>
+            </div>
+          </ng-container>
+
+        </ng-container>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- EDIT PROFILE MODAL -->
+<ion-modal
+  class="profile-editor-modal"
+  [isOpen]="isEditModalOpen"
+  [breakpoints]="[0, 0.92]"
+  [initialBreakpoint]="0.92"
+  (didDismiss)="closeEditProfile()"
+>
+  <ng-template>
+    <ion-content class="modal-content">
+      <app-profile-editor
+        variant="sheet"
+        title="Modifica profilo"
+        submitLabel="Salva"
+        (saved)="onProfileSaved($event)"
+        (closed)="closeEditProfile()"
+      ></app-profile-editor>
+    </ion-content>
+  </ng-template>
+</ion-modal>

@@ -1,13 +1,13 @@
-$bg-page: #f2f2f7;
+$bg-page: #f7f8fc;
 $bg-card: #ffffff;
 
-$text-primary: #1a1a2e;
-$text-secondary: #6b6b80;
-$text-muted: #a0a0b2;
+$text-primary: #1f2940;
+$text-secondary: #65708b;
+$text-muted: #9aa3ba;
 
-$purple: #8b5cf6;
-$purple-light: #ede9fe;
-$pink: #ec4899;
+$primary: #4f6bff;
+$primary-soft: #e8edff;
+$accent: #ff9f6e;
 
 $radius-xl: 28px;
 $radius-full: 9999px;
@@ -24,7 +24,7 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba($bg-page, 0.85);
+  background: rgba(247, 248, 252, 0.86);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   padding-top: env(safe-area-inset-top);
@@ -68,7 +68,7 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: $font-display;
   font-size: 1.3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, $purple 0%, $pink 100%);
+  background: linear-gradient(135deg, $primary 0%, $accent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -107,7 +107,7 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: linear-gradient(135deg, $purple, $pink);
+  background: linear-gradient(135deg, $primary, $accent);
   z-index: 0;
 }
 
@@ -123,7 +123,7 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .custom-tab-btn {
   --color: #{$text-muted};
-  --color-selected: #{$purple};
+  --color-selected: #{$primary};
   --ripple-color: transparent;
 
   ion-icon {
@@ -141,12 +141,12 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &[aria-selected='true'] {
     ion-icon {
-      color: $purple;
+      color: $primary;
       transform: scale(1.08);
     }
 
     ion-label {
-      color: $purple;
+      color: $primary;
       font-weight: 700;
     }
 
@@ -158,9 +158,9 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       transform: translateX(-50%);
       width: 16px;
       height: 3px;
-      background: $purple;
+      background: $primary;
       border-radius: $radius-full;
-      box-shadow: 0 0 8px rgba($purple, 0.4);
+      box-shadow: 0 0 8px rgba(79, 107, 255, 0.35);
       animation: indicatorIn 0.3s $spring both;
     }
   }
@@ -171,6 +171,7 @@ $spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     width: 4px;
     opacity: 0;
   }
+
   to {
     width: 16px;
     opacity: 1;
