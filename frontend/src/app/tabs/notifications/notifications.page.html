@@ -1,0 +1,75 @@
+<ion-content [fullscreen]="true" class="notifications-page">
+  <div class="notifications-shell">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <button type="button" class="back-btn" (click)="goBack()" aria-label="Torna indietro">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+
+      <div class="top-copy">
+        <h1>Notifiche</h1>
+        <p *ngIf="unreadCount > 0">{{ unreadCount }} non lette</p>
+        <p *ngIf="unreadCount === 0">Tutto aggiornato ✨</p>
+      </div>
+
+      <button
+        type="button"
+        class="mark-btn"
+        *ngIf="notifications.length > 0"
+        (click)="markAllAsRead()"
+      >
+        Segna tutte
+      </button>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="notifications.length === 0">
+      <div class="empty-icon">
+        <ion-icon name="notifications-off-outline"></ion-icon>
+      </div>
+      <h3>Nessuna notifica</h3>
+      <p>Quando succede qualcosa di importante, la vedrai qui.</p>
+    </div>
+
+    <!-- List -->
+    <div class="notifications-list" *ngIf="notifications.length > 0">
+      <article
+        class="notification-card"
+        [class.notification-card--unread]="!notification.read"
+        *ngFor="let notification of notifications; trackBy: trackById"
+        (click)="openNotification(notification)"
+      >
+        <div class="notif-icon" [ngClass]="notificationClass(notification.type)">
+          <ion-icon [name]="notificationIcon(notification.type)"></ion-icon>
+        </div>
+
+        <div class="notif-copy">
+          <div class="notif-top">
+            <h3>{{ notification.title }}</h3>
+            <span class="notif-time">{{ formatRelativeDate(notification.createdAt) }}</span>
+          </div>
+
+          <p>{{ notification.message }}</p>
+
+          <div class="notif-meta">
+            <span class="notif-dot" *ngIf="!notification.read"></span>
+            <span *ngIf="!notification.read">Non letta</span>
+            <span *ngIf="notification.read">Letta</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="notif-remove"
+          (click)="removeNotification(notification, $event)"
+          aria-label="Rimuovi notifica"
+        >
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </article>
+    </div>
+
+    <div style="height: 120px"></div>
+  </div>
+</ion-content>

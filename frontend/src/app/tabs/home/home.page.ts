@@ -64,6 +64,10 @@ export class HomePage implements OnInit, OnDestroy {
     this.loadHomeData();
   }
 
+  openNotifications(): void {
+    this.router.navigate(['tabs/notifications']);
+  }
+
   openPlanner(): void {
     this.router.navigate(['/tabs/planner']);
   }

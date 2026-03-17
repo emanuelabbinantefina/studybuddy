@@ -55,7 +55,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .hero-inner {
   position: relative;
   z-index: 1;
-  padding: 20px 0 0;
+  padding: 14px 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,9 +64,9 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .avatar-wrap {
   position: relative;
-  width: 90px;
-  height: 90px;
-  margin-bottom: 14px;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 12px;
   cursor: pointer;
   transition: transform $transition;
 
@@ -101,7 +101,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .hero-name {
   font-family: $font-display;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: $text-primary;
   margin: 0;
@@ -145,18 +145,18 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero-member {
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: $text-muted;
-  margin: 8px 0 0;
+  margin: 7px 0 0;
 }
 
 .hero-bio {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: $text-secondary;
-  margin: 10px 0 0;
-  max-width: 280px;
+  margin: 8px 0 0;
+  max-width: 320px;
   line-height: 1.45;
 }
 
@@ -164,13 +164,13 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 14px;
-  padding: 9px 18px;
+  margin-top: 12px;
+  padding: 8px 16px;
   background: $bg-card;
   border: 1px solid #eef0f7;
   border-radius: $radius-full;
   font-family: $font-body;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: $primary;
   cursor: pointer;
@@ -189,9 +189,9 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .activity-card {
   background: $bg-card;
   border-radius: $radius-lg;
-  padding: 14px 16px;
+  padding: 12px 14px;
   box-shadow: $shadow-card;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .activity-title {
@@ -214,11 +214,11 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 12px 8px;
+  gap: 3px;
+  padding: 10px 8px;
   background: #fafbfc;
-  border-radius: 16px;
-  min-height: 72px;
+  border-radius: 14px;
+  min-height: 64px;
 }
 
 .activity-value {
@@ -271,7 +271,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .achievement {
@@ -279,8 +279,8 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
-  padding: 10px 8px;
+  min-height: 58px;
+  padding: 8px 6px;
   background: $bg-card;
   border-radius: 18px;
   box-shadow: $shadow-card;
@@ -298,7 +298,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .achievement-label {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 700;
   color: $text-primary;
   line-height: 1.2;
@@ -375,8 +375,8 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .account-section {
-  margin-top: 32px;
-  padding: 20px 0 32px;
+  margin-top: 24px;
+  padding: 18px 0 28px;
   border-top: 1px solid #eef0f7;
   display: flex;
   flex-direction: column;
@@ -389,12 +389,12 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   background: $bg-card;
   border: 1.5px solid rgba(239, 107, 115, 0.15);
   border-radius: $radius-lg;
   font-family: $font-body;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: $red;
   cursor: pointer;
@@ -416,7 +416,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   background: transparent;
   border: 1.5px dashed rgba(0, 0, 0, 0.08);
   border-radius: $radius-lg;

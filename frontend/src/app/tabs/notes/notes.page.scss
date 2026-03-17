@@ -112,9 +112,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   background: $bg-card;
   border-radius: $radius-lg;
-  padding: 14px 16px;
+  padding: 10px 14px;
   box-shadow: $shadow-card;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .mini-stat {
@@ -122,7 +122,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
 }
 
 .mini-stat-emoji {
@@ -131,7 +131,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .mini-stat-value {
   font-family: $font-display;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: $text-primary;
   line-height: 1;
@@ -167,7 +167,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .search-input {
   flex: 1;
-  height: 48px;
+  height: 46px;
   padding: 0 52px 0 46px;
   background: $bg-card;
   border: 1.5px solid rgba(0, 0, 0, 0.06);
@@ -247,12 +247,12 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .tab-chip {
   flex-shrink: 0;
-  padding: 8px 18px;
+  padding: 7px 16px;
   background: $bg-card;
   border: 1.5px solid rgba(0, 0, 0, 0.06);
   border-radius: $radius-full;
   font-family: $font-body;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: $text-secondary;
   cursor: pointer;
@@ -372,7 +372,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .scope-card {
   background: $bg-card;
   border-radius: $radius-lg;
-  padding: 14px;
+  padding: 12px;
   margin-bottom: 14px;
   box-shadow: $shadow-card;
 }
@@ -384,11 +384,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   padding: 4px;
   background: $bg-page;
   border-radius: $radius-full;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .scope-btn {
-  height: 38px;
+  height: 36px;
   border: none;
   border-radius: $radius-full;
   background: transparent;
@@ -597,7 +597,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .result-bar {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .result-count {
@@ -677,7 +677,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
   transition: transform $spring;
   border-left: 4px solid $primary;
-  min-height: 130px;
+  min-height: 118px;
   display: flex;
   flex-direction: column;
   animation: cardFadeIn 0.3s ease-out both;
@@ -869,7 +869,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 48px 20px;
+  padding: 36px 20px;
   text-align: center;
 }
 
@@ -1123,7 +1123,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 @media (min-width: 500px) {
   .note-card {
-    min-height: 145px;
+    min-height: 128px;
     padding: 16px;
   }
 }

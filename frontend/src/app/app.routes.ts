@@ -73,6 +73,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./tabs/focus/focus.page').then((m) => m.FocusPage),
       },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./tabs/notifications/notifications.page').then((m) => m.NotificationsPage),
+      },
     ],
   },
 

@@ -1,26 +1,25 @@
-﻿$bg-page: #f2f2f7;
+﻿$bg-page: #f7f8fc;
 $bg-card: #ffffff;
-$bg-card-hover: #f9f9fb;
+$bg-card-hover: #f1f3f9;
 
-$text-primary: #1a1a2e;
-$text-secondary: #6b6b80;
-$text-muted: #a0a0b2;
+$text-primary: #1f2940;
+$text-secondary: #65708b;
+$text-muted: #9aa3ba;
 
-$purple: #8b5cf6;
-$purple-light: #ede9fe;
-$purple-soft: rgba(139, 92, 246, 0.08);
+$primary: #4f6bff;
+$primary-soft: #e8edff;
 
-$pink: #ec4899;
-$pink-light: #fce7f3;
+$accent: #ff9f6e;
+$accent-soft: #fff1e8;
 
 $blue: #3b82f6;
 $blue-light: #dbeafe;
 
-$green: #10b981;
-$green-light: #d1fae5;
+$green: #23b38a;
+$green-light: #ddf8ef;
 
-$orange: #f59e0b;
-$orange-light: #fef3c7;
+$orange: #f4b740;
+$orange-light: #fff4d6;
 
 $radius-sm: 14px;
 $radius-md: 18px;
@@ -109,7 +108,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   right: 10px;
   width: 8px;
   height: 8px;
-  background: $pink;
+  background: $accent;
   border-radius: 50%;
   border: 2px solid $bg-card;
 }
@@ -121,13 +120,13 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .hero-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 40%, #c084fc 100%);
+  background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%);
   border-radius: $radius-xl;
   padding: 28px 24px;
   margin: 16px 0 24px;
   box-shadow:
-    0 8px 32px rgba(139, 92, 246, 0.2),
-    0 2px 8px rgba(139, 92, 246, 0.1);
+    0 8px 32px rgba(79, 107, 255, 0.18),
+    0 2px 8px rgba(79, 107, 255, 0.08);
   cursor: pointer;
   transition: transform $transition;
   min-height: 180px;
@@ -137,7 +136,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &--empty {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #4f6bff 50%, #7c8fff 100%);
   }
 }
 
@@ -145,13 +144,13 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: absolute;
   border-radius: 50%;
   filter: blur(40px);
-  opacity: 0.3;
+  opacity: 0.28;
   pointer-events: none;
 
   &--1 {
     width: 160px;
     height: 160px;
-    background: #ec4899;
+    background: #ff9f6e;
     top: -40px;
     right: -30px;
   }
@@ -159,7 +158,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &--2 {
     width: 120px;
     height: 120px;
-    background: #3b82f6;
+    background: #6ea8ff;
     bottom: -30px;
     left: -20px;
   }
@@ -235,7 +234,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 6px;
   padding: 10px 20px;
   background: #fff;
-  color: $purple;
+  color: $primary;
   font-family: $font-body;
   font-size: 0.85rem;
   font-weight: 700;
@@ -265,7 +264,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &--small {
     padding: 8px 16px;
     font-size: 0.8rem;
-    background: $purple;
+    background: $primary;
     color: #fff;
     box-shadow: $shadow-button;
   }
@@ -287,9 +286,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .today-date {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $text-muted;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $text-secondary;
 }
 
 .focus-grid {
@@ -318,15 +317,24 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &--warm {
-    background: linear-gradient(145deg, #fef3c7 0%, #fecaca 100%);
+    background: linear-gradient(145deg, #fff4d6 0%, #fff1e8 100%);
   }
 
   &--progress {
     background: $bg-card;
+    border: 1px solid #eef0f7;
   }
 
   &--cool {
-    background: linear-gradient(145deg, #dbeafe 0%, #e0e7ff 100%);
+    background: linear-gradient(145deg, #e8edff 0%, #eef4ff 100%);
+  }
+
+  &--static {
+    cursor: default;
+
+    &:active {
+      transform: none;
+    }
   }
 }
 
@@ -356,15 +364,15 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform: rotate(-90deg);
 }
 
-.progress-bg {
+ .progress-bg {
   fill: none;
-  stroke: #dcdce1;
+  stroke: #e6eaf5;
   stroke-width: 3;
 }
 
 .progress-fill {
   fill: none;
-  stroke: $purple;
+  stroke: $primary;
   stroke-width: 3;
   stroke-linecap: round;
   transition: stroke-dasharray 0.6s ease;
@@ -399,20 +407,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .section-title {
   font-family: $font-display;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.12rem;
+  font-weight: 800;
   color: $text-primary;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .link-btn {
   background: none;
   border: none;
   font-family: $font-body;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $purple;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $primary;
   cursor: pointer;
   padding: 4px 0;
   transition: opacity $transition;
@@ -465,7 +473,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     border-left-color: $blue;
   }
   &.exam-accent-pink {
-    border-left-color: $pink;
+    border-left-color: $accent;
   }
   &.exam-accent-green {
     border-left-color: $green;
@@ -487,7 +495,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: $blue-light;
   }
   .exam-accent-pink & {
-    background: $pink-light;
+    background: $accent-soft;
   }
   .exam-accent-green & {
     background: $green-light;
@@ -503,8 +511,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   .exam-accent-blue & {
     color: $blue;
   }
-  .exam-accent-pink & {
-    color: $pink;
+  .exam-accent-orange & {
+    color: $accent;
   }
   .exam-accent-green & {
     color: $green;
@@ -556,6 +564,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 14px;
   padding: 14px 16px;
   background: $bg-card;
+  border: 1px solid #eef0f7;
   border-radius: $radius-md;
   box-shadow: $shadow-card;
   cursor: pointer;

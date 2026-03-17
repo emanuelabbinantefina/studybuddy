@@ -42,5 +42,9 @@ export const routes: Routes = [
           import('./focus/focus.page').then((m) => m.FocusPage),
       },
     ],
+  },  {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notifications.page').then( m => m.NotificationsPage)
   },
+
 ];
