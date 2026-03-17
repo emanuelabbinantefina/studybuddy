@@ -154,7 +154,7 @@ export class ProfilePage implements OnInit, OnDestroy {
         detail: `${this.groupsCount} gruppi`
       },
       {
-        icon: 'calendar-clear-outline',
+        icon: 'calendar-outline',
         title: 'Il tuo planner e tutti gli esami',
         detail: 'Eventi e promemoria'
       },

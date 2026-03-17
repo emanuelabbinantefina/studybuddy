@@ -159,7 +159,7 @@
         class="note-card"
         *ngFor="let note of recentNotes; let i = index"
         [style.animation-delay]="i * 60 + 'ms'"
-        (click)="openAppunti()"
+        (click)="openNote(note)"
       >
         <div class="note-icon-box" [ngClass]="getNoteAccentClass(note)">
           <span class="note-icon-label">{{ getNoteFileLabel(note) }}</span>

@@ -1,165 +1,126 @@
-:root {
-  --sb-primary: #3B82F6;      // Blu del logo StudyBuddy
-  --sb-primary-dark: #2563EB;  // Blu più scuro per hover
-  --sb-accent: #FB923C;       // Arancione "Crea evento"
-  --sb-accent-dark: #F97316;  // Arancione hover
-  --sb-bg: #F8FAFC;           // Sfondo grigio chiaro
-  --sb-card-bg: #EFF6FF;      // Azzurro pastello box "Ciao!"
-  --sb-text: #1E293B;         // Testo scuro
-  --sb-text-light: #64748B;   // Testo secondario
-  --sb-border: #E2E8F0;       // Bordi
-  --sb-button-primary: #3B82F6;
-  --sb-button-primary-hover: #2563EB;
-  --sb-button-secondary: #FB923C;
-  --sb-button-secondary-hover: #F97316;
-}
+$purple: #8b5cf6;
+$purple-dark: #7c3aed;
+$purple-light: #ede9fe;
+$purple-soft: rgba(139, 92, 246, 0.12);
+
+$text-primary: #1a1a2e;
+$text-secondary: #6b6b80;
+$text-muted: #a0a0b2;
+
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 28px;
+$radius-full: 9999px;
+
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 ion-content {
-  --padding-top: 0 !important;
-  --padding-bottom: 0 !important;
-  height: 100dvh !important;
+  --background: linear-gradient(145deg, #8b5cf6 0%, #a78bfa 50%, #c084fc 100%);
+  --padding-top: 0;
+  --padding-bottom: 0;
 }
 
 .background-container {
-  min-height: 100dvh !important;
-}
-
-ion-content {
-  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
-}
-
-.background-container {
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  padding: 24px 20px;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  width: 320px;
-  border-radius: 40px;
-  padding: 25px;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  background: #ffffff;
+  width: 100%;
+  max-width: 340px;
+  border-radius: $radius-xl;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.25), 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 28px;
+
+  .brand-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, $purple, #c084fc);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+
+    ion-icon {
+      font-size: 26px;
+      color: white;
+    }
+  }
 }
 
 .title {
-  font-size: 28px;
-  font-weight: bold;
+  font-family: $font-display;
+  font-size: 26px;
+  font-weight: 700;
+  color: $text-primary;
   text-align: center;
-  color: black;
-  margin-top: 0;
-  margin-bottom: 5px;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
 }
 
 .subtitle {
+  font-family: $font-body;
   font-size: 14px;
-  color: gray;
+  color: $text-muted;
   text-align: center;
-  margin-bottom: 20px;
-  margin-top: 0;
-}
-
-.social-container {
-  margin-bottom: 0; /* Rimosso margine inferiore per gestire lo spazio col divider */
-}
-
-.social-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  width: 100%;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 13px;
-  transition: transform 0.1s ease;
-
-  .uni-logo {
-    height: 24px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  span {
-    white-space: nowrap;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &.university {
-    background-color: rgba(255, 255, 255, 0.85);
-    color: black;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  }
-}
-
-/* NUOVO DIVISORE "o" */
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 15px 0; /* Spazio sopra e sotto */
-  color: gray;
-  font-size: 14px;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.2); /* Linea sottile */
-  }
-
-  &::before {
-    margin-right: 10px;
-  }
-
-  &::after {
-    margin-left: 10px;
-  }
+  margin: 0 0 24px;
 }
 
 .input-container {
   display: flex;
   align-items: center;
-  background-color: #f7f7f7;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  padding: 0 15px;
+  background: #f5f4ff;
+  border-radius: $radius-md;
+  margin-bottom: 12px;
+  padding: 0 14px;
+  border: 1.5px solid transparent;
+  transition: border-color $transition, background $transition;
+
+  &:focus-within {
+    border-color: $purple;
+    background: #faf9ff;
+  }
 
   .input-icon {
-    color: gray;
-    font-size: 20px;
+    color: $text-muted;
+    font-size: 18px;
     margin-right: 10px;
+    flex-shrink: 0;
   }
 
   ion-input {
     flex: 1;
-    --padding-top: 15px;
-    --padding-bottom: 15px;
+    --padding-top: 14px;
+    --padding-bottom: 14px;
     --padding-start: 0;
-    --placeholder-color: gray;
-    --color: black;
+    --placeholder-color: #{$text-muted};
+    --color: #{$text-primary};
+    font-family: $font-body;
+    font-size: 15px;
   }
 
   .password-toggle {
-    color: gray;
-    font-size: 22px;
+    color: $text-muted;
+    font-size: 20px;
     margin-left: 8px;
     cursor: pointer;
-    padding: 5px;
+    padding: 4px;
+    transition: color $transition;
+
+    &:hover { color: $purple; }
   }
 }
 
@@ -167,96 +128,99 @@ ion-content {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
+  margin: 4px 0 16px;
   cursor: pointer;
   user-select: none;
 }
 
 .custom-checkbox {
-  width: 22px;
-  height: 22px;
-  border: 2px solid #4B8AD1;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d4d0e8;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   background: transparent;
+  flex-shrink: 0;
 
   ion-icon {
-    font-size: 16px;
+    font-size: 13px;
     color: white;
     opacity: 0;
     transition: opacity 0.15s ease;
   }
 
   &.checked {
-    background: #4B8AD1;
+    background: $purple;
+    border-color: $purple;
 
-    ion-icon {
-      opacity: 1;
-    }
+    ion-icon { opacity: 1; }
   }
 }
 
 .remember-text {
-  font-size: 15px;
-  color: gray;
+  font-family: $font-body;
+  font-size: 14px;
+  color: $text-secondary;
 }
 
 .error-text {
-  color: red;
+  font-family: $font-body;
+  color: #ef4444;
   text-align: center;
   margin-bottom: 10px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .main-btn {
-  --background: #FF8A65;
-  --border-radius: 12px;
-  margin-top: 20px;
+  --background: linear-gradient(135deg, #{$purple} 0%, #a78bfa 100%);
+  --background-activated: #{$purple-dark};
+  --border-radius: #{$radius-full};
+  --box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  margin-top: 4px;
   height: 50px;
-  font-size: 18px;
-  font-weight: bold;
-  --box-shadow: none;
+  font-family: $font-display;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .footer-links {
-  margin-top: 25px;
+  margin-top: 24px;
   text-align: center;
+  font-family: $font-body;
   font-size: 14px;
-  color: gray;
+  color: $text-muted;
 
-  p {
-    margin: 5px 0;
-  }
+  p { margin: 6px 0; }
 
   .link-red {
-    color: #4B8AD1;
-    font-weight: bold;
-    margin-left: 5px;
+    color: $purple;
+    font-weight: 600;
+    margin-left: 4px;
     cursor: pointer;
+
+    &:hover { color: $purple-dark; }
   }
 
   .link-gray {
-    color: gray;
+    color: $text-muted;
     cursor: pointer;
-    margin-top: 15px;
+    margin-top: 10px;
     display: block;
+    font-size: 13px;
+
+    &:hover { color: $text-secondary; }
   }
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

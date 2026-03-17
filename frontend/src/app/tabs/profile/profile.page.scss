@@ -451,8 +451,7 @@
 }
 
 .delete-sheet {
-  min-height: 100%;
-  padding: 14px 18px 24px;
+  padding: 14px 18px max(28px, env(safe-area-inset-bottom));
   background:
     radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent 30%),
     linear-gradient(180deg, #ffffff 0%, #faf7ff 100%);
@@ -594,8 +593,7 @@
 
 .delete-actions {
   width: 100%;
-  margin-top: auto;
-  padding-top: 26px;
+  margin-top: 28px;
   display: grid;
   gap: 12px;
 }

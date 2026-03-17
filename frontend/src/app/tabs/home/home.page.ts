@@ -30,6 +30,7 @@ export class HomePage implements OnInit, OnDestroy {
   nextExam: UpcomingExam | null = null;
   upcomingExams: UpcomingExam[] = [];
   recentNotes: Appunto[] = [];
+  totalNotesCount = 0;
   loadingExams = false;
   loadingNotes = false;
 
@@ -69,6 +70,10 @@ export class HomePage implements OnInit, OnDestroy {
 
   openAppunti(): void {
     this.router.navigate(['/tabs/notes']);
+  }
+
+  openNote(note: Appunto): void {
+    this.router.navigate(['/tabs/notes'], { queryParams: { noteId: note.id } });
   }
 
   openFocus(): void {
@@ -143,7 +148,9 @@ export class HomePage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (notes) => {
-          this.recentNotes = Array.isArray(notes) ? notes.slice(0, 4) : [];
+          const all = Array.isArray(notes) ? notes : [];
+          this.totalNotesCount = all.length;
+          this.recentNotes = all.slice(0, 4);
           this.loadingNotes = false;
         },
         error: (err) => {

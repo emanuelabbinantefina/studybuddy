@@ -1,65 +1,92 @@
+$purple: #8b5cf6;
+$purple-dark: #7c3aed;
+$purple-light: #ede9fe;
+
+$text-primary: #1a1a2e;
+$text-secondary: #6b6b80;
+$text-muted: #a0a0b2;
+
+$radius-md: 18px;
+$radius-xl: 28px;
+$radius-full: 9999px;
+
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
 :host {
   display: block;
   height: 100%;
 }
 
 ion-content {
-  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
+  --background: linear-gradient(145deg, #8b5cf6 0%, #a78bfa 50%, #c084fc 100%);
 }
 
 .background-container {
   width: 100%;
-  height: 100%;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100dvh !important;
+  padding: 24px 20px;
 }
 
 .card {
   background: #ffffff;
-  width: 320px;
-  border-radius: 28px;
-  padding: 25px;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  max-height: 90vh;
+  width: 100%;
+  max-width: 340px;
+  border-radius: $radius-xl;
+  padding: 32px 28px;
+  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.25), 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 92dvh;
   overflow-y: auto;
 }
 
 .title {
-  font-size: 28px;
+  font-family: $font-display;
+  font-size: 26px;
+  font-weight: 700;
+  color: $text-primary;
   text-align: center;
-  margin-top: 0;
-  margin-bottom: 20px;
+  margin: 0 0 24px;
+  letter-spacing: -0.3px;
 }
 
 .input-container {
   display: flex;
   align-items: center;
-  background-color: #f7f7f7;
-  border-radius: 16px;
-  margin-bottom: 15px;
-  padding: 0 15px;
+  background: #f5f4ff;
+  border-radius: $radius-md;
+  margin-bottom: 12px;
+  padding: 0 14px;
   min-height: 50px;
+  border: 1.5px solid transparent;
+  transition: border-color $transition, background $transition;
 
-  .input-icon {
-    color: gray;
-    font-size: 20px;
-    margin-right: 10px;
-    min-width: 20px;
-    display: flex;
-    align-items: center;
+  &:focus-within {
+    border-color: $purple;
+    background: #faf9ff;
   }
 
-  ion-input, ion-select {
+  .input-icon {
+    color: $text-muted;
+    font-size: 18px;
+    margin-right: 10px;
+    min-width: 18px;
+    flex-shrink: 0;
+  }
+
+  ion-input,
+  ion-select {
     flex: 1;
     width: 100%;
     --padding-start: 0;
-    --placeholder-color: gray;
-    --color: black;
-    font-size: 16px;
+    --placeholder-color: #{$text-muted};
+    --color: #{$text-primary};
+    font-family: $font-body;
+    font-size: 15px;
   }
 
   ion-select {
@@ -67,52 +94,52 @@ ion-content {
     height: 100%;
   }
 }
+
 .error-text {
-  color: red;
+  font-family: $font-body;
+  color: #ef4444;
   text-align: center;
   margin-bottom: 10px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .main-btn {
-  --background: #ff6b35;
-  --border-radius: 999px;
-  margin-top: 20px;
+  --background: linear-gradient(135deg, #{$purple} 0%, #a78bfa 100%);
+  --background-activated: #{$purple-dark};
+  --border-radius: #{$radius-full};
+  --box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+  margin-top: 8px;
   height: 50px;
-  font-size: 18px;
+  font-family: $font-display;
+  font-size: 16px;
   font-weight: 600;
-  --box-shadow: none;
+  letter-spacing: 0.2px;
 }
 
 .footer-links {
-  margin-top: 25px;
+  margin-top: 20px;
   text-align: center;
+  font-family: $font-body;
   font-size: 14px;
-  color: gray;
+  color: $text-muted;
 
-  p {
-    margin: 5px 0;
-  }
+  p { margin: 6px 0; }
 
   .link-red {
-    color: #ff6b35;
-    font-weight: 500;
-    margin-left: 5px;
+    color: $purple;
+    font-weight: 600;
+    margin-left: 4px;
     cursor: pointer;
+
+    &:hover { color: $purple-dark; }
   }
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

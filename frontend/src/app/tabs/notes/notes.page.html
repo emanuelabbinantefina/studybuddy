@@ -28,12 +28,6 @@
     </div>
     <div class="mini-stat-divider"></div>
     <div class="mini-stat">
-      <span class="mini-stat-emoji">📥</span>
-      <span class="mini-stat-value">{{ totalDownloaded }}</span>
-      <span class="mini-stat-label">Scaricati</span>
-    </div>
-    <div class="mini-stat-divider"></div>
-    <div class="mini-stat">
       <span class="mini-stat-emoji">🔖</span>
       <span class="mini-stat-value">{{ totalSaved }}</span>
       <span class="mini-stat-label">Salvati</span>
@@ -316,8 +310,16 @@
         <span> · {{ n.materia }}</span>
       </p>
       <div class="note-card-footer">
-        <span class="note-saved-dot" *ngIf="n.isSaved">🔖</span>
         <span class="note-mine-dot" *ngIf="n.canDelete">✏️</span>
+        <button
+          *ngIf="!n.canDelete"
+          class="note-save-btn"
+          [class.note-save-btn--saved]="n.isSaved"
+          [disabled]="savingNoteId === n.id"
+          (click)="toggleBookmark(n, $event)"
+        >
+          <ion-icon [name]="n.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+        </button>
       </div>
     </div>
   </div>
@@ -344,6 +346,15 @@
         </span>
       </div>
       <span class="note-list-time">{{ n.tempoUpload }}</span>
+      <button
+        *ngIf="!n.canDelete"
+        class="note-save-btn"
+        [class.note-save-btn--saved]="n.isSaved"
+        [disabled]="savingNoteId === n.id"
+        (click)="toggleBookmark(n, $event)"
+      >
+        <ion-icon [name]="n.isSaved ? 'bookmark' : 'bookmark-outline'"></ion-icon>
+      </button>
       <ion-icon name="chevron-forward" class="note-list-arrow"></ion-icon>
     </div>
   </div>

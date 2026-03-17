@@ -44,9 +44,20 @@
   <!-- CARD STACK -->
   <ng-container *ngIf="!loading && items.length > 0">
 
-    <p class="swipe-hint" *ngIf="items.length > 1">
-      ← Swipa per vedere gli altri impegni →
-    </p>
+    <div class="card-stack-wrapper">
+      <button class="side-arrow side-arrow--left"
+        *ngIf="items.length > 1 && currentCardIndex > 0"
+        (click)="scrollToCard(currentCardIndex - 1)"
+        aria-label="Precedente">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+
+      <button class="side-arrow side-arrow--right"
+        *ngIf="items.length > 1 && currentCardIndex < items.length - 1"
+        (click)="scrollToCard(currentCardIndex + 1)"
+        aria-label="Successivo">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
 
     <div class="card-stack" #cardScroller>
       <div
@@ -74,10 +85,6 @@
               {{ item.daysLabel }}
             </span>
 
-            <!-- DELETE ICON RIGHT -->
-            <button class="hero-trash" (click)="confirmDelete(item, $event)" aria-label="Elimina impegno">
-              <ion-icon name="trash-outline"></ion-icon>
-            </button>
           </div>
 
           <div class="hero-countdown">
@@ -100,15 +107,8 @@
         </div>
       </div>
     </div>
+    </div><!-- /card-stack-wrapper -->
 
-    <div class="dots" *ngIf="items.length > 1">
-      <span
-        class="dot"
-        [class.dot--active]="i === currentCardIndex"
-        *ngFor="let it of items; let i = index"
-        (click)="scrollToCard(i)"
-      ></span>
-    </div>
 
     <!-- Compact list -->
     <section class="compact-section">

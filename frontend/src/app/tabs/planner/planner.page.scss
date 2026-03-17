@@ -99,14 +99,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &:active { transform: scale(0.95); }
 }
 
-.swipe-hint {
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: $text-muted;
-  margin: 0 0 10px;
-  letter-spacing: 0.02em;
-}
 
 .card-stack {
   display: flex;
@@ -185,25 +177,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &--soon { background: rgba(245,158,11,0.3); }
 }
 
-.hero-trash {
-  margin-left: 6px;
-  width: 36px;
-  height: 36px;
-  border-radius: $radius-sm;
-  border: 1px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform $transition;
-
-  ion-icon { font-size: 18px; color: #fff; }
-
-  &:active { transform: scale(0.92); }
-}
 
 .hero-countdown {
   display: flex;
@@ -280,29 +253,39 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin: 0;
 }
 
-.dots {
+.card-stack-wrapper {
+  position: relative;
+}
+
+.side-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 16px 0;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: darken($bg-page, 10%);
   cursor: pointer;
-  transition: all $spring;
+  padding: 0;
+  transition: transform $transition;
 
-  &--active {
-    background: $purple;
-    width: 24px;
-    border-radius: $radius-full;
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+  ion-icon {
+    font-size: 22px;
+    color: $purple;
   }
+
+  &--left  { left: 4px; }
+  &--right { right: 4px; }
+
+  &:active { transform: translateY(-50%) scale(0.88); }
 }
+
 
 .compact-section {
   margin-top: 4px;

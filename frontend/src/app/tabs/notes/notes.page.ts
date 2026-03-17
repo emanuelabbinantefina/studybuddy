@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { Appunto } from '../../core/interfaces/models';
@@ -80,13 +81,15 @@ export class NotesPage implements OnInit, OnDestroy {
   ];
 
   totalUploaded = 0;
-  totalDownloaded = 0;
   totalSaved = 0;
+
+  private pendingNoteId: number | null = null;
 
   constructor(
     private apiService: ApiService,
     private toastCtrl: ToastController,
-    private userService: UserService
+    private userService: UserService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -110,6 +113,9 @@ export class NotesPage implements OnInit, OnDestroy {
   this.selectedNote = null;
   this.showFilters = false;
   this.showAllFaculties = true;
+
+  const noteId = this.route.snapshot.queryParamMap.get('noteId');
+  this.pendingNoteId = noteId ? Number(noteId) : null;
 
   this.loadStats();
   this.loadNoteContext();
@@ -367,7 +373,7 @@ export class NotesPage implements OnInit, OnDestroy {
       anchor.click();
 
       URL.revokeObjectURL(url);
-      this.incrementStat('downloaded');
+      // stat download rimossa
     } catch (err: any) {
       const message =
         err?.error?.message || 'Impossibile scaricare il file';
@@ -543,6 +549,11 @@ export class NotesPage implements OnInit, OnDestroy {
         this.allNotes = Array.isArray(res) ? res : [];
         this.applyNoteFilters();
         this.loading = false;
+        if (this.pendingNoteId !== null) {
+          const note = this.allNotes.find((n) => n.id === this.pendingNoteId);
+          if (note) this.selectedNote = note;
+          this.pendingNoteId = null;
+        }
       },
       error: () => {
         if (requestId !== this.notesRequestId) return;
@@ -708,14 +719,11 @@ export class NotesPage implements OnInit, OnDestroy {
   private loadStats(): void {
     this.totalUploaded =
       parseInt(localStorage.getItem('notes_stat_uploaded') || '0', 10) || 0;
-    this.totalDownloaded =
-      parseInt(localStorage.getItem('notes_stat_downloaded') || '0', 10) ||
-      0;
     this.totalSaved =
       parseInt(localStorage.getItem('notes_stat_saved') || '0', 10) || 0;
   }
 
-  private incrementStat(key: 'uploaded' | 'downloaded' | 'saved'): void {
+  private incrementStat(key: 'uploaded' | 'saved'): void {
     const storageKey = `notes_stat_${key}`;
     const current =
       parseInt(localStorage.getItem(storageKey) || '0', 10) || 0;
@@ -723,7 +731,6 @@ export class NotesPage implements OnInit, OnDestroy {
     localStorage.setItem(storageKey, next.toString());
 
     if (key === 'uploaded') this.totalUploaded = next;
-    if (key === 'downloaded') this.totalDownloaded = next;
     if (key === 'saved') this.totalSaved = next;
   }
 

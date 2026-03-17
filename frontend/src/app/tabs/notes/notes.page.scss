@@ -735,9 +735,44 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .note-card-footer {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 4px;
   margin-top: 6px;
   font-size: 0.7rem;
+}
+
+.note-save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  cursor: pointer;
+  transition: color $transition, background $transition;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: $purple-light;
+    color: $purple;
+  }
+
+  &--saved {
+    color: $purple;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 }
 
 // ═══ NOTES LIST VIEW ═══
