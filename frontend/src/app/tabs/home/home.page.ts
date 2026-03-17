@@ -43,7 +43,7 @@ export class HomePage implements OnInit, OnDestroy {
     private readonly apiService: ApiService,
     private readonly dataService: DataService,
     private readonly userService: UserService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.todayLabel = this.formatTodayLabel();
@@ -139,7 +139,7 @@ export class HomePage implements OnInit, OnDestroy {
   private loadRecentNotes(): void {
     this.loadingNotes = true;
     this.apiService
-      .getAppunti('')
+      .getAppunti('', '', 'all')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (notes) => {

@@ -1,29 +1,22 @@
-$bg-page: #f2f2f7;
+$bg-page: #f7f8fc;
 $bg-card: #ffffff;
-$bg-card-hover: #f9f9fb;
+$bg-card-hover: #f1f3f9;
 
-$text-primary: #1a1a2e;
-$text-secondary: #6b6b80;
-$text-muted: #a0a0b2;
+$text-primary: #1f2940;
+$text-secondary: #65708b;
+$text-muted: #9aa3ba;
 
-$purple: #8b5cf6;
-$purple-light: #ede9fe;
-$purple-soft: rgba(139, 92, 246, 0.08);
+$primary: #4f6bff;
+$primary-soft: #e8edff;
 
-$pink: #ec4899;
-$pink-light: #fce7f3;
+$accent: #ff9f6e;
+$accent-soft: #fff1e8;
 
-$blue: #3b82f6;
-$blue-light: #dbeafe;
+$green: #23b38a;
+$green-soft: #ddf8ef;
 
-$green: #10b981;
-$green-light: #d1fae5;
-
-$orange: #f59e0b;
-$orange-light: #fef3c7;
-
-$red: #ef4444;
-$red-light: #fee2e2;
+$red: #ef6b73;
+$red-soft: #ffe4e7;
 
 $radius-sm: 14px;
 $radius-md: 18px;
@@ -31,26 +24,18 @@ $radius-lg: 24px;
 $radius-xl: 28px;
 $radius-full: 9999px;
 
-$shadow-card: 0 2px 16px rgba(0, 0, 0, 0.04),
-  0 1px 4px rgba(0, 0, 0, 0.03);
-$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08),
-  0 2px 8px rgba(0, 0, 0, 0.04);
-
+$shadow-card: 0 4px 16px rgba(79, 107, 255, 0.05);
+$shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
-
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-// ═══ PAGE ═══
 
 .notes-content {
   --background: #{$bg-page};
   --padding-start: 20px;
   --padding-end: 20px;
 }
-
-// ═══ HEADER ═══
 
 .notes-header {
   display: flex;
@@ -102,7 +87,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   gap: 5px;
   padding: 10px 18px;
-  background: $purple;
+  background: $primary;
   color: #fff;
   border: none;
   border-radius: $radius-full;
@@ -110,16 +95,17 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 16px rgba(79, 107, 255, 0.25);
   transition: transform $transition;
-  -webkit-tap-highlight-color: transparent;
 
-  ion-icon { font-size: 16px; }
+  ion-icon {
+    font-size: 16px;
+  }
 
-  &:active { transform: scale(0.95); }
+  &:active {
+    transform: scale(0.95);
+  }
 }
-
-// ═══ MINI STATS ═══
 
 .mini-stats {
   display: flex;
@@ -160,10 +146,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .mini-stat-divider {
   width: 1px;
   height: 28px;
-  background: darken($bg-page, 5%);
+  background: #eef0f7;
 }
-
-// ═══ SEARCH BAR ═══
 
 .search-bar {
   position: relative;
@@ -196,8 +180,13 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: $shadow-card;
   transition: border-color $transition;
 
-  &::placeholder { color: $text-muted; }
-  &:focus { border-color: $purple; }
+  &::placeholder {
+    color: $text-muted;
+  }
+
+  &:focus {
+    border-color: $primary;
+  }
 }
 
 .filter-toggle {
@@ -220,8 +209,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   &--active {
-    background: $purple-light;
-    ion-icon { color: $purple; }
+    background: $primary-soft;
+
+    ion-icon {
+      color: $primary;
+    }
   }
 }
 
@@ -231,7 +223,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   right: 2px;
   width: 16px;
   height: 16px;
-  background: $purple;
+  background: $primary;
   color: #fff;
   border-radius: 50%;
   font-size: 0.55rem;
@@ -241,15 +233,16 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   justify-content: center;
 }
 
-// ═══ TABS ═══
-
 .tabs-row {
   display: flex;
   gap: 8px;
   margin-bottom: 14px;
   overflow-x: auto;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .tab-chip {
@@ -264,19 +257,18 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-secondary;
   cursor: pointer;
   transition: all $transition;
-  -webkit-tap-highlight-color: transparent;
 
   &--active {
-    background: $purple;
-    border-color: $purple;
+    background: $primary;
+    border-color: $primary;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 12px rgba(79, 107, 255, 0.2);
   }
 
-  &:active { transform: scale(0.95); }
+  &:active {
+    transform: scale(0.95);
+  }
 }
-
-// ═══ FILTERS PANEL ═══
 
 .filters-panel {
   background: $bg-card;
@@ -290,7 +282,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .filter-section {
   margin-bottom: 14px;
 
-  &:last-of-type { margin-bottom: 0; }
+  &:last-of-type {
+    margin-bottom: 0;
+  }
 }
 
 .filter-label {
@@ -308,7 +302,10 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &--wrap {
     flex-wrap: wrap;
@@ -327,28 +324,34 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-secondary;
   cursor: pointer;
   transition: all $transition;
-  -webkit-tap-highlight-color: transparent;
 
   &--active {
-    background: $purple-light;
-    border-color: rgba(139, 92, 246, 0.2);
-    color: $purple;
+    background: $primary-soft;
+    border-color: rgba(79, 107, 255, 0.2);
+    color: $primary;
   }
 
   &--pdf.f-chip--active {
-    background: $purple-light;
-    color: $purple;
-  }
-  &--doc.f-chip--active {
-    background: $pink-light;
-    color: $pink;
-  }
-  &--img.f-chip--active {
-    background: $orange-light;
-    color: $orange;
+    background: $red-soft;
+    color: $red;
+    border-color: rgba(239, 107, 115, 0.2);
   }
 
-  &:active { transform: scale(0.95); }
+  &--doc.f-chip--active {
+    background: $primary-soft;
+    color: $primary;
+    border-color: rgba(79, 107, 255, 0.2);
+  }
+
+  &--img.f-chip--active {
+    background: $green-soft;
+    color: $green;
+    border-color: rgba(35, 179, 138, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .clear-filters {
@@ -365,8 +368,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
   text-align: center;
 }
-
-// ═══ SCOPE ═══
 
 .scope-card {
   background: $bg-card;
@@ -399,9 +400,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   transition: all $transition;
 
   &--active {
-    background: $purple;
+    background: $primary;
     color: #fff;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 12px rgba(79, 107, 255, 0.2);
   }
 }
 
@@ -425,8 +426,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-muted;
 }
 
-// ═══ UPLOAD PANEL ═══
-
 .upload-panel {
   background: $bg-card;
   border-radius: $radius-lg;
@@ -446,6 +445,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     color: $text-primary;
     margin: 0 0 4px;
   }
+
   p {
     font-size: 0.8rem;
     font-weight: 500;
@@ -455,10 +455,10 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .dropzone {
-  border: 2px dashed rgba(139, 92, 246, 0.25);
+  border: 2px dashed rgba(79, 107, 255, 0.25);
   border-radius: $radius-md;
   min-height: 140px;
-  background: $purple-soft;
+  background: rgba(79, 107, 255, 0.04);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -469,8 +469,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   transition: all $transition;
 
   &--active {
-    border-color: $purple;
-    background: rgba(139, 92, 246, 0.12);
+    border-color: $primary;
+    background: rgba(79, 107, 255, 0.08);
   }
 
   h4 {
@@ -479,8 +479,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     font-weight: 700;
     color: $text-primary;
     margin: 10px 0 4px;
-    word-break: break-word;
   }
+
   p {
     font-size: 0.78rem;
     color: $text-muted;
@@ -492,12 +492,15 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 48px;
   height: 48px;
   border-radius: $radius-md;
-  background: $purple-light;
+  background: $primary-soft;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  ion-icon { font-size: 22px; color: $purple; }
+  ion-icon {
+    font-size: 22px;
+    color: $primary;
+  }
 }
 
 .format-tags {
@@ -510,8 +513,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .format-tag {
   padding: 3px 8px;
-  background: $purple-light;
-  color: $purple;
+  background: $primary-soft;
+  color: $primary;
   border-radius: $radius-full;
   font-size: 0.6rem;
   font-weight: 700;
@@ -538,23 +541,13 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   outline: none;
   transition: border-color $transition;
 
-  &::placeholder { color: $text-muted; }
-  &:focus { border-color: $purple; }
-}
+  &::placeholder {
+    color: $text-muted;
+  }
 
-.field-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, $text-muted 50%),
-    linear-gradient(135deg, $text-muted 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% - 3px);
-  background-size: 6px 6px, 6px 6px;
-  background-repeat: no-repeat;
-  padding-right: 34px;
-  cursor: pointer;
+  &:focus {
+    border-color: $primary;
+  }
 }
 
 .upload-actions {
@@ -566,7 +559,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .btn-primary {
   padding: 10px 20px;
-  background: $purple;
+  background: $primary;
   color: #fff;
   border: none;
   border-radius: $radius-full;
@@ -574,11 +567,17 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 12px rgba(79, 107, 255, 0.25);
   transition: transform $transition;
 
-  &:active { transform: scale(0.95); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .btn-ghost {
@@ -592,10 +591,10 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   cursor: pointer;
 
-  &:active { background: rgba(0, 0, 0, 0.04); }
+  &:active {
+    background: rgba(0, 0, 0, 0.04);
+  }
 }
-
-// ═══ RESULT BAR ═══
 
 .result-bar {
   margin-bottom: 12px;
@@ -606,8 +605,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   color: $text-muted;
 }
-
-// ═══ SKELETON ═══
 
 .skeleton-card {
   background: $bg-card;
@@ -625,29 +622,46 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-height: 64px;
     gap: 14px;
 
-    .skeleton--badge { width: 42px; height: 42px; border-radius: $radius-sm; flex-shrink: 0; }
-    .skeleton--title { flex: 1; height: 14px; }
-    .skeleton--meta { width: 60px; height: 10px; }
+    .skeleton--badge {
+      width: 42px;
+      height: 42px;
+      border-radius: $radius-sm;
+      flex-shrink: 0;
+    }
+
+    .skeleton--title {
+      flex: 1;
+      height: 14px;
+    }
+
+    .skeleton--meta {
+      width: 60px;
+      height: 10px;
+    }
   }
 }
 
 .skeleton {
   border-radius: 8px;
-  background: linear-gradient(
-    90deg,
-    darken($bg-page, 2%) 25%,
-    darken($bg-page, 5%) 50%,
-    darken($bg-page, 2%) 75%
-  );
+  background: linear-gradient(90deg, #eef0f7 25%, #e0e4ef 50%, #eef0f7 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 
-  &--badge { width: 40px; height: 18px; }
-  &--title { width: 80%; height: 14px; }
-  &--meta { width: 60%; height: 10px; }
-}
+  &--badge {
+    width: 40px;
+    height: 18px;
+  }
 
-// ═══ NOTES GRID ═══
+  &--title {
+    width: 80%;
+    height: 14px;
+  }
+
+  &--meta {
+    width: 60%;
+    height: 10px;
+  }
+}
 
 .notes-grid {
   display: grid;
@@ -662,17 +676,27 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: $shadow-card;
   cursor: pointer;
   transition: transform $spring;
-  border-left: 4px solid $purple;
+  border-left: 4px solid $primary;
   min-height: 130px;
   display: flex;
   flex-direction: column;
   animation: cardFadeIn 0.3s ease-out both;
 
-  &:active { transform: scale(0.97); }
+  &:active {
+    transform: scale(0.97);
+  }
 
-  &.note-pdf { border-left-color: $purple; }
-  &.note-doc { border-left-color: $pink; }
-  &.note-img { border-left-color: $orange; }
+  &.note-pdf {
+    border-left-color: $red;
+  }
+
+  &.note-doc {
+    border-left-color: $primary;
+  }
+
+  &.note-img {
+    border-left-color: $green;
+  }
 }
 
 .note-card-top {
@@ -691,9 +715,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 800;
   letter-spacing: 0.03em;
 
-  &.note-pdf { background: $purple-light; color: $purple; }
-  &.note-doc { background: $pink-light; color: $pink; }
-  &.note-img { background: $orange-light; color: $orange; }
+  &.note-pdf {
+    background: $red-soft;
+    color: $red;
+  }
+
+  &.note-doc {
+    background: $primary-soft;
+    color: $primary;
+  }
+
+  &.note-img {
+    background: $green-soft;
+    color: $green;
+  }
 }
 
 .note-time {
@@ -711,7 +746,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin: 0 0 6px;
   line-height: 1.25;
   flex: 1;
-
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -725,7 +759,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-muted;
   margin: 0;
   line-height: 1.35;
-
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -739,8 +772,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin-top: 6px;
   font-size: 0.7rem;
 }
-
-// ═══ NOTES LIST VIEW ═══
 
 .notes-list-view {
   display: flex;
@@ -778,9 +809,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 800;
   letter-spacing: 0.03em;
 
-  &.note-pdf { background: $purple-light; color: $purple; }
-  &.note-doc { background: $pink-light; color: $pink; }
-  &.note-img { background: $orange-light; color: $orange; }
+  &.note-pdf {
+    background: $red-soft;
+    color: $red;
+  }
+
+  &.note-doc {
+    background: $primary-soft;
+    color: $primary;
+  }
+
+  &.note-img {
+    background: $green-soft;
+    color: $green;
+  }
 }
 
 .note-list-info {
@@ -823,8 +865,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
-// ═══ EMPTY STATE ═══
-
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -858,7 +898,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   gap: 6px;
   padding: 10px 20px;
-  background: $purple;
+  background: $primary;
   color: #fff;
   border: none;
   border-radius: $radius-full;
@@ -866,14 +906,17 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 12px rgba(79, 107, 255, 0.25);
   transition: transform $transition;
 
-  ion-icon { font-size: 16px; }
-  &:active { transform: scale(0.95); }
-}
+  ion-icon {
+    font-size: 16px;
+  }
 
-// ═══ DETAIL OVERLAY ═══
+  &:active {
+    transform: scale(0.95);
+  }
+}
 
 .detail-overlay {
   position: fixed;
@@ -896,18 +939,26 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: $radius-xl $radius-xl 0 0;
   padding: 12px 20px 28px;
   box-shadow: $shadow-lg;
-  border-left: 5px solid $purple;
+  border-left: 5px solid $primary;
   animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 
-  &.note-pdf { border-left-color: $purple; }
-  &.note-doc { border-left-color: $pink; }
-  &.note-img { border-left-color: $orange; }
+  &.note-pdf {
+    border-left-color: $red;
+  }
+
+  &.note-doc {
+    border-left-color: $primary;
+  }
+
+  &.note-img {
+    border-left-color: $green;
+  }
 }
 
 .detail-handle {
   width: 36px;
   height: 4px;
-  background: darken($bg-page, 8%);
+  background: #cdcdd2;
   border-radius: $radius-full;
   margin: 0 auto 16px;
 }
@@ -931,8 +982,14 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
   transition: transform $transition;
 
-  ion-icon { font-size: 18px; color: $text-secondary; }
-  &:active { transform: scale(0.9); }
+  ion-icon {
+    font-size: 18px;
+    color: $text-secondary;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 
 .detail-title {
@@ -975,59 +1032,94 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   cursor: pointer;
   transition: all $transition;
 
-  ion-icon { font-size: 18px; }
+  ion-icon {
+    font-size: 18px;
+  }
 
-  &:active { transform: scale(0.96); }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
   &--primary {
-    background: $purple;
+    background: $primary;
     border-color: transparent;
     color: #fff;
-    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.25);
+    box-shadow: 0 4px 16px rgba(79, 107, 255, 0.25);
   }
 
   &--saved {
-    background: $purple-light;
-    border-color: rgba(139, 92, 246, 0.15);
-    color: $purple;
+    background: $primary-soft;
+    border-color: rgba(79, 107, 255, 0.15);
+    color: $primary;
   }
 
   &--danger {
-    background: $red-light;
-    border-color: rgba(239, 68, 68, 0.15);
+    background: $red-soft;
+    border-color: rgba(239, 107, 115, 0.15);
     color: $red;
   }
 }
 
-// ═══ ANIMATIONS ═══
-
 @keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes sheetUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+  0% {
+    background-position: 200% 0;
+  }
 
-// ═══ RESPONSIVE ═══
+  100% {
+    background-position: -200% 0;
+  }
+}
 
 @media (min-width: 500px) {
   .note-card {

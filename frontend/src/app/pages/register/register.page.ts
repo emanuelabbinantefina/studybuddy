@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController, AlertController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { lastValueFrom } from 'rxjs';
-import { addIcons } from 'ionicons';
-import {  personOutline,  mailOutline,  lockClosedOutline,  schoolOutline,  bookOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-register',
@@ -31,37 +29,31 @@ export class RegisterPage implements OnInit {
     private navCtrl: NavController,
     private alertCtrl: AlertController,
     private authService: AuthService
-  ) { 
-    addIcons({
-      'person-outline': personOutline, 
-      'mail-outline': mailOutline, 
-      'lock-closed-outline': lockClosedOutline,
-      'school-outline': schoolOutline, 
-      'book-outline': bookOutline
-    });
-  }
+  ) {}
 
   ngOnInit() {
     this.authService.getFaculties().subscribe({
       next: (data: any) => {
         this.faculties = data;
       },
-      error: (err: any) => {
+      error: () => {
         this.error = 'Errore nel caricamento delle facoltà.';
-      }
+      },
     });
   }
 
   onFacoltaChange(event: any) {
     const selectedId = event.detail.value;
-    const faculty = this.faculties.find(f => f.id === selectedId);
-    
+    const faculty = this.faculties.find((f) => f.id === selectedId);
+
     if (faculty) {
       this.availableCourses = faculty.Courses || [];
       this.facolta = faculty.name;
     } else {
       this.availableCourses = [];
+      this.facolta = '';
     }
+
     this.corso = '';
   }
 
@@ -80,14 +72,18 @@ export class RegisterPage implements OnInit {
     }
 
     this.loading = true;
+
     try {
-      await lastValueFrom(this.authService.register({
-        name: this.name,
-        email: this.email,
-        password: this.password,
-        facolta: this.facolta,
-        corso: this.corso
-      }));
+      await lastValueFrom(
+        this.authService.register({
+          name: this.name,
+          email: this.email,
+          password: this.password,
+          facolta: this.facolta,
+          corso: this.corso,
+        })
+      );
+
       this.loading = false;
       this.showAlertSuccess();
     } catch (err: any) {
@@ -100,10 +96,18 @@ export class RegisterPage implements OnInit {
     const alert = await this.alertCtrl.create({
       header: 'Successo',
       message: 'Account creato!',
-      buttons: [{ text: 'Inizia', handler: () => this.navCtrl.navigateForward('/complete-profile') }]
+      buttons: [
+        {
+          text: 'Inizia',
+          handler: () => this.navCtrl.navigateForward('/complete-profile'),
+        },
+      ],
     });
+
     await alert.present();
   }
 
-  goBack() { this.navCtrl.back(); }
+  goBack() {
+    this.navCtrl.back();
+  }
 }

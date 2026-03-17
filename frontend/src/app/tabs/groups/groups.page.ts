@@ -23,6 +23,7 @@ export class GroupsPage implements OnInit {
   activeSection: GroupSection = 'my';
   myGroups: Gruppo[] = [];
   publicGroups: Gruppo[] = [];
+  query = '';
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -40,17 +41,32 @@ export class GroupsPage implements OnInit {
   }
 
   get visibleGroups(): Gruppo[] {
-    return this.activeSection === 'my' ? this.myGroups : this.publicGroups;
+    const source = this.activeSection === 'my' ? this.myGroups : this.publicGroups;
+    const q = this.query.trim().toLowerCase();
+
+    if (!q) return source;
+
+    return source.filter((group) => {
+      const values = [
+        group.nome,
+        group.materia,
+        group.facolta,
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).toLowerCase());
+
+      return values.some((value) => value.includes(q));
+    });
   }
 
   get visibleTitle(): string {
-    return this.activeSection === 'my' ? 'I miei gruppi' : 'Tutti i gruppi';
+    return this.activeSection === 'my' ? 'I miei gruppi' : 'Esplora gruppi';
   }
 
   get visibleSubtitle(): string {
     return this.activeSection === 'my'
-      ? 'Qui trovi i gruppi a cui partecipi gia`.'
-      : 'Qui trovi tutti i gruppi disponibili da aprire o scoprire.';
+      ? 'I gruppi a cui partecipi già'
+      : 'Scopri e unisciti a nuovi gruppi di studio';
   }
 
   get totalVisibleGroups(): number {
@@ -59,6 +75,11 @@ export class GroupsPage implements OnInit {
 
   setSection(section: GroupSection): void {
     this.activeSection = section;
+  }
+
+  onSearchChange(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.query = target?.value || '';
   }
 
   async doRefresh(event: any): Promise<void> {
@@ -86,7 +107,10 @@ export class GroupsPage implements OnInit {
       try {
         await firstValueFrom(this.apiService.joinPublicGroup(group.id));
       } catch (err: any) {
-        await this.showToast(err?.error?.message || 'Impossibile entrare nel gruppo', 'danger');
+        await this.showToast(
+          err?.error?.message || 'Impossibile entrare nel gruppo',
+          'danger'
+        );
         return;
       }
     }
@@ -100,7 +124,7 @@ export class GroupsPage implements OnInit {
 
   groupContextLabel(group: Gruppo): string {
     const parts = [group.materia, group.facolta].filter(Boolean);
-    return parts.join(' - ') || 'Gruppo di studio';
+    return parts.join(' · ') || 'Gruppo di studio';
   }
 
   trackById(index: number, item: Gruppo): number {
@@ -125,7 +149,7 @@ export class GroupsPage implements OnInit {
 
     forkJoin({
       myGroups: this.apiService.getGruppi('my'),
-      publicGroups: this.apiService.getGruppi('all')
+      publicGroups: this.apiService.getGruppi('all'),
     }).subscribe({
       next: ({ myGroups, publicGroups }) => {
         this.myGroups = (myGroups || []).map((group) => ({
@@ -143,11 +167,19 @@ export class GroupsPage implements OnInit {
             colorClass: group.colorClass || this.resolveGroupColor(group.materia),
           }));
 
-        if (this.activeSection === 'my' && this.myGroups.length === 0 && this.publicGroups.length > 0) {
+        if (
+          this.activeSection === 'my' &&
+          this.myGroups.length === 0 &&
+          this.publicGroups.length > 0
+        ) {
           this.activeSection = 'all';
         }
 
-        if (this.activeSection === 'all' && this.publicGroups.length === 0 && this.myGroups.length > 0) {
+        if (
+          this.activeSection === 'all' &&
+          this.publicGroups.length === 0 &&
+          this.myGroups.length > 0
+        ) {
           this.activeSection = 'my';
         }
 
@@ -159,7 +191,10 @@ export class GroupsPage implements OnInit {
         this.publicGroups = [];
         this.loadingList = false;
         if (event) event.target.complete();
-        await this.showToast(err?.error?.message || 'Errore caricamento gruppi', 'danger');
+        await this.showToast(
+          err?.error?.message || 'Errore caricamento gruppi',
+          'danger'
+        );
       },
     });
   }
@@ -167,13 +202,16 @@ export class GroupsPage implements OnInit {
   private resolveGroupColor(materia: string): string {
     const value = (materia || '').toLowerCase();
     if (value.includes('analisi') || value.includes('matematica')) return 'bg-blue';
-    if (value.includes('diritto') || value.includes('lettere')) return 'bg-pink';
+    if (value.includes('diritto') || value.includes('lettere')) return 'bg-peach';
     if (value.includes('fisica') || value.includes('chimica')) return 'bg-orange';
-    if (value.includes('sistemi') || value.includes('informatica')) return 'bg-teal';
+    if (value.includes('sistemi') || value.includes('informatica')) return 'bg-cyan';
     return 'bg-green';
   }
 
-  private async showToast(message: string, color: 'success' | 'warning' | 'danger'): Promise<void> {
+  private async showToast(
+    message: string,
+    color: 'success' | 'warning' | 'danger'
+  ): Promise<void> {
     const toast = await this.toastCtrl.create({
       message,
       duration: 1800,

@@ -1,19 +1,15 @@
 <ion-content [fullscreen]="true" class="focus-content">
 
   <!-- ═══ HEADER ═══ -->
-  <div class="focus-page-header">
-    <button class="back-btn" (click)="goBack()">
-      <ion-icon name="arrow-back"></ion-icon>
-    </button>
-    <div class="header-center">
-      <h1 class="page-title">Focus del giorno</h1>
-      <p class="page-date">{{ todayDateLabel }}</p>
-    </div>
-    <div class="header-streak">
-      <ion-icon name="flame-outline"></ion-icon>
-      <span>{{ completedPomodoros }}</span>
-    </div>
+<div class="focus-page-header">
+  <button class="back-btn" (click)="goBack()">
+    <ion-icon name="arrow-back"></ion-icon>
+  </button>
+  <div class="header-center">
+    <h1 class="page-title">Focus del giorno</h1>
+    <p class="page-date">{{ todayDateLabel }}</p>
   </div>
+</div>
 
   <!-- ═══ POMODORO TIMER ═══ -->
   <div class="timer-section">

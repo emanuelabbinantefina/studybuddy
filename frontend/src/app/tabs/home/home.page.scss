@@ -358,7 +358,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .progress-bg {
   fill: none;
-  stroke: darken($bg-page, 5%);
+  stroke: #dcdce1;
   stroke-width: 3;
 }
 
@@ -673,9 +673,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 8px;
   background: linear-gradient(
     90deg,
-    darken($bg-page, 2%) 25%,
-    darken($bg-page, 5%) 50%,
-    darken($bg-page, 2%) 75%
+    #ebebf0 25%,
+    #dcdce1 50%,
+    #ebebf0 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;

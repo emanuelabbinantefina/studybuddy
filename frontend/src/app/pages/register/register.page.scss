@@ -1,118 +1,253 @@
-:host {
-  display: block;
-  height: 100%;
+$bg-page: #f7f8fc;
+$bg-card: rgba(255, 255, 255, 0.72);
+$bg-input: rgba(255, 255, 255, 0.88);
+
+$text-primary: #1f2940;
+$text-secondary: #65708b;
+$text-muted: #9aa3ba;
+
+$primary: #4f6bff;
+$accent: #ff9f6e;
+$red: #ef6b73;
+
+$radius-sm: 14px;
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 32px;
+$radius-full: 9999px;
+
+$shadow-card: 0 18px 50px rgba(79, 107, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.04);
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+.register-content {
+  --background: #{$bg-page};
 }
 
-ion-content {
-  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
+.register-page {
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(79, 107, 255, 0.15), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(35, 179, 138, 0.1), transparent 24%),
+    radial-gradient(circle at 70% 75%, rgba(255, 159, 110, 0.15), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
 }
 
-.background-container {
-  width: 100%;
-  height: 100%;
+.register-shell {
+  min-height: 100dvh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  min-height: 100dvh !important;
-}
-
-.card {
-  background: #ffffff;
-  width: 320px;
-  border-radius: 28px;
-  padding: 25px;
+  padding: 28px 20px;
+  max-width: 460px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
-.title {
-  font-size: 28px;
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.45;
+
+  &--1 {
+    width: 220px;
+    height: 220px;
+    background: rgba(79, 107, 255, 0.2);
+    top: -40px;
+    left: -70px;
+  }
+
+  &--2 {
+    width: 180px;
+    height: 180px;
+    background: rgba(35, 179, 138, 0.15);
+    top: 35%;
+    right: -60px;
+  }
+
+  &--3 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 159, 110, 0.15);
+    bottom: -40px;
+    left: 20%;
+  }
+}
+
+.brand-block {
   text-align: center;
-  margin-top: 0;
   margin-bottom: 20px;
 }
 
-.input-container {
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: $radius-full;
+  background: rgba(79, 107, 255, 0.1);
+  color: $primary;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-family: $font-display;
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin: 0;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.hero-subtitle {
+  margin: 8px 0 0;
+  color: $text-secondary;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.register-card {
+  background: $bg-card;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: $radius-xl;
+  padding: 22px 18px 20px;
+  box-shadow: $shadow-card;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: $text-secondary;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.input-wrap {
   display: flex;
   align-items: center;
-  background-color: #f7f7f7;
-  border-radius: 16px;
-  margin-bottom: 15px;
-  padding: 0 15px;
-  min-height: 50px;
+  gap: 10px;
+  min-height: 54px;
+  padding: 0 14px;
+  background: $bg-input;
+  border: 1.5px solid rgba(79, 107, 255, 0.1);
+  border-radius: $radius-md;
+  transition: all $transition;
 
-  .input-icon {
-    color: gray;
-    font-size: 20px;
-    margin-right: 10px;
-    min-width: 20px;
-    display: flex;
-    align-items: center;
+  &:focus-within {
+    border-color: rgba(79, 107, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
   }
 
-  ion-input, ion-select {
-    flex: 1;
-    width: 100%;
-    --padding-start: 0;
-    --placeholder-color: gray;
-    --color: black;
-    font-size: 16px;
-  }
-
+  ion-input,
   ion-select {
-    --placeholder-opacity: 1;
-    height: 100%;
+    flex: 1;
+    --padding-top: 14px;
+    --padding-bottom: 14px;
+    --padding-start: 0;
+    --color: #{$text-primary};
+    --placeholder-color: #{$text-muted};
+    font-size: 0.94rem;
+    font-weight: 500;
   }
 }
-.error-text {
-  color: red;
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 14px;
+
+.input-wrap--select ion-select {
+  --placeholder-opacity: 1;
+}
+
+.input-icon {
+  font-size: 18px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.error-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  background: rgba(239, 107, 115, 0.1);
+  border: 1px solid rgba(239, 107, 115, 0.2);
+  border-radius: $radius-md;
+  color: $red;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .main-btn {
-  --background: #ff6b35;
-  --border-radius: 999px;
-  margin-top: 20px;
-  height: 50px;
-  font-size: 18px;
-  font-weight: 600;
-  --box-shadow: none;
+  --background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%);
+  --border-radius: 16px;
+  --box-shadow: 0 10px 24px rgba(79, 107, 255, 0.25);
+  height: 52px;
+  margin-top: 10px;
+  font-size: 0.96rem;
+  font-weight: 800;
+  text-transform: none;
 }
 
 .footer-links {
-  margin-top: 25px;
+  margin-top: 18px;
   text-align: center;
-  font-size: 14px;
-  color: gray;
 
   p {
-    margin: 5px 0;
-  }
-
-  .link-red {
-    color: #ff6b35;
+    margin: 0;
+    color: $text-secondary;
+    font-size: 0.84rem;
     font-weight: 500;
-    margin-left: 5px;
-    cursor: pointer;
   }
 }
 
+.link-primary {
+  border: none;
+  background: transparent;
+  color: $primary;
+  font-weight: 800;
+  font-size: 0.84rem;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+}
+
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.45s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(14px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .register-shell {
+    max-width: 500px;
+  }
+
+  .hero-title {
+    font-size: 2.4rem;
+  }
+
+  .register-card {
+    padding: 24px 22px 22px;
   }
 }

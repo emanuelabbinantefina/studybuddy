@@ -1,48 +1,153 @@
-<ion-content [fullscreen]="true">
-  <div class="background-container">
-    <div class="card fade-in">
-      <h1 class="title">Crea Account</h1>
-      <form (ngSubmit)="handleRegister()">
-        <div class="input-container">
-          <ion-icon name="person-outline" class="input-icon"></ion-icon>
-          <ion-input type="text" placeholder="Nome" [(ngModel)]="name" name="name" required></ion-input>
-        </div>
+<ion-content [fullscreen]="true" class="register-content">
+  <div class="register-page">
 
-        <div class="input-container">
-          <ion-icon name="mail-outline" class="input-icon"></ion-icon>
-          <ion-input type="email" placeholder="Email" [(ngModel)]="email" name="email" required></ion-input>
-        </div>
+    <!-- Background blobs -->
+    <div class="bg-blob bg-blob--1"></div>
+    <div class="bg-blob bg-blob--2"></div>
+    <div class="bg-blob bg-blob--3"></div>
 
-        <div class="input-container">
-          <ion-icon name="school-outline" class="input-icon"></ion-icon>
-          <ion-select placeholder="Facoltà" (ionChange)="onFacoltaChange($event)" interface="action-sheet">
-            <ion-select-option *ngFor="let f of faculties" [value]="f.id">{{ f.name }}</ion-select-option>
-          </ion-select>
-        </div>
+    <div class="register-shell">
 
-        <div class="input-container">
-          <ion-icon name="book-outline" class="input-icon"></ion-icon>
-          <ion-select placeholder="Corso" [(ngModel)]="corso" name="corso" [disabled]="availableCourses.length === 0" interface="action-sheet">
-            <ion-select-option *ngFor="let c of availableCourses" [value]="c.name">{{ c.name }}</ion-select-option>
-          </ion-select>
-        </div>
+      <!-- Header -->
+      <div class="brand-block fade-in">
+        <h1 class="hero-title">Crea account</h1>
+      </div>
 
-        <div class="input-container">
-          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
-          <ion-input type="password" placeholder="Password" [(ngModel)]="password" name="password" required></ion-input>
-        </div>
+      <!-- Card -->
+      <div class="register-card fade-in">
+        <form (ngSubmit)="handleRegister()">
 
-        <div class="input-container">
-          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
-          <ion-input type="password" placeholder="Conferma" [(ngModel)]="confirmPassword" name="confirmPassword" required></ion-input>
-        </div>
+          <!-- Nome -->
+          <div class="field">
+            <label class="field-label">Nome</label>
+            <div class="input-wrap">
+              <ion-icon name="person-outline" class="input-icon"></ion-icon>
+              <ion-input
+                type="text"
+                placeholder="Il tuo nome"
+                [(ngModel)]="name"
+                name="name"
+                required
+              ></ion-input>
+            </div>
+          </div>
 
-        <p *ngIf="error" class="error-text">{{ error }}</p>
-        <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading">
-          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-          <span *ngIf="!loading">Registrati</span>
-        </ion-button>
-      </form>
+          <!-- Email -->
+          <div class="field">
+            <label class="field-label">Email</label>
+            <div class="input-wrap">
+              <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+              <ion-input
+                type="email"
+                placeholder="La tua email"
+                [(ngModel)]="email"
+                name="email"
+                required
+              ></ion-input>
+            </div>
+          </div>
+
+          <!-- Facoltà -->
+          <div class="field">
+            <label class="field-label">Facoltà</label>
+            <div class="input-wrap input-wrap--select">
+              <ion-icon name="school-outline" class="input-icon"></ion-icon>
+              <ion-select
+                placeholder="Seleziona facoltà"
+                (ionChange)="onFacoltaChange($event)"
+                interface="action-sheet"
+              >
+                <ion-select-option
+                  *ngFor="let f of faculties"
+                  [value]="f.id"
+                >
+                  {{ f.name }}
+                </ion-select-option>
+              </ion-select>
+            </div>
+          </div>
+
+          <!-- Corso -->
+          <div class="field">
+            <label class="field-label">Corso</label>
+            <div class="input-wrap input-wrap--select">
+              <ion-icon name="book-outline" class="input-icon"></ion-icon>
+              <ion-select
+                placeholder="Seleziona corso"
+                [(ngModel)]="corso"
+                name="corso"
+                [disabled]="availableCourses.length === 0"
+                interface="action-sheet"
+              >
+                <ion-select-option
+                  *ngFor="let c of availableCourses"
+                  [value]="c.name"
+                >
+                  {{ c.name }}
+                </ion-select-option>
+              </ion-select>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="field-label">Password</label>
+            <div class="input-wrap">
+              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+              <ion-input
+                type="password"
+                placeholder="Crea una password"
+                [(ngModel)]="password"
+                name="password"
+                required
+              ></ion-input>
+            </div>
+          </div>
+
+          <!-- Conferma -->
+          <div class="field">
+            <label class="field-label">Conferma password</label>
+            <div class="input-wrap">
+              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+              <ion-input
+                type="password"
+                placeholder="Ripeti la password"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                required
+              ></ion-input>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div class="error-box" *ngIf="error">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- CTA -->
+          <ion-button
+            expand="block"
+            class="main-btn"
+            type="submit"
+            [disabled]="loading"
+          >
+            <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+            <span *ngIf="!loading">Registrati</span>
+          </ion-button>
+        </form>
+
+        <!-- Footer -->
+        <div class="footer-links">
+          <p>
+            Hai già un account?
+            <button type="button" class="link-primary" (click)="goBack()">
+              Accedi
+            </button>
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 </ion-content>

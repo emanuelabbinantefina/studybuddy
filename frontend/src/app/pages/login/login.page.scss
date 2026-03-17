@@ -1,173 +1,207 @@
-:root {
-  --sb-primary: #3B82F6;      // Blu del logo StudyBuddy
-  --sb-primary-dark: #2563EB;  // Blu più scuro per hover
-  --sb-accent: #FB923C;       // Arancione "Crea evento"
-  --sb-accent-dark: #F97316;  // Arancione hover
-  --sb-bg: #F8FAFC;           // Sfondo grigio chiaro
-  --sb-card-bg: #EFF6FF;      // Azzurro pastello box "Ciao!"
-  --sb-text: #1E293B;         // Testo scuro
-  --sb-text-light: #64748B;   // Testo secondario
-  --sb-border: #E2E8F0;       // Bordi
-  --sb-button-primary: #3B82F6;
-  --sb-button-primary-hover: #2563EB;
-  --sb-button-secondary: #FB923C;
-  --sb-button-secondary-hover: #F97316;
+$bg-page: #f7f8fc;
+$bg-card: rgba(255, 255, 255, 0.72);
+$bg-input: rgba(255, 255, 255, 0.88);
+
+$text-primary: #1f2940;
+$text-secondary: #65708b;
+$text-muted: #9aa3ba;
+
+$primary: #4f6bff;
+$accent: #ff9f6e;
+$red: #ef6b73;
+
+$radius-sm: 14px;
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 32px;
+$radius-full: 9999px;
+
+$shadow-card: 0 18px 50px rgba(79, 107, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.04);
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+.login-content {
+  --background: #{$bg-page};
 }
 
-ion-content {
-  --padding-top: 0 !important;
-  --padding-bottom: 0 !important;
-  height: 100dvh !important;
-}
-
-.background-container {
-  min-height: 100dvh !important;
-}
-
-ion-content {
-  --background: url('/assets/images/sfondo.jpg') no-repeat center center / cover;
-}
-
-.background-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.login-page {
+  min-height: 100dvh;
   position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(79, 107, 255, 0.15), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(35, 179, 138, 0.1), transparent 24%),
+    radial-gradient(circle at 70% 75%, rgba(255, 159, 110, 0.15), transparent 24%),
+    linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  width: 320px;
-  border-radius: 40px;
-  padding: 25px;
+.login-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 20px;
+  max-width: 430px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.title {
-  font-size: 28px;
-  font-weight: bold;
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.45;
+
+  &--1 {
+    width: 220px;
+    height: 220px;
+    background: rgba(79, 107, 255, 0.2);
+    top: -40px;
+    left: -70px;
+  }
+
+  &--2 {
+    width: 180px;
+    height: 180px;
+    background: rgba(35, 179, 138, 0.15);
+    top: 30%;
+    right: -60px;
+  }
+
+  &--3 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 159, 110, 0.15);
+    bottom: -40px;
+    left: 20%;
+  }
+}
+
+.brand-block {
   text-align: center;
-  color: black;
-  margin-top: 0;
-  margin-bottom: 5px;
+  margin-bottom: 22px;
 }
 
-.subtitle {
-  font-size: 14px;
-  color: gray;
-  text-align: center;
-  margin-bottom: 20px;
-  margin-top: 0;
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: $radius-full;
+  background: rgba(79, 107, 255, 0.1);
+  color: $primary;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 14px;
 }
 
-.social-container {
-  margin-bottom: 0; /* Rimosso margine inferiore per gestire lo spazio col divider */
+.hero-title {
+  font-family: $font-display;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin: 0;
+  letter-spacing: -0.04em;
 }
 
-.social-btn {
+.hero-subtitle {
+  margin: 8px 0 0;
+  color: $text-secondary;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.login-card {
+  background: $bg-card;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: $radius-xl;
+  padding: 22px 18px 20px;
+  box-shadow: $shadow-card;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: $text-secondary;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.input-wrap {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  width: 100%;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 13px;
-  transition: transform 0.1s ease;
+  min-height: 54px;
+  padding: 0 14px;
+  background: $bg-input;
+  border: 1.5px solid rgba(79, 107, 255, 0.1);
+  border-radius: $radius-md;
+  transition: all $transition;
 
-  .uni-logo {
-    height: 24px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  span {
-    white-space: nowrap;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  &.university {
-    background-color: rgba(255, 255, 255, 0.85);
-    color: black;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  }
-}
-
-/* NUOVO DIVISORE "o" */
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 15px 0; /* Spazio sopra e sotto */
-  color: gray;
-  font-size: 14px;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.2); /* Linea sottile */
-  }
-
-  &::before {
-    margin-right: 10px;
-  }
-
-  &::after {
-    margin-left: 10px;
-  }
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  background-color: #f7f7f7;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  padding: 0 15px;
-
-  .input-icon {
-    color: gray;
-    font-size: 20px;
-    margin-right: 10px;
+  &:focus-within {
+    border-color: rgba(79, 107, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
   }
 
   ion-input {
     flex: 1;
-    --padding-top: 15px;
-    --padding-bottom: 15px;
+    --padding-top: 14px;
+    --padding-bottom: 14px;
     --padding-start: 0;
-    --placeholder-color: gray;
-    --color: black;
+    --color: #{$text-primary};
+    --placeholder-color: #{$text-muted};
+    font-size: 0.94rem;
+    font-weight: 500;
+  }
+}
+
+.input-icon {
+  font-size: 18px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.password-toggle-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 18px;
+    color: $text-muted;
   }
 
-  .password-toggle {
-    color: gray;
-    font-size: 22px;
-    margin-left: 8px;
-    cursor: pointer;
-    padding: 5px;
+  &:active {
+    background: rgba(0, 0, 0, 0.05);
   }
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  margin-bottom: 14px;
 }
 
 .remember-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
   cursor: pointer;
   user-select: none;
 }
@@ -175,23 +209,23 @@ ion-content {
 .custom-checkbox {
   width: 22px;
   height: 22px;
-  border: 2px solid #4B8AD1;
-  border-radius: 6px;
+  border: 2px solid rgba(79, 107, 255, 0.4);
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  background: transparent;
+  transition: all $transition;
 
   ion-icon {
-    font-size: 16px;
+    font-size: 14px;
     color: white;
     opacity: 0;
     transition: opacity 0.15s ease;
   }
 
   &.checked {
-    background: #4B8AD1;
+    background: $primary;
+    border-color: $primary;
 
     ion-icon {
       opacity: 1;
@@ -200,63 +234,94 @@ ion-content {
 }
 
 .remember-text {
-  font-size: 15px;
-  color: gray;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-secondary;
 }
 
-.error-text {
-  color: red;
-  text-align: center;
-  margin-bottom: 10px;
-  font-size: 14px;
+.forgot-link {
+  border: none;
+  background: transparent;
+  color: $primary;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.error-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  background: rgba(239, 107, 115, 0.1);
+  border: 1px solid rgba(239, 107, 115, 0.2);
+  border-radius: $radius-md;
+  color: $red;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .main-btn {
-  --background: #FF8A65;
-  --border-radius: 12px;
-  margin-top: 20px;
-  height: 50px;
-  font-size: 18px;
-  font-weight: bold;
-  --box-shadow: none;
+  --background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%);
+  --border-radius: 16px;
+  --box-shadow: 0 10px 24px rgba(79, 107, 255, 0.25);
+  height: 52px;
+  margin-top: 10px;
+  font-size: 0.96rem;
+  font-weight: 800;
+  text-transform: none;
 }
 
 .footer-links {
-  margin-top: 25px;
+  margin-top: 18px;
   text-align: center;
-  font-size: 14px;
-  color: gray;
 
   p {
-    margin: 5px 0;
-  }
-
-  .link-red {
-    color: #4B8AD1;
-    font-weight: bold;
-    margin-left: 5px;
-    cursor: pointer;
-  }
-
-  .link-gray {
-    color: gray;
-    cursor: pointer;
-    margin-top: 15px;
-    display: block;
+    margin: 0;
+    color: $text-secondary;
+    font-size: 0.84rem;
+    font-weight: 500;
   }
 }
 
+.link-primary {
+  border: none;
+  background: transparent;
+  color: $primary;
+  font-weight: 800;
+  font-size: 0.84rem;
+  cursor: pointer;
+  padding: 0 0 0 4px;
+}
+
 .fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.45s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(14px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .login-shell {
+    max-width: 460px;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .login-card {
+    padding: 24px 22px 22px;
   }
 }

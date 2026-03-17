@@ -1,44 +1,108 @@
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="login-content">
+  <div class="login-page">
 
-  <div class="background-container">
-    <div class="card fade-in">
-      <h1 class="title">Bentornato</h1>
-      <p class="subtitle">Pronto a studiare?</p>
+    <!-- Background blobs -->
+    <div class="bg-blob bg-blob--1"></div>
+    <div class="bg-blob bg-blob--2"></div>
+    <div class="bg-blob bg-blob--3"></div>
 
-      <form (ngSubmit)="handleLogin()">
-        <div class="input-container">
-          <ion-icon name="mail-outline" class="input-icon"></ion-icon>
-          <ion-input type="email" inputmode="email" name="email" placeholder="Email" [(ngModel)]="email"
-            autocorrect="off" autocapitalize="off" required>
-          </ion-input>
-        </div>
+    <div class="login-shell">
 
-        <div class="input-container">
-          <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
-          <ion-input [type]="passwordType" name="password" placeholder="Password" [(ngModel)]="password" required>
-          </ion-input>
-          <ion-icon [name]="passwordIcon" class="password-toggle" (click)="togglePasswordMode()"></ion-icon>
-        </div>
-
-        <div class="remember-wrapper" (click)="toggleRemember()">
-          <div class="custom-checkbox" [class.checked]="rememberMe">
-            <ion-icon name="checkmark"></ion-icon>
-          </div>
-          <span class="remember-text">Ricordati di me</span>
-        </div>
-
-        <p *ngIf="error" class="error-text">{{ error }}</p>
-
-        <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading">
-          <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-          <span *ngIf="!loading">Accedi</span>
-        </ion-button>
-      </form>
-
-      <div class="footer-links">
-        <p>Non hai un account? <span class="link-red" (click)="goToRegister()">Registrati</span></p>
-        <span class="link-gray" (click)="goToForgot()">Password dimenticata?</span>
+      <!-- Brand -->
+      <div class="brand-block fade-in">
+        <h1 class="hero-title">Bentornato</h1>
+        <p class="hero-subtitle">Pronto a studiare sul serio?</p>
       </div>
+
+      <!-- Card -->
+      <div class="login-card fade-in">
+        <form (ngSubmit)="handleLogin()">
+
+          <!-- Email -->
+          <div class="field">
+            <label class="field-label">Email</label>
+            <div class="input-wrap">
+              <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+              <ion-input
+                type="email"
+                inputmode="email"
+                name="email"
+                placeholder="Inserisci la tua email"
+                [(ngModel)]="email"
+                autocorrect="off"
+                autocapitalize="off"
+                required
+              >
+              </ion-input>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="field-label">Password</label>
+            <div class="input-wrap">
+              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+              <ion-input
+                [type]="passwordType"
+                name="password"
+                placeholder="Inserisci la password"
+                [(ngModel)]="password"
+                required
+              >
+              </ion-input>
+              <button
+                type="button"
+                class="password-toggle-btn"
+                (click)="togglePasswordMode()"
+              >
+                <ion-icon [name]="passwordIcon"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="form-row">
+            <div class="remember-wrapper" (click)="toggleRemember()">
+              <div class="custom-checkbox" [class.checked]="rememberMe">
+                <ion-icon name="checkmark"></ion-icon>
+              </div>
+              <span class="remember-text">Ricordami</span>
+            </div>
+
+            <button type="button" class="forgot-link" (click)="goToForgot()">
+              Password dimenticata?
+            </button>
+          </div>
+
+          <!-- Error -->
+          <div class="error-box" *ngIf="error">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- Submit -->
+          <ion-button
+            expand="block"
+            class="main-btn"
+            type="submit"
+            [disabled]="loading"
+          >
+            <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+            <span *ngIf="!loading">Accedi</span>
+          </ion-button>
+        </form>
+
+        <!-- Footer -->
+        <div class="footer-links">
+          <p>
+            Non hai un account?
+            <button type="button" class="link-primary" (click)="goToRegister()">
+              Registrati
+            </button>
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 </ion-content>
