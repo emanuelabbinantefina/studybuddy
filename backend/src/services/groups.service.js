@@ -1,6 +1,7 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue } = require('../utils/academic-values');
+const { getItalianExamDateValidationError } = require('../utils/exam-date');
 
 function badRequest(message) {
   const err = new Error(message);
@@ -316,6 +317,11 @@ async function createGroup(userId, body = {}) {
     throw badRequest('facolta e corso non coerenti');
   }
 
+  if (examDate) {
+    const examDateError = getItalianExamDateValidationError(examDate);
+    if (examDateError) throw badRequest(examDateError);
+  }
+
   const ownerId = await resolveOwnerId(userId, body.userId);
   const now = nowIso();
 
@@ -452,6 +458,11 @@ async function updateGroup(userId, groupId, body = {}) {
     body.examDate === null || body.examDate === ''
       ? null
       : sanitizeExamDate(body.examDate);
+
+  if (body.examDate) {
+    const examDateError = getItalianExamDateValidationError(body.examDate);
+    if (examDateError) throw badRequest(examDateError);
+  }
 
   if (body.examDate && !nextExamDate) {
     throw badRequest('data esame non valida');

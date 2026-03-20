@@ -70,32 +70,10 @@ ion-content.detail-page::part(background) {
 
 // Top bar
 .top-bar {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: center;
-  gap: 12px;
-}
-
-.back-btn,
-.spacer {
-  width: 44px;
-  height: 44px;
-}
-
-.back-btn {
-  border: none;
-  border-radius: $radius-sm;
-  background: $bg-card;
-  color: $text-primary;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: $shadow-card;
-  cursor: pointer;
-
-  ion-icon {
-    font-size: 1.2rem;
-  }
+  min-height: 44px;
 }
 
 .page-title {
@@ -249,6 +227,17 @@ ion-content.detail-page::part(background) {
       box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
     }
   }
+}
+
+.exam-editor-hint {
+  margin: -4px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: $text-muted;
+}
+
+.exam-editor-hint--warn {
+  color: $accent;
 }
 
 .exam-editor-actions {

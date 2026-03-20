@@ -47,6 +47,9 @@
 
       <label>DATA ESAME (OPZIONALE)</label>
       <input type="date" [(ngModel)]="examDate">
+      <p class="field-hint field-hint--warn" *ngIf="examDateValidationMessage">
+        {{ examDateValidationMessage }}
+      </p>
     </section>
 
     <section *ngIf="step === 2" class="step-pane animate-fade-in">

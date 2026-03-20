@@ -3,11 +3,7 @@
 
     <!-- TOP BAR -->
     <div class="top-bar">
-      <button type="button" class="back-btn" (click)="goBack()" aria-label="Torna indietro">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </button>
       <span class="page-title">Dettaglio gruppo</span>
-      <div class="spacer" aria-hidden="true"></div>
     </div>
 
     <!-- HERO -->
@@ -48,13 +44,16 @@
 
         <div class="exam-editor" *ngIf="editingExamDate">
           <input type="date" [(ngModel)]="examDateDraft" />
+          <p class="exam-editor-hint exam-editor-hint--warn" *ngIf="examDateValidationMessage">
+            {{ examDateValidationMessage }}
+          </p>
 
           <div class="exam-editor-actions">
             <button type="button" class="ghost-action" (click)="cancelExamDateEditor()">Annulla</button>
             <button
               type="button"
               class="primary-action"
-              [disabled]="savingExamDate"
+              [disabled]="savingExamDate || !!examDateValidationMessage"
               (click)="saveExamDate()"
             >
               {{ savingExamDate ? 'Salvataggio...' : 'Salva data' }}

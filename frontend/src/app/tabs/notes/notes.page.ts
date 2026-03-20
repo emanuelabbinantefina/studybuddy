@@ -252,11 +252,23 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   toggleUploadPanel(): void {
-    const nextValue = !this.showUploadPanel;
-    this.showUploadPanel = nextValue;
-    if (nextValue && !this.uploadSubject && this.subjectOptions.length === 1) {
-      this.uploadSubject = this.subjectOptions[0];
+    if (this.showUploadPanel) {
+      this.closeUploadModal();
+      return;
     }
+
+    this.openUploadModal();
+  }
+
+  openUploadModal(): void {
+    this.showUploadPanel = true;
+    this.syncDefaultUploadSubject();
+  }
+
+  closeUploadModal(force = false): void {
+    if (this.uploading && !force) return;
+    this.resetUploadState();
+    this.showUploadPanel = false;
   }
 
   openFilePicker(): void {
@@ -289,14 +301,7 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   resetUploadForm(): void {
-    this.selectedFile = null;
-    this.uploadTitle = '';
-    this.uploadSubject = '';
-    this.dragActive = false;
-    if (this.fileInput?.nativeElement) {
-      this.fileInput.nativeElement.value = '';
-    }
-    this.showUploadPanel = false;
+    this.closeUploadModal();
   }
 
   async submitUpload(): Promise<void> {
@@ -331,7 +336,7 @@ export class NotesPage implements OnInit, OnDestroy {
 
       this.incrementStat('uploaded');
       await this.showToast('Appunto caricato con successo', 'success');
-      this.resetUploadForm();
+      this.closeUploadModal(true);
       this.query = '';
       this.loadNoteContext();
     } catch (err: any) {
@@ -669,9 +674,7 @@ export class NotesPage implements OnInit, OnDestroy {
         ) {
           this.uploadSubject = '';
         }
-        if (!this.uploadSubject && subjects.length === 1) {
-          this.uploadSubject = subjects[0];
-        }
+        this.syncDefaultUploadSubject();
         this.myFacultyLabel = String(result?.faculty || '').trim();
         if (!this.myFacultyLabel) {
           this.showAllFaculties = true;
@@ -732,6 +735,22 @@ export class NotesPage implements OnInit, OnDestroy {
 
     if (key === 'uploaded') this.totalUploaded = next;
     if (key === 'saved') this.totalSaved = next;
+  }
+
+  private resetUploadState(): void {
+    this.selectedFile = null;
+    this.uploadTitle = '';
+    this.uploadSubject = '';
+    this.dragActive = false;
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+    }
+  }
+
+  private syncDefaultUploadSubject(): void {
+    if (!this.uploadSubject && this.subjectOptions.length === 1) {
+      this.uploadSubject = this.subjectOptions[0];
+    }
   }
 
   private decrementStat(key: 'saved'): void {

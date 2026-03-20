@@ -83,22 +83,6 @@
           <span class="section-count">{{ totalVisibleGroups }}</span>
         </div>
 
-        <!-- EMPTY PROMO -->
-        <div
-          class="promo-card"
-          *ngIf="activeSection === 'all' && totalVisibleGroups === 0"
-          (click)="onCreateGroup()"
-        >
-          <div class="promo-icon-wrap">
-            <ion-icon class="promo-icon" name="sparkles-outline"></ion-icon>
-          </div>
-          <div class="promo-copy">
-            <h3>Non trovi il tuo gruppo?</h3>
-            <p>Creane uno in meno di un minuto</p>
-          </div>
-          <span class="promo-arrow">Crea</span>
-        </div>
-
         <!-- LIST -->
         <div class="cards-list" *ngIf="visibleGroups.length > 0; else emptyVisibleGroups">
           <article
@@ -163,7 +147,7 @@
               Quando entrerai in un gruppo lo vedrai qui.
             </p>
             <p *ngIf="activeSection === 'all'">
-              Puoi crearne uno nuovo e iniziare tu.
+              Prova a cambiare ricerca oppure ripassa piu tardi.
             </p>
           </div>
         </ng-template>

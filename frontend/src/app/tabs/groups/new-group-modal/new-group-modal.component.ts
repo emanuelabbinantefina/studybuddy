@@ -8,6 +8,7 @@ import { closeOutline, trashOutline } from 'ionicons/icons';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
+import { getItalianExamDateValidationMessage } from '../../../core/utils/exam-date.util';
 
 interface FacultyRow {
   id: number;
@@ -122,12 +123,18 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
       this.groupName.trim() &&
       this.selectedFacultyId &&
       this.selectedFacultyName &&
-      this.selectedSubject
+      this.selectedSubject &&
+      !this.examDateValidationMessage
     );
   }
 
   canCreate(): boolean {
     return this.canContinueStep1() && !this.creating;
+  }
+
+  get examDateValidationMessage(): string {
+    if (!this.examDate) return '';
+    return getItalianExamDateValidationMessage(this.examDate);
   }
 
   nextStep() {
@@ -188,6 +195,11 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
 
   async createGroup() {
     if (!this.canCreate()) return;
+
+    if (this.examDateValidationMessage) {
+      await this.showToast(this.examDateValidationMessage, 'warning');
+      return;
+    }
 
     this.creating = true;
     try {

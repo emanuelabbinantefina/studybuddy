@@ -1,6 +1,7 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
+const { getItalianExamDateValidationError } = require('../utils/exam-date');
 
 function badRequest(msg) {
   const err = new Error(msg);
@@ -8,27 +9,10 @@ function badRequest(msg) {
   return err;
 }
 
-function toStartOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function parseDateOnly(raw) {
-  if (!raw) return null;
-  const source = /^\d{4}-\d{2}-\d{2}$/.test(String(raw)) ? `${raw}T00:00:00` : String(raw);
-  const parsed = new Date(source);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return toStartOfDay(parsed);
-}
-
 function validateExamDate(type, startAt) {
   if (String(type || '').trim().toLowerCase() !== 'exam') return;
-  const examDate = parseDateOnly(startAt);
-  if (!examDate) throw badRequest('data esame non valida');
-
-  const today = toStartOfDay(new Date());
-  if (examDate.getTime() < today.getTime()) {
-    throw badRequest('non puoi inserire una data esame nel passato');
-  }
+  const validationError = getItalianExamDateValidationError(startAt, { disallowPast: true });
+  if (validationError) throw badRequest(validationError);
 }
 
 async function createEvent(userId, body) {

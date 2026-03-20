@@ -12,9 +12,9 @@
         <ion-icon [name]="viewMode === 'grid' ? 'list-outline' : 'grid-outline'"></ion-icon>
       </button>
 
-      <button class="upload-btn" (click)="toggleUploadPanel()">
+      <button class="upload-btn" (click)="openUploadModal()">
         <ion-icon name="add-outline"></ion-icon>
-        Carica
+        Crea
       </button>
     </div>
   </div>
@@ -126,46 +126,6 @@
     </div>
   </div>
 
-  <!-- UPLOAD PANEL -->
-  <div class="upload-panel" *ngIf="showUploadPanel">
-    <div class="upload-panel-head">
-      <h3>Carica Appunti</h3>
-      <p>Trascina o seleziona un file</p>
-    </div>
-
-    <div class="dropzone" [class.dropzone--active]="dragActive" (click)="openFilePicker()"
-      (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
-      <input #fileInput type="file" [attr.accept]="fileAccept" (change)="onFileSelected($event)" hidden />
-
-      <div class="dropzone-icon-wrap">
-        <ion-icon name="cloud-upload-outline"></ion-icon>
-      </div>
-
-      <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
-      <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
-
-      <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
-      <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
-
-      <div class="format-tags">
-        <span class="format-tag" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
-      </div>
-    </div>
-
-    <div class="upload-fields">
-      <input type="text" class="field-input" placeholder="Titolo appunto" [(ngModel)]="uploadTitle" />
-
-      <input type="text" class="field-input" placeholder="Materia" [(ngModel)]="uploadSubject" />
-    </div>
-
-    <div class="upload-actions">
-      <button class="btn-ghost" (click)="resetUploadForm()">Annulla</button>
-      <button class="btn-primary" [disabled]="uploading" (click)="submitUpload()">
-        {{ uploading ? 'Caricamento...' : 'Carica' }}
-      </button>
-    </div>
-  </div>
-
   <!-- RESULT COUNT -->
   <div class="result-bar" *ngIf="!loading">
     <span class="result-count">{{ resultCountLabel }}</span>
@@ -244,13 +204,13 @@
       Prova a cercare qualcos'altro o carica i tuoi
     </span>
     <span class="empty-hint" *ngIf="activeTab === 'mine'">
-      Tocca "Carica" per condividere i tuoi appunti
+      Tocca "Crea" per condividere i tuoi appunti
     </span>
     <span class="empty-hint" *ngIf="activeTab === 'saved'">
       Salva gli appunti che ti interessano con il 🔖
     </span>
 
-    <button class="empty-action" *ngIf="activeTab === 'mine'" (click)="toggleUploadPanel()">
+    <button class="empty-action" *ngIf="activeTab === 'mine'" (click)="openUploadModal()">
       <ion-icon name="add-outline"></ion-icon>
       Carica il primo
     </button>
@@ -302,3 +262,100 @@
 
   <div style="height: 100px"></div>
 </ion-content>
+
+<ion-modal
+  [isOpen]="showUploadPanel"
+  cssClass="upload-note-modal"
+  [breakpoints]="[0, 0.92]"
+  [initialBreakpoint]="0.92"
+  [expandToScroll]="false"
+  [backdropDismiss]="!uploading"
+  (didDismiss)="closeUploadModal()"
+>
+  <ng-template>
+    <ion-content class="upload-modal-content" [fullscreen]="true" [forceOverscroll]="false">
+      <section class="upload-modal-card">
+        <div class="upload-modal-handle"></div>
+
+        <header class="upload-modal-header">
+          <div>
+            <h2>Carica appunto</h2>
+            <p>Aggiungi un file e condividilo con gli altri studenti</p>
+          </div>
+          <button
+            type="button"
+            class="upload-modal-close"
+            [disabled]="uploading"
+            (click)="closeUploadModal()"
+            aria-label="Chiudi"
+          >
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+        </header>
+
+        <section class="upload-panel">
+          <div class="upload-panel-head">
+            <h3>File</h3>
+            <p>Trascina o seleziona un documento da caricare</p>
+          </div>
+
+          <div
+            class="dropzone"
+            [class.dropzone--active]="dragActive"
+            (click)="openFilePicker()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            <input
+              #fileInput
+              type="file"
+              [attr.accept]="fileAccept"
+              (change)="onFileSelected($event)"
+              hidden
+            />
+
+            <div class="dropzone-icon-wrap">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+            </div>
+
+            <h4 *ngIf="!selectedFile">Trascina il file qui</h4>
+            <h4 *ngIf="selectedFile">{{ selectedFile.name }}</h4>
+
+            <p *ngIf="!selectedFile">oppure clicca per selezionarlo</p>
+            <p *ngIf="selectedFile">{{ formatFileSize(selectedFile.size) }}</p>
+
+            <div class="format-tags">
+              <span class="format-tag" *ngFor="let ext of uploadExtensions">{{ ext }}</span>
+            </div>
+          </div>
+
+          <div class="upload-fields">
+            <input
+              type="text"
+              class="field-input"
+              placeholder="Titolo appunto"
+              [(ngModel)]="uploadTitle"
+            />
+
+            <input
+              type="text"
+              class="field-input"
+              placeholder="Materia"
+              [(ngModel)]="uploadSubject"
+            />
+          </div>
+
+          <div class="upload-actions">
+            <button type="button" class="btn-ghost" [disabled]="uploading" (click)="resetUploadForm()">
+              Annulla
+            </button>
+            <button type="button" class="btn-primary" [disabled]="uploading" (click)="submitUpload()">
+              {{ uploading ? 'Caricamento...' : 'Carica' }}
+            </button>
+          </div>
+        </section>
+      </section>
+    </ion-content>
+  </ng-template>
+</ion-modal>

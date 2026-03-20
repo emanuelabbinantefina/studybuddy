@@ -14,7 +14,7 @@
 
     <button class="add-btn" (click)="openAddModal()">
       <ion-icon name="add-outline"></ion-icon>
-      Nuovo
+      Crea
     </button>
   </div>
 
@@ -45,20 +45,6 @@
   <ng-container *ngIf="!loading && items.length > 0">
 
     <div class="card-stack-wrapper">
-      <button class="side-arrow side-arrow--left"
-        *ngIf="items.length > 1 && currentCardIndex > 0"
-        (click)="scrollToCard(currentCardIndex - 1)"
-        aria-label="Precedente">
-        <ion-icon name="chevron-back-outline"></ion-icon>
-      </button>
-
-      <button class="side-arrow side-arrow--right"
-        *ngIf="items.length > 1 && currentCardIndex < items.length - 1"
-        (click)="scrollToCard(currentCardIndex + 1)"
-        aria-label="Successivo">
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </button>
-
     <div class="card-stack" #cardScroller>
       <div
         class="hero-card"
@@ -197,6 +183,9 @@
         <div class="field-group">
           <label class="field-label">Data</label>
           <input class="custom-input" type="date" [min]="minDate" [(ngModel)]="newDate" />
+          <p class="field-hint field-hint--warn" *ngIf="plannerExamDateValidationMessage">
+            {{ plannerExamDateValidationMessage }}
+          </p>
         </div>
 
         <!-- NOTES -->

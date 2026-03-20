@@ -14,6 +14,10 @@ import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 
 import { DataService, EventItem } from '../../core/services/data.service';
 import { UserService } from '../../core/services/user.service';
+import {
+  getItalianExamDateValidationMessage,
+  getNextAllowedItalianExamDateIso,
+} from '../../core/utils/exam-date.util';
 
 type PlannerType = 'exam' | 'group' | 'personal';
 
@@ -121,6 +125,11 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     return `Prossimo: ${next.title} (${next.daysLeft}gg)`;
   }
 
+  get plannerExamDateValidationMessage(): string {
+    if (this.newType !== 'exam' || !this.newDate) return '';
+    return getItalianExamDateValidationMessage(this.newDate, true);
+  }
+
   // ═══════════════════════════
   //   CARD STACK NAV
   // ═══════════════════════════
@@ -211,7 +220,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     this.newType = 'exam';
     this.newSubject = this.subjectOptions[0] || '';
     this.newTitle = '';
-    this.newDate = this.minDate;
+    this.newDate = getNextAllowedItalianExamDateIso(this.minDate);
     this.newNotes = '';
     this.isAddModalOpen = true;
   }
@@ -224,6 +233,9 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     // se passo a "esame", provo a pre-compilare subject
     if (this.newType === 'exam') {
       this.newSubject = this.newSubject || this.subjectOptions[0] || '';
+      if (this.plannerExamDateValidationMessage) {
+        this.newDate = getNextAllowedItalianExamDateIso(this.minDate);
+      }
     } else {
       // per altri tipi subject è opzionale, lasciamo vuoto
       this.newSubject = '';
@@ -235,7 +247,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     if (!this.newDate || !this.isDateAllowed(this.newDate)) return false;
 
     if (this.newType === 'exam') {
-      return !!this.newSubject;
+      return !!this.newSubject && !this.plannerExamDateValidationMessage;
     }
 
     // group/personal: titolo obbligatorio
@@ -244,6 +256,11 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
 
   async save(): Promise<void> {
     if (!this.canSave()) return;
+
+    if (this.plannerExamDateValidationMessage) {
+      await this.showToast(this.plannerExamDateValidationMessage, 'danger');
+      return;
+    }
 
     this.savingEvent = true;
     try {

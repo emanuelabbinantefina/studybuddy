@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, NavController, ToastController } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { Appunto, GroupBoardMessage, GroupQuestion, Gruppo } from '../../../core/interfaces/models';
+import { getItalianExamDateValidationMessage } from '../../../core/utils/exam-date.util';
 
 interface ThreadReply extends GroupBoardMessage {
   isOwn: boolean;
@@ -59,10 +60,14 @@ export class GroupDetailPage implements OnInit {
   replyingTo: GroupBoardMessage | null = null;
   currentUserId = 0;
 
+  get examDateValidationMessage(): string {
+    if (!this.examDateDraft) return '';
+    return getItalianExamDateValidationMessage(this.examDateDraft);
+  }
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly apiService: ApiService,
-    private readonly navCtrl: NavController,
     private readonly toastCtrl: ToastController
   ) {}
 
@@ -151,10 +156,6 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
-  goBack() {
-    this.navCtrl.back();
-  }
-
   openExamDateEditor(): void {
     this.examDateDraft = this.toDateInputValue(this.gruppo?.examDate);
     this.editingExamDate = true;
@@ -169,6 +170,11 @@ export class GroupDetailPage implements OnInit {
   async saveExamDate(): Promise<void> {
     const groupId = Number(this.gruppo?.id || 0);
     if (!groupId || this.savingExamDate) return;
+
+    if (this.examDateValidationMessage) {
+      await this.presentToast(this.examDateValidationMessage, 'danger');
+      return;
+    }
 
     try {
       this.savingExamDate = true;

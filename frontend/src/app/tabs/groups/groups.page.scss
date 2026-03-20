@@ -296,61 +296,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 800;
 }
 
-// Promo card
-.promo-card {
-  margin: 0 0 16px;
-  border: 1px dashed #d9e2ff;
-  border-radius: $radius-lg;
-  background: rgba(79, 107, 255, 0.05);
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: transform $transition;
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.promo-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: $primary-soft;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.promo-icon {
-  color: $primary;
-  font-size: 22px;
-}
-
-.promo-copy {
-  h3 {
-    margin: 0;
-    color: $text-primary;
-    font-size: 1rem;
-    font-weight: 800;
-  }
-
-  p {
-    margin: 4px 0 0;
-    color: $text-secondary;
-    font-size: 0.86rem;
-  }
-}
-
-.promo-arrow {
-  color: $primary;
-  font-size: 0.84rem;
-  font-weight: 800;
-}
-
 // Cards
 .cards-list {
   display: flex;
@@ -602,14 +547,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-width: 94px;
     min-height: 42px;
     font-size: 0.84rem;
-  }
-
-  .promo-card {
-    grid-template-columns: 48px 1fr;
-  }
-
-  .promo-arrow {
-    display: none;
   }
 
   .group-topline {
