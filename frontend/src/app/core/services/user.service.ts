@@ -234,23 +234,29 @@ export class UserService {
     this.fetchProfile().subscribe();
   }
 
-  updateProfile(newData: Partial<UserProfile> & { avatarUrl?: string }): Observable<UserProfile> {
+  updateProfile(newData: Partial<UserProfile> & { avatarUrl?: string; courseKey?: string }): Observable<UserProfile> {
     const avatarUrl =
       typeof newData?.avatarUrl === 'string'
         ? newData.avatarUrl.trim()
         : typeof newData?.avatar === 'string'
           ? newData.avatar.trim()
           : '';
+    const courseKey =
+      typeof newData?.courseKey === 'string'
+        ? newData.courseKey.trim()
+        : '';
 
     const payload: Record<string, string> = {
       firstName: String(newData?.firstName || '').trim(),
       lastName: String(newData?.lastName || '').trim(),
       username: typeof newData?.username === 'string' ? newData.username.trim() : '',
-      facolta: String(newData?.facolta || '').trim(),
-      corso: String(newData?.corso || '').trim(),
       courseYear: String(newData?.courseYear || '').trim(),
       bio: typeof newData?.bio === 'string' ? newData.bio.trim().slice(0, 120) : '',
     };
+
+    if (courseKey) {
+      payload['courseKey'] = courseKey;
+    }
 
     if (avatarUrl) {
       payload['avatarUrl'] = avatarUrl;

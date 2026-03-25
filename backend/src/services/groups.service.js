@@ -76,6 +76,21 @@ function sanitizeQuestionSession(value) {
   return match || '';
 }
 
+function parseCourseKey(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { faculty: '', course: '' };
+
+  const separatorIndex = raw.indexOf('::');
+  if (separatorIndex <= 0) {
+    return { faculty: '', course: raw };
+  }
+
+  return {
+    faculty: raw.slice(0, separatorIndex).trim(),
+    course: raw.slice(separatorIndex + 2).trim(),
+  };
+}
+
 function parseQuestionAnswer(value) {
   const raw = String(value || '').trim();
   if (!raw) return { session: '', year: '' };
@@ -164,18 +179,49 @@ async function ensureGroupExists(groupId) {
   if (!group) throw notFound('gruppo non trovato');
 }
 
-async function isValidFacultyCourseSelection(faculty, course) {
-  const row = await get(
-    `select Courses.id
-     from Courses
-     join Faculties on Faculties.id = Courses.facultyId
-     where lower(trim(Faculties.name)) = lower(trim(?))
-       and lower(trim(Courses.name)) = lower(trim(?))
-     limit 1`,
-    [faculty, course]
-  );
+async function resolveCourseSelection(body = {}) {
+  const facoltaIn = sanitizeText(body.facolta ?? body.faculty, 80);
+  const corsoIn = sanitizeText(body.corso ?? body.course ?? body.subject ?? body.materia, 80);
+  const parsedKey = parseCourseKey(body.courseKey);
 
-  return !!row;
+  const faculty = parsedKey.faculty || facoltaIn;
+  const course = parsedKey.course || corsoIn;
+
+  if (!course) {
+    throw badRequest('corso di laurea triennale obbligatorio');
+  }
+
+  const rows = faculty
+    ? await all(
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+         from Courses
+         join Faculties on Faculties.id = Courses.facultyId
+         where lower(trim(Faculties.name)) = lower(trim(?))
+           and lower(trim(Courses.name)) = lower(trim(?))
+         limit 2`,
+        [faculty, course]
+      )
+    : await all(
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+         from Courses
+         join Faculties on Faculties.id = Courses.facultyId
+         where lower(trim(Courses.name)) = lower(trim(?))
+         limit 2`,
+        [course]
+      );
+
+  if (!rows.length) {
+    throw badRequest('corso di laurea triennale non valido');
+  }
+
+  if (!faculty && rows.length > 1) {
+    throw badRequest('seleziona un corso di laurea valido dalla lista');
+  }
+
+  return {
+    faculty: String(rows[0]?.facultyName || '').trim(),
+    course: String(rows[0]?.courseName || '').trim(),
+  };
 }
 
 async function getMemberRole(groupId, userId) {
@@ -295,9 +341,6 @@ async function listGroups(userId, opts = {}) {
 
 async function createGroup(userId, body = {}) {
   const name = sanitizeText(body.name ?? body.nome, 60);
-  const faculty = sanitizeText(body.faculty ?? body.facolta, 80);
-  const course = sanitizeText(body.course ?? body.corso ?? body.subject ?? body.materia, 80);
-  const subject = sanitizeText(body.subject ?? body.materia ?? course, 80);
   const description = sanitizeText(body.description ?? body.descrizione, 400);
   const examDate = sanitizeText(body.examDate ?? body.dataEsame, 40);
   const colorClass = normalizeColorClass(
@@ -306,16 +349,14 @@ async function createGroup(userId, body = {}) {
   const boardMessage = sanitizeText(body.boardMessage ?? body.firstMessage ?? body.firstPost, 1000);
   const visibility = 'public';
   const seedQuestions = parseQuestionsSeed(body.questions ?? body.initialQuestions);
+  const selection = await resolveCourseSelection(body);
+  const faculty = selection.faculty;
+  const course = selection.course;
+  const subject = sanitizeText(body.subject ?? body.materia ?? course, 80) || course;
 
   if (!name) throw badRequest('nome gruppo obbligatorio');
-  if (!faculty) throw badRequest('facolta obbligatoria');
   if (!subject) throw badRequest('materia obbligatoria');
-  if (!isMeaningfulSubjectValue(subject)) throw badRequest('corso non valido');
-
-  const isValidSelection = await isValidFacultyCourseSelection(faculty, course || subject);
-  if (!isValidSelection) {
-    throw badRequest('facolta e corso non coerenti');
-  }
+  if (!isMeaningfulSubjectValue(subject)) throw badRequest('corso di laurea triennale non valido');
 
   if (examDate) {
     const examDateError = getItalianExamDateValidationError(examDate);

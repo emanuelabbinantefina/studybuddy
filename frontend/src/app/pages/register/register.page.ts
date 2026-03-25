@@ -5,6 +5,17 @@ import { IonicModule, NavController, AlertController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { lastValueFrom } from 'rxjs';
 
+interface FacultyRow {
+  id: number;
+  name: string;
+  Courses?: Array<{ id: number; name: string }>;
+}
+
+interface CourseOption {
+  key: string;
+  label: string;
+}
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
@@ -15,15 +26,14 @@ import { lastValueFrom } from 'rxjs';
 export class RegisterPage implements OnInit {
   name = '';
   email = '';
-  facolta = '';
-  corso = '';
+  courseKey = '';
   password = '';
   confirmPassword = '';
   error = '';
   loading = false;
 
-  faculties: any[] = [];
-  availableCourses: any[] = [];
+  faculties: FacultyRow[] = [];
+  courseOptions: CourseOption[] = [];
 
   constructor(
     private navCtrl: NavController,
@@ -33,36 +43,29 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() {
     this.authService.getFaculties().subscribe({
-      next: (data: any) => {
-        this.faculties = data;
+      next: (data: FacultyRow[]) => {
+        this.faculties = Array.isArray(data) ? data : [];
+        this.courseOptions = this.buildCourseOptions(this.faculties);
       },
       error: () => {
-        this.error = 'Errore nel caricamento delle facoltà.';
+        this.error = 'Errore nel caricamento dei corsi.';
       },
     });
-  }
-
-  onFacoltaChange(event: any) {
-    const selectedId = event.detail.value;
-    const faculty = this.faculties.find((f) => f.id === selectedId);
-
-    if (faculty) {
-      this.availableCourses = faculty.Courses || [];
-      this.facolta = faculty.name;
-    } else {
-      this.availableCourses = [];
-      this.facolta = '';
-    }
-
-    this.corso = '';
   }
 
   async handleRegister() {
     if (this.loading) return;
     this.error = '';
+    this.password = this.password.trim();
+    this.confirmPassword = this.confirmPassword.trim();
 
-    if (!this.name || !this.email || !this.facolta || !this.corso || !this.password) {
+    if (!this.name || !this.email || !this.courseKey || !this.password) {
       this.error = 'Compila tutti i campi';
+      return;
+    }
+
+    if (this.password.length < 8) {
+      this.error = 'La password deve avere almeno 8 caratteri';
       return;
     }
 
@@ -79,8 +82,7 @@ export class RegisterPage implements OnInit {
           name: this.name,
           email: this.email,
           password: this.password,
-          facolta: this.facolta,
-          corso: this.corso,
+          courseKey: this.courseKey,
         })
       );
 
@@ -109,5 +111,35 @@ export class RegisterPage implements OnInit {
 
   goBack() {
     this.navCtrl.back();
+  }
+
+  private buildCourseOptions(rows: FacultyRow[]): CourseOption[] {
+    const flatRows = (Array.isArray(rows) ? rows : []).reduce<Array<{ facultyName: string; courseName: string }>>(
+      (accumulator, faculty) => {
+        const nextRows = (faculty?.Courses || []).map((course) => ({
+          facultyName: String(faculty?.name || '').trim(),
+          courseName: String(course?.name || '').trim(),
+        }));
+        return accumulator.concat(nextRows);
+      },
+      []
+    ).filter((entry) => entry.facultyName && entry.courseName);
+
+    const courseOccurrences = new Map<string, number>();
+    flatRows.forEach((entry) => {
+      const key = entry.courseName.toLowerCase();
+      courseOccurrences.set(key, (courseOccurrences.get(key) || 0) + 1);
+    });
+
+    return flatRows
+      .map((entry) => {
+        const hasDuplicateName = (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1;
+
+        return {
+          key: `${entry.facultyName}::${entry.courseName}`,
+          label: hasDuplicateName ? `${entry.courseName} - ${entry.facultyName}` : entry.courseName,
+        };
+      })
+      .sort((left, right) => left.label.localeCompare(right.label, 'it'));
   }
 }

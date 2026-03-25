@@ -1,6 +1,7 @@
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
+const { canonicalAcademicKey } = require('../utils/academic-catalog');
 
 const FILE_SIZE_LIMITS = {
   pdf: 10 * 1024 * 1024,
@@ -12,6 +13,8 @@ const IMAGE_SIZE_LIMITS = {
   other: 4 * 1024 * 1024,
 };
 const MAX_FILE_DATA_LEN = 20_000_000; // base64/data-url in json body
+const NOTE_FACULTY_SQL = `coalesce(nullif(trim(Notes.facultyName), ''), nullif(trim(Users.facolta), ''))`;
+const NOTE_COURSE_SQL = `coalesce(nullif(trim(Notes.courseName), ''), nullif(trim(Users.corso), ''))`;
 
 function badRequest(message) {
   const err = new Error(message);
@@ -43,21 +46,102 @@ async function getUserAcademicContext(userId) {
     [userId]
   );
 
+  const faculty = String(user?.facolta || '').trim();
+  const course = String(user?.corso || '').trim();
+  if (faculty || course) {
+    return {
+      faculty: faculty || null,
+      course: course || null,
+    };
+  }
+
+  const latestNoteContext = await get(
+    `select
+       trim(coalesce(nullif(Notes.facultyName, ''), nullif(Users.facolta, ''))) as faculty,
+       trim(coalesce(nullif(Notes.courseName, ''), nullif(Users.corso, ''))) as course
+     from Notes
+     left join Users on Users.id = Notes.userId
+     where Notes.userId = ?
+       and (
+         trim(coalesce(Notes.facultyName, '')) <> ''
+         or trim(coalesce(Notes.courseName, '')) <> ''
+       )
+     order by datetime(coalesce(Notes.updatedAt, Notes.createdAt)) desc, Notes.id desc
+     limit 1`,
+    [userId]
+  );
+
   return {
-    faculty: String(user?.facolta || '').trim() || null,
-    course: String(user?.corso || '').trim() || null,
+    faculty: String(latestNoteContext?.faculty || '').trim() || null,
+    course: String(latestNoteContext?.course || '').trim() || null,
   };
+}
+
+function pushUniqueAcademicValue(target, value) {
+  const normalized = normalizeAcademicValue(value);
+  if (!isMeaningfulSubjectValue(normalized)) return;
+
+  pushUniqueTextValue(target, normalized);
+}
+
+function pushUniqueTextValue(target, value) {
+  const normalized = normalizeAcademicValue(value);
+  if (!normalized) return;
+
+  const key = canonicalAcademicKey(normalized);
+  if (!key || target.has(key)) return;
+  target.set(key, normalized);
 }
 
 function mergeUniqueSubjects(target, rows = [], field = 'subject') {
   rows.forEach((row) => {
-    const value = normalizeAcademicValue(row?.[field]);
-    if (!isMeaningfulSubjectValue(value)) return;
-    const key = value.toLowerCase();
-    if (!target.has(key)) {
-      target.set(key, value);
-    }
+    pushUniqueAcademicValue(target, row?.[field]);
   });
+}
+
+async function loadCatalogSubjects(facultyName, courseName = '', includeCourse = true) {
+  const faculty = normalizeAcademicValue(facultyName);
+  const course = normalizeAcademicValue(courseName);
+  const subjects = new Map();
+
+  if (!faculty) return [];
+
+  if (includeCourse && course) {
+    const courseRows = await all(
+      `select distinct trim(subjectName) as subject
+       from ExamSubjects
+       where lower(trim(facultyName)) = lower(trim(?))
+         and lower(trim(courseName)) = lower(trim(?))
+         and trim(coalesce(subjectName, '')) <> ''
+       order by lower(trim(subjectName)) asc`,
+      [faculty, course]
+    );
+    mergeUniqueSubjects(subjects, courseRows);
+  }
+
+  const facultyRows = await all(
+    `select distinct trim(subjectName) as subject
+     from ExamSubjects
+     where lower(trim(facultyName)) = lower(trim(?))
+       and trim(coalesce(courseName, '')) = ''
+       and trim(coalesce(subjectName, '')) <> ''
+     order by lower(trim(subjectName)) asc`,
+    [faculty]
+  );
+  mergeUniqueSubjects(subjects, facultyRows);
+
+  return Array.from(subjects.values());
+}
+
+function findCanonicalSubjectMatch(rawSubject, allowedSubjects = []) {
+  const normalized = normalizeAcademicValue(rawSubject);
+  const subjectKey = canonicalAcademicKey(normalized);
+  if (!subjectKey) return '';
+
+  return (
+    allowedSubjects.find((subject) => canonicalAcademicKey(subject) === subjectKey) ||
+    ''
+  );
 }
 
 function formatMegabytes(bytes) {
@@ -160,6 +244,7 @@ function formatRelativeTime(isoDate) {
 async function list(userId, query = {}) {
   const q = String(query.cerca || '').trim().toLowerCase();
   const materia = String(query.materia || '').trim();
+  const faculty = normalizeAcademicValue(query.faculty);
   const rawGroupId = query.groupId;
   const hasGroupContext = rawGroupId !== undefined && rawGroupId !== null && rawGroupId !== '';
   const groupId = hasGroupContext ? Number(rawGroupId) : null;
@@ -183,9 +268,14 @@ async function list(userId, query = {}) {
   if (!groupId && scope === 'faculty') {
     const context = await getUserAcademicContext(userId);
     if (context.faculty) {
-      where.push(`lower(trim(coalesce(Users.facolta, ''))) = lower(trim(?))`);
+      where.push(`lower(trim(${NOTE_FACULTY_SQL})) = lower(trim(?))`);
       params.push(context.faculty);
     }
+  }
+
+  if (!groupId && faculty) {
+    where.push(`lower(trim(${NOTE_FACULTY_SQL})) = lower(trim(?))`);
+    params.push(faculty);
   }
 
   if (q) {
@@ -212,7 +302,8 @@ async function list(userId, query = {}) {
        Notes.mimeType as mimeType,
        Notes.sizeBytes as sizeBytes,
        Notes.createdAt as createdAt,
-       Users.facolta as facolta,
+       ${NOTE_FACULTY_SQL} as facolta,
+       ${NOTE_COURSE_SQL} as corso,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
        case when saved.noteId is not null then 1 else 0 end as isSaved
      from Notes
@@ -235,6 +326,7 @@ async function list(userId, query = {}) {
     sizeBytes: Number(row.sizeBytes || 0),
     groupId: row.groupId || null,
     facolta: String(row.facolta || '').trim() || null,
+    corso: String(row.corso || '').trim() || null,
     autoreNome: row.autoreNome,
     createdAt: row.createdAt,
     tempoUpload: formatRelativeTime(row.createdAt),
@@ -248,6 +340,7 @@ async function list(userId, query = {}) {
 async function listSaved(userId, query = {}) {
   const q = String(query.cerca || '').trim().toLowerCase();
   const materia = String(query.materia || '').trim();
+  const faculty = normalizeAcademicValue(query.faculty);
   const lim = Number(query.limit) > 0 ? Math.min(Number(query.limit), 100) : 80;
 
   const where = [`NoteBookmarks.userId = ?`, `Notes.groupId is null`];
@@ -263,6 +356,11 @@ async function listSaved(userId, query = {}) {
     params.push(materia);
   }
 
+  if (faculty) {
+    where.push(`lower(trim(${NOTE_FACULTY_SQL})) = lower(trim(?))`);
+    params.push(faculty);
+  }
+
   params.push(lim);
 
   const rows = await all(
@@ -273,7 +371,8 @@ async function listSaved(userId, query = {}) {
        Notes.subject as materia,
        Notes.fileType as tipoFile,
        Notes.createdAt as createdAt,
-       Users.facolta as facolta,
+       ${NOTE_FACULTY_SQL} as facolta,
+       ${NOTE_COURSE_SQL} as corso,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome
      from NoteBookmarks
      inner join Notes on Notes.id = NoteBookmarks.noteId
@@ -290,6 +389,7 @@ async function listSaved(userId, query = {}) {
     materia: row.materia,
     tipoFile: row.tipoFile,
     facolta: String(row.facolta || '').trim() || null,
+    corso: String(row.corso || '').trim() || null,
     autoreNome: row.autoreNome,
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
@@ -303,69 +403,67 @@ async function listSubjects(userId, query = {}) {
   const { faculty, course } = await getUserAcademicContext(userId);
   const scope = normalizeScope(query.scope, 'faculty');
   const source = normalizeSubjectSource(query.source, 'browse');
+  const requestedFaculty = normalizeAcademicValue(query.faculty);
   const subjects = new Map();
+  const faculties = new Map();
 
-  let noteRows = [];
+  if (source === 'upload') {
+    const uploadSubjects = await loadCatalogSubjects(faculty, course, true);
+    uploadSubjects.forEach((subject) => pushUniqueAcademicValue(subjects, subject));
 
-  if (scope === 'all') {
-    noteRows = await all(
-      `select distinct trim(subject) as subject
+    if (faculty) {
+      pushUniqueTextValue(faculties, faculty);
+    }
+
+    return {
+      faculty: faculty || null,
+      course: course || null,
+      selectedFaculty: faculty || null,
+      faculties: Array.from(faculties.values()),
+      subjects: Array.from(subjects.values()),
+    };
+  }
+
+  let selectedFaculty = '';
+
+  if (scope === 'faculty' && faculty) {
+    selectedFaculty = faculty;
+    pushUniqueTextValue(faculties, faculty);
+    const browseSubjects = await loadCatalogSubjects(faculty, course, true);
+    browseSubjects.forEach((subject) => pushUniqueAcademicValue(subjects, subject));
+
+    return {
+      faculty: faculty || null,
+      course: course || null,
+      selectedFaculty: selectedFaculty || null,
+      faculties: Array.from(faculties.values()),
+      subjects: Array.from(subjects.values()),
+    };
+  } else {
+    const facultyRows = await all(
+      `select distinct ${NOTE_FACULTY_SQL} as faculty
        from Notes
-       where groupId is null
-         and trim(coalesce(subject, '')) <> ''
-       order by lower(trim(subject)) asc`
-    );
-  } else if (faculty) {
-    noteRows = await all(
-      `select distinct trim(Notes.subject) as subject
-       from Notes
-       join Users on Users.id = Notes.userId
+       left join Users on Users.id = Notes.userId
        where Notes.groupId is null
-         and trim(coalesce(Notes.subject, '')) <> ''
-         and lower(trim(coalesce(Users.facolta, ''))) = lower(trim(?))
-       order by lower(trim(Notes.subject)) asc`,
-      [faculty]
+         and trim(coalesce(${NOTE_FACULTY_SQL}, '')) <> ''
+       order by lower(trim(${NOTE_FACULTY_SQL})) asc`
     );
-  }
-
-  if (source !== 'upload') {
-    mergeUniqueSubjects(subjects, noteRows);
-  }
-
-  if (source === 'upload' && scope === 'faculty' && faculty && course) {
-    const courseRows = await all(
-      `select subjectName as subject
-       from ExamSubjects
-       where lower(trim(facultyName)) = lower(trim(?))
-         and lower(trim(courseName)) = lower(trim(?))
-       order by lower(trim(subjectName)) asc`,
-      [faculty, course]
-    );
-    mergeUniqueSubjects(subjects, courseRows);
-  }
-
-  if (source === 'upload' && scope === 'faculty' && faculty) {
-    const fallbackRows = await all(
-      `select subjectName as subject
-       from ExamSubjects
-       where lower(trim(facultyName)) = lower(trim(?))
-         and trim(coalesce(courseName, '')) = ''
-       order by lower(trim(subjectName)) asc`,
-      [faculty]
-    );
-    mergeUniqueSubjects(subjects, fallbackRows);
+    facultyRows.forEach((row) => pushUniqueTextValue(faculties, row?.faculty));
+    selectedFaculty = requestedFaculty;
   }
 
   return {
     faculty: faculty || null,
-    course,
-    subjects: Array.from(subjects.values()),
+    course: course || null,
+    selectedFaculty: selectedFaculty || null,
+    faculties: Array.from(faculties.values()),
+    subjects: [],
   };
 }
 
 async function create(userId, body = {}) {
   const titolo = String(body.titolo || '').trim();
-  const materia = String(body.materia || '').trim();
+  const rawMateria = String(body.materia || '').trim();
   const fileName = String(body.fileName || '').trim();
   const mimeType = body.mimeType ? String(body.mimeType).trim() : null;
   const fileData = String(body.fileData || '').trim();
@@ -387,8 +485,8 @@ async function create(userId, body = {}) {
   }
 
   if (!titolo) throw badRequest('titolo obbligatorio');
-  if (!materia) throw badRequest('materia obbligatoria');
-  if (!isMeaningfulSubjectValue(materia)) {
+  if (!rawMateria) throw badRequest('materia obbligatoria');
+  if (!isMeaningfulSubjectValue(rawMateria)) {
     throw badRequest('materia non valida');
   }
   if (!fileName) throw badRequest('nome file obbligatorio');
@@ -398,6 +496,23 @@ async function create(userId, body = {}) {
   }
   if (fileData.length > MAX_FILE_DATA_LEN) {
     throw badRequest('file troppo grande');
+  }
+
+  const context = await getUserAcademicContext(userId);
+  const facultyName = normalizeAcademicValue(context.faculty);
+  const courseName = normalizeAcademicValue(context.course);
+  if (!facultyName || !courseName) {
+    throw badRequest('completa il corso di laurea triennale nel profilo prima di caricare appunti');
+  }
+
+  const allowedSubjects = await loadCatalogSubjects(facultyName, courseName, true);
+  if (!allowedSubjects.length) {
+    throw badRequest('nessuna materia disponibile per il tuo corso');
+  }
+
+  const materia = findCanonicalSubjectMatch(rawMateria, allowedSubjects);
+  if (!materia) {
+    throw badRequest('materia non valida per il tuo corso');
   }
 
   const parsedFile = parseDataUrl(fileData, mimeType);
@@ -417,23 +532,25 @@ async function create(userId, body = {}) {
 
   const out = await run(
     `insert into Notes
-      (userId, groupId, title, subject, fileName, fileType, mimeType, sizeBytes, fileData, createdAt, updatedAt)
+      (userId, groupId, title, subject, facultyName, courseName, fileName, fileType, mimeType, sizeBytes, fileData, createdAt, updatedAt)
      values
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, groupId, titolo, materia, fileName, tipoFile, mimeType, actualSizeBytes, fileData, now, now]
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      groupId,
+      titolo,
+      materia,
+      facultyName,
+      courseName,
+      fileName,
+      tipoFile,
+      mimeType,
+      actualSizeBytes,
+      fileData,
+      now,
+      now,
+    ]
   );
-
-  const context = await getUserAcademicContext(userId);
-  const facultyName = normalizeAcademicValue(context.faculty);
-  const courseName = normalizeAcademicValue(context.course);
-  const subjectName = normalizeAcademicValue(materia);
-  if (facultyName && courseName && isMeaningfulSubjectValue(subjectName)) {
-    await run(
-      `insert or ignore into ExamSubjects (facultyName, courseName, subjectName, createdAt, updatedAt)
-       values (?, ?, ?, ?, ?)`,
-      [facultyName, courseName, subjectName, now, now]
-    );
-  }
 
   return { id: out.lastID };
 }

@@ -12,6 +12,21 @@ function badRequest(msg) {
   return err;
 }
 
+function parseCourseKey(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return { faculty: '', course: '' };
+
+  const separatorIndex = raw.indexOf('::');
+  if (separatorIndex <= 0) {
+    return { faculty: '', course: raw };
+  }
+
+  return {
+    faculty: raw.slice(0, separatorIndex).trim(),
+    course: raw.slice(separatorIndex + 2).trim(),
+  };
+}
+
 function splitLegacyName(name) {
   const clean = String(name || '').trim();
   if (!clean) {
@@ -43,22 +58,52 @@ function normalizeUserRow(row) {
   };
 }
 
-async function isValidFacultyCourseSelection(facultyName, courseName) {
-  const faculty = String(facultyName || '').trim();
-  const course = String(courseName || '').trim();
-  if (!faculty || !course) return false;
+async function resolveAcademicSelection(body = {}, { required = false } = {}) {
+  const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() : '';
+  const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() : '';
+  const courseKeyIn = body && typeof body.courseKey === 'string' ? body.courseKey.trim() : '';
+  const parsedKey = parseCourseKey(courseKeyIn);
 
-  const row = await get(
-    `select Courses.id
-     from Courses
-     join Faculties on Faculties.id = Courses.facultyId
-     where lower(trim(Faculties.name)) = lower(trim(?))
-       and lower(trim(Courses.name)) = lower(trim(?))
-     limit 1`,
-    [faculty, course]
-  );
+  const faculty = parsedKey.faculty || facoltaIn;
+  const course = parsedKey.course || corsoIn;
 
-  return !!row;
+  if (!course) {
+    if (required) throw badRequest('corso di laurea triennale obbligatorio');
+    return { faculty: '', course: '' };
+  }
+
+  const rows = faculty
+    ? await all(
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+         from Courses
+         join Faculties on Faculties.id = Courses.facultyId
+         where lower(trim(Faculties.name)) = lower(trim(?))
+           and lower(trim(Courses.name)) = lower(trim(?))
+         limit 2`,
+        [faculty, course]
+      )
+    : await all(
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+         from Courses
+         join Faculties on Faculties.id = Courses.facultyId
+         where lower(trim(Courses.name)) = lower(trim(?))
+         limit 2`,
+        [course]
+      );
+
+  if (!rows.length) {
+    throw badRequest('corso di laurea triennale non valido');
+  }
+
+  if (!faculty && rows.length > 1) {
+    throw badRequest('seleziona un corso di laurea valido dalla lista');
+  }
+
+  const selected = rows[0];
+  return {
+    faculty: String(selected?.facultyName || '').trim(),
+    course: String(selected?.courseName || '').trim(),
+  };
 }
 
 async function facultiesWithCourses() {
@@ -86,13 +131,20 @@ async function facultiesWithCourses() {
 }
 
 async function register(body) {
-  const { name, email, password, facolta, corso } = body;
+  const { name, email, password } = body;
   const cleanName = String(name || '').trim();
   const cleanEmail = String(email || '').trim();
+  const cleanPassword = String(password || '');
 
-  if (!cleanName || !cleanEmail || !password) {
+  if (!cleanName || !cleanEmail || !cleanPassword) {
     throw badRequest('name, email e password sono obbligatori');
   }
+
+  if (cleanPassword.length < 8) {
+    throw badRequest('la password deve contenere almeno 8 caratteri');
+  }
+
+  const selection = await resolveAcademicSelection(body, { required: true });
 
   const existing = await get(`select id from Users where email = ?`, [cleanEmail]);
   if (existing) {
@@ -101,7 +153,7 @@ async function register(body) {
     throw err;
   }
 
-  const hashed = await bcrypt.hash(password, 10);
+  const hashed = await bcrypt.hash(cleanPassword, 10);
   const now = nowIso();
 
   const out = await run(
@@ -109,7 +161,22 @@ async function register(body) {
       (name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, createdAt, updatedAt)
      values
       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [cleanName, cleanName, '', cleanEmail, hashed, null, facolta || null, corso || null, null, null, null, null, now, now]
+    [
+      cleanName,
+      cleanName,
+      '',
+      cleanEmail,
+      hashed,
+      null,
+      selection.faculty || null,
+      selection.course || null,
+      null,
+      null,
+      null,
+      null,
+      now,
+      now,
+    ]
   );
 
   const token = jwt.sign(
@@ -128,8 +195,8 @@ async function register(body) {
       lastName: '',
       email: cleanEmail,
       username: null,
-      facolta: facolta || null,
-      corso: corso || null,
+      facolta: selection.faculty || null,
+      corso: selection.course || null,
       courseYear: null,
       nickname: null,
       bio: null,
@@ -213,8 +280,9 @@ async function updateProfile(userId, body) {
   const lastNameIn = body && typeof body.lastName === 'string' ? body.lastName.trim() : undefined;
   const usernameIn = body && typeof body.username === 'string' ? body.username.trim() : undefined;
   const bioIn = body && typeof body.bio === 'string' ? body.bio.trim() : undefined;
-  const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() : undefined;
-  const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() : undefined;
+  const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() || undefined : undefined;
+  const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() || undefined : undefined;
+  const courseKeyIn = body && typeof body.courseKey === 'string' ? body.courseKey.trim() || undefined : undefined;
   const courseYearIn = body && typeof body.courseYear === 'string' ? body.courseYear.trim() : undefined;
   const avatarUrlIn = body && typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
 
@@ -244,18 +312,6 @@ async function updateProfile(userId, body) {
     params.push(bioIn || null);
   }
 
-  if (facoltaIn !== undefined) {
-    if (!facoltaIn) throw badRequest('facolta obbligatoria');
-    updates.push('facolta = ?');
-    params.push(facoltaIn);
-  }
-
-  if (corsoIn !== undefined) {
-    if (!corsoIn) throw badRequest('corso obbligatorio');
-    updates.push('corso = ?');
-    params.push(corsoIn);
-  }
-
   if (courseYearIn !== undefined) {
     if (!courseYearIn) throw badRequest('anno obbligatorio');
     updates.push('courseYear = ?');
@@ -267,21 +323,32 @@ async function updateProfile(userId, body) {
     params.push(avatarUrlIn || null);
   }
 
-  if (!updates.length) throw badRequest('nessun campo da aggiornare');
-
   const nextFirstName = firstNameIn !== undefined ? firstNameIn : current.firstName;
   const nextLastName = lastNameIn !== undefined ? lastNameIn : current.lastName;
-  const nextFaculty = facoltaIn !== undefined ? facoltaIn : String(current.facolta || '').trim();
-  const nextCourse = corsoIn !== undefined ? corsoIn : String(current.corso || '').trim();
   if (!nextFirstName) throw badRequest('nome obbligatorio');
   if (!nextLastName) throw badRequest('cognome obbligatorio');
-  if (!nextFaculty) throw badRequest('facolta obbligatoria');
-  if (!nextCourse) throw badRequest('corso obbligatorio');
 
-  const isValidSelection = await isValidFacultyCourseSelection(nextFaculty, nextCourse);
-  if (!isValidSelection) {
-    throw badRequest('facolta e corso non coerenti');
+  const shouldResolveSelection =
+    facoltaIn !== undefined || corsoIn !== undefined || courseKeyIn !== undefined;
+  const selection = shouldResolveSelection
+    ? await resolveAcademicSelection(body, { required: true })
+    : {
+        faculty: String(current.facolta || '').trim(),
+        course: String(current.corso || '').trim(),
+      };
+
+  if (!selection.faculty || !selection.course) {
+    throw badRequest('corso di laurea triennale obbligatorio');
   }
+
+  if (shouldResolveSelection) {
+    updates.push('facolta = ?');
+    params.push(selection.faculty);
+    updates.push('corso = ?');
+    params.push(selection.course);
+  }
+
+  if (!updates.length) throw badRequest('nessun campo da aggiornare');
 
   updates.push('name = ?');
   params.push([nextFirstName, nextLastName].filter(Boolean).join(' ').trim());

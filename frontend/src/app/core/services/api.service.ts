@@ -17,9 +17,10 @@ interface UploadAppuntoPayload {
 
 interface CreateGroupPayload {
   nome: string;
-  facolta: string;
+  courseKey?: string;
+  facolta?: string;
   corso?: string;
-  materia: string;
+  materia?: string;
   dataEsame?: string;
   colorClass?: string;
   boardMessage?: string;
@@ -28,6 +29,9 @@ interface CreateGroupPayload {
 
 interface NoteSubjectsResponse {
   faculty: string | null;
+  course: string | null;
+  selectedFaculty?: string | null;
+  faculties?: string[];
   subjects: string[];
 }
 
@@ -210,15 +214,22 @@ export class ApiService {
     });
   }
 
-  getAppunti(query: string, materia = '', scope: 'all' | 'faculty' = 'all'): Observable<Appunto[]> {
+  getAppunti(
+    query: string,
+    materia = '',
+    scope: 'all' | 'faculty' = 'all',
+    faculty = ''
+  ): Observable<Appunto[]> {
     const token = localStorage.getItem('auth_token') || '';
     if (!token) return of([]);
 
     const q = (query || '').trim();
     const subject = (materia || '').trim();
+    const facultyFilter = (faculty || '').trim();
     const params: Record<string, string> = { scope };
     if (q) params['cerca'] = q;
     if (subject) params['materia'] = subject;
+    if (facultyFilter) params['faculty'] = facultyFilter;
 
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
       headers: this.authHeaders(),
@@ -244,17 +255,34 @@ export class ApiService {
 
   getNoteSubjects(
     scope: 'all' | 'faculty' = 'faculty',
-    source: 'browse' | 'upload' = 'browse'
+    source: 'browse' | 'upload' = 'browse',
+    faculty = ''
   ): Observable<NoteSubjectsResponse> {
     const token = localStorage.getItem('auth_token') || '';
-    if (!token) return of({ faculty: null, subjects: [] });
+    if (!token) {
+      return of({ faculty: null, course: null, selectedFaculty: null, faculties: [], subjects: [] });
+    }
 
     return this.http.get<any>(`${this.baseUrl}/appunti/subjects`, {
       headers: this.authHeaders(),
-      params: { scope, source }
+      params: {
+        scope,
+        source,
+        ...(faculty.trim() ? { faculty: faculty.trim() } : {})
+      }
     }).pipe(
       map((raw) => ({
         faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
+        course: typeof raw?.course === 'string' && raw.course.trim() ? raw.course.trim() : null,
+        selectedFaculty:
+          typeof raw?.selectedFaculty === 'string' && raw.selectedFaculty.trim()
+            ? raw.selectedFaculty.trim()
+            : null,
+        faculties: Array.isArray(raw?.faculties)
+          ? raw.faculties
+            .map((value: unknown) => String(value || '').trim())
+            .filter((value: string) => !!value)
+          : [],
         subjects: Array.isArray(raw?.subjects)
           ? raw.subjects
             .map((value: unknown) => String(value || '').trim())

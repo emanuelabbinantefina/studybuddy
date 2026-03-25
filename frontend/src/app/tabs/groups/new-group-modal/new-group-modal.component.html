@@ -21,29 +21,16 @@
       <label>NOME DEL GRUPPO</label>
       <input type="text" maxlength="60" placeholder="Es. Analisi II - Sessione giugno" [(ngModel)]="groupName">
 
-      <label>FACOLTÀ</label>
-      <div class="chips-wrap">
-        <button
-          type="button"
-          class="chip"
-          *ngFor="let faculty of faculties"
-          [class.active]="selectedFacultyId === faculty.id"
-          (click)="selectFaculty(faculty)">
-          {{ faculty.name }}
-        </button>
-      </div>
-
-      <label *ngIf="subjectOptions.length > 0">CORSO</label>
-      <div class="chips-wrap" *ngIf="subjectOptions.length > 0">
-        <button
-          type="button"
-          class="chip"
-          *ngFor="let subject of subjectOptions"
-          [class.active]="selectedSubject === subject"
-          (click)="selectedSubject = subject">
-          {{ subject }}
-        </button>
-      </div>
+      <label>CORSO DI LAUREA TRIENNALE</label>
+      <select
+        [(ngModel)]="selectedCourseKey"
+        (ngModelChange)="onCourseChange($event)"
+        [disabled]="courseOptions.length === 0">
+        <option value="" disabled>Seleziona corso</option>
+        <option *ngFor="let course of courseOptions" [value]="course.key">
+          {{ course.label }}
+        </option>
+      </select>
 
       <label>DATA ESAME (OPZIONALE)</label>
       <input type="date" [(ngModel)]="examDate">

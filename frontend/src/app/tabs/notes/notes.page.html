@@ -80,12 +80,25 @@
       </div>
     </div>
 
-    <div class="filter-section" *ngIf="subjectOptions.length > 0">
+    <div class="filter-section" *ngIf="showAllFaculties && facultyOptions.length > 0">
+      <span class="filter-label">Facoltà</span>
+      <div class="filter-chips filter-chips--wrap">
+        <button class="f-chip" [class.f-chip--active]="activeFacultyFilter === ''"
+          (click)="setFacultyFilter('')">Tutte</button>
+        <button class="f-chip" *ngFor="let faculty of facultyOptions"
+          [class.f-chip--active]="activeFacultyFilter === faculty"
+          (click)="setFacultyFilter(faculty)">
+          {{ faculty }}
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-section" *ngIf="canFilterBySubject">
       <span class="filter-label">Materia</span>
       <div class="filter-chips filter-chips--wrap">
         <button class="f-chip" [class.f-chip--active]="activeSubjectFilter === ''"
           (click)="setSubjectFilter('')">Tutte</button>
-        <button class="f-chip" *ngFor="let s of subjectOptions" [class.f-chip--active]="activeSubjectFilter === s"
+        <button class="f-chip" *ngFor="let s of browseSubjectOptions" [class.f-chip--active]="activeSubjectFilter === s"
           (click)="setSubjectFilter(s)">
           {{ s }}
         </button>
@@ -264,11 +277,9 @@
 </ion-content>
 
 <ion-modal
+  class="upload-note-modal"
   [isOpen]="showUploadPanel"
-  cssClass="upload-note-modal"
-  [breakpoints]="[0, 0.92]"
-  [initialBreakpoint]="0.92"
-  [expandToScroll]="false"
+  [canDismiss]="!uploading"
   [backdropDismiss]="!uploading"
   (didDismiss)="closeUploadModal()"
 >
@@ -294,6 +305,11 @@
         </header>
 
         <section class="upload-panel">
+          <div class="upload-context" *ngIf="myFacultyLabel || myCourseLabel">
+            <span class="context-chip" *ngIf="myFacultyLabel">{{ myFacultyLabel }}</span>
+            <span class="context-chip" *ngIf="myCourseLabel">{{ myCourseLabel }}</span>
+          </div>
+
           <div class="upload-panel-head">
             <h3>File</h3>
             <p>Trascina o seleziona un documento da caricare</p>
@@ -338,19 +354,27 @@
               [(ngModel)]="uploadTitle"
             />
 
-            <input
-              type="text"
+            <select
               class="field-input"
-              placeholder="Materia"
+              [disabled]="uploading || uploadSubjectOptions.length === 0"
               [(ngModel)]="uploadSubject"
-            />
+            >
+              <option value="" disabled>Seleziona materia</option>
+              <option *ngFor="let subject of uploadSubjectOptions" [value]="subject">
+                {{ subject }}
+              </option>
+            </select>
+
+            <p class="field-hint field-hint--warn" *ngIf="uploadSubjectOptions.length === 0">
+              Nessuna materia disponibile. Completa il corso di laurea triennale nel profilo per caricare appunti.
+            </p>
           </div>
 
           <div class="upload-actions">
             <button type="button" class="btn-ghost" [disabled]="uploading" (click)="resetUploadForm()">
               Annulla
             </button>
-            <button type="button" class="btn-primary" [disabled]="uploading" (click)="submitUpload()">
+            <button type="button" class="btn-primary" [disabled]="uploading || uploadSubjectOptions.length === 0" (click)="submitUpload()">
               {{ uploading ? 'Caricamento...' : 'Carica' }}
             </button>
           </div>

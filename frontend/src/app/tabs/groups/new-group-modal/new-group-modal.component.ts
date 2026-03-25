@@ -16,6 +16,13 @@ interface FacultyRow {
   Courses?: Array<{ id: number; name: string }>;
 }
 
+interface CourseOption {
+  key: string;
+  label: string;
+  facultyName: string;
+  courseName: string;
+}
+
 interface SeedQuestionRow {
   question: string;
   session?: string;
@@ -34,15 +41,14 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private preferredFacultyName = '';
   private preferredCourseName = '';
-  private facultySelectionTouched = false;
 
   step = 1;
   creating = false;
 
   faculties: FacultyRow[] = [];
-  selectedFacultyId: number | null = null;
+  courseOptions: CourseOption[] = [];
+  selectedCourseKey = '';
   selectedFacultyName = '';
-  subjectOptions: string[] = [];
   selectedSubject = '';
 
   groupName = '';
@@ -91,10 +97,12 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
     this.authService.getFaculties().pipe(takeUntil(this.destroy$)).subscribe({
       next: (rows) => {
         this.faculties = Array.isArray(rows) ? rows : [];
+        this.courseOptions = this.buildCourseOptions(this.faculties);
         this.applyPreferredSelection();
       },
       error: () => {
         this.faculties = [];
+        this.courseOptions = [];
       },
     });
   }
@@ -108,20 +116,17 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
     return this.modalCtrl.dismiss(null, 'cancel');
   }
 
-  selectFaculty(faculty: FacultyRow, markTouched = true) {
-    if (markTouched) {
-      this.facultySelectionTouched = true;
-    }
-    this.selectedFacultyId = faculty.id;
-    this.selectedFacultyName = faculty.name;
-    this.subjectOptions = (faculty.Courses || []).map((course) => course.name);
-    this.selectedSubject = '';
+  onCourseChange(value: string): void {
+    const option = this.courseOptions.find((entry) => entry.key === String(value || '').trim());
+    this.selectedCourseKey = option?.key || '';
+    this.selectedFacultyName = option?.facultyName || '';
+    this.selectedSubject = option?.courseName || '';
   }
 
   canContinueStep1(): boolean {
     return !!(
       this.groupName.trim() &&
-      this.selectedFacultyId &&
+      this.selectedCourseKey &&
       this.selectedFacultyName &&
       this.selectedSubject &&
       !this.examDateValidationMessage
@@ -206,8 +211,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
       await firstValueFrom(
         this.apiService.createStudyGroup({
           nome: this.groupName.trim(),
-          facolta: this.selectedFacultyName,
-          corso: this.selectedSubject,
+          courseKey: this.selectedCourseKey,
           materia: this.selectedSubject,
           dataEsame: this.examDate ? new Date(this.examDate).toISOString() : undefined,
           colorClass: this.selectedColorClass,
@@ -265,20 +269,57 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
   }
 
   private applyPreferredSelection(): void {
-    if (this.facultySelectionTouched || this.faculties.length === 0 || !this.preferredFacultyName) {
+    if (!this.courseOptions.length || !this.preferredCourseName) {
       return;
     }
 
-    const faculty = this.faculties.find(
-      (item) => String(item?.name || '').trim() === this.preferredFacultyName
+    const exactMatch = this.courseOptions.find(
+      (item) =>
+        item.facultyName === this.preferredFacultyName &&
+        item.courseName === this.preferredCourseName
     );
 
-    if (!faculty) return;
-
-    this.selectFaculty(faculty, false);
-
-    if (this.preferredCourseName && this.subjectOptions.includes(this.preferredCourseName)) {
-      this.selectedSubject = this.preferredCourseName;
+    if (exactMatch) {
+      this.onCourseChange(exactMatch.key);
+      return;
     }
+
+    const fallbackMatch = this.courseOptions.find(
+      (item) => item.courseName === this.preferredCourseName
+    );
+    if (fallbackMatch) {
+      this.onCourseChange(fallbackMatch.key);
+    }
+  }
+
+  private buildCourseOptions(rows: FacultyRow[]): CourseOption[] {
+    const flatRows = (Array.isArray(rows) ? rows : []).reduce<Array<{ facultyName: string; courseName: string }>>(
+      (accumulator, faculty) => {
+        const nextRows = (faculty?.Courses || []).map((course) => ({
+          facultyName: String(faculty?.name || '').trim(),
+          courseName: String(course?.name || '').trim(),
+        }));
+        return accumulator.concat(nextRows);
+      },
+      []
+    ).filter((entry) => entry.facultyName && entry.courseName);
+
+    const courseOccurrences = new Map<string, number>();
+    flatRows.forEach((entry) => {
+      const key = entry.courseName.toLowerCase();
+      courseOccurrences.set(key, (courseOccurrences.get(key) || 0) + 1);
+    });
+
+    return flatRows
+      .map((entry) => {
+        const hasDuplicateName = (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1;
+        return {
+          key: `${entry.facultyName}::${entry.courseName}`,
+          label: hasDuplicateName ? `${entry.courseName} - ${entry.facultyName}` : entry.courseName,
+          facultyName: entry.facultyName,
+          courseName: entry.courseName,
+        };
+      })
+      .sort((left, right) => left.label.localeCompare(right.label, 'it'));
   }
 }

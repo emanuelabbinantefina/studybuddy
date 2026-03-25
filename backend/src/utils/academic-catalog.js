@@ -460,5 +460,7 @@ function buildSubjectsForCourse(facultyName, courseName) {
 module.exports = {
   FACULTY_SUBJECT_TEMPLATES,
   COURSE_SUBJECT_TEMPLATES,
+  canonicalAcademicKey,
+  normalizeAcademicKey,
   buildSubjectsForCourse,
 };

@@ -1,17 +1,27 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SearchPage } from './notes.page';
+import { NotesPage } from './notes.page';
 
-describe('SearchPage', () => {
-  let component: SearchPage;
-  let fixture: ComponentFixture<SearchPage>;
+describe('NotesPage', () => {
+  let component: NotesPage;
+  let fixture: ComponentFixture<NotesPage>;
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(SearchPage);
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [NotesPage],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(NotesPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should open the upload modal when requested', () => {
+    component.openUploadModal();
+
+    expect(component.showUploadPanel).toBeTrue();
   });
 });

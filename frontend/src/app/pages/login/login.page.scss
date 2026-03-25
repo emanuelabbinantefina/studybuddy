@@ -239,16 +239,6 @@ $font-body: 'Inter', -apple-system, sans-serif;
   color: $text-secondary;
 }
 
-.forgot-link {
-  border: none;
-  background: transparent;
-  color: $primary;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-}
-
 .error-box {
   display: flex;
   align-items: center;

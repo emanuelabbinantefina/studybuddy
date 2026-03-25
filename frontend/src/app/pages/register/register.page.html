@@ -47,43 +47,23 @@
             </div>
           </div>
 
-          <!-- Facoltà -->
+          <!-- Corso -->
           <div class="field">
-            <label class="field-label">Facoltà</label>
+            <label class="field-label">Corso di laurea triennale</label>
             <div class="input-wrap input-wrap--select">
               <ion-icon name="school-outline" class="input-icon"></ion-icon>
               <ion-select
-                placeholder="Seleziona facoltà"
-                (ionChange)="onFacoltaChange($event)"
-                interface="action-sheet"
-              >
-                <ion-select-option
-                  *ngFor="let f of faculties"
-                  [value]="f.id"
-                >
-                  {{ f.name }}
-                </ion-select-option>
-              </ion-select>
-            </div>
-          </div>
-
-          <!-- Corso -->
-          <div class="field">
-            <label class="field-label">Corso</label>
-            <div class="input-wrap input-wrap--select">
-              <ion-icon name="book-outline" class="input-icon"></ion-icon>
-              <ion-select
                 placeholder="Seleziona corso"
-                [(ngModel)]="corso"
-                name="corso"
-                [disabled]="availableCourses.length === 0"
+                [(ngModel)]="courseKey"
+                name="courseKey"
+                [disabled]="courseOptions.length === 0"
                 interface="action-sheet"
               >
                 <ion-select-option
-                  *ngFor="let c of availableCourses"
-                  [value]="c.name"
+                  *ngFor="let course of courseOptions"
+                  [value]="course.key"
                 >
-                  {{ c.name }}
+                  {{ course.label }}
                 </ion-select-option>
               </ion-select>
             </div>
@@ -99,6 +79,7 @@
                 placeholder="Crea una password"
                 [(ngModel)]="password"
                 name="password"
+                minlength="8"
                 required
               ></ion-input>
             </div>
@@ -114,6 +95,7 @@
                 placeholder="Ripeti la password"
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
+                minlength="8"
                 required
               ></ion-input>
             </div>

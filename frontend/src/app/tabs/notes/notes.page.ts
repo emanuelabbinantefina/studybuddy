@@ -31,6 +31,7 @@ export class NotesPage implements OnInit, OnDestroy {
 
   private notesRequestId = 0;
   private uploadSubjectsRequestId = 0;
+  private browseFiltersRequestId = 0;
   private readonly destroy$ = new Subject<void>();
   private lastProfileFaculty = '';
   private lastProfileCourse = '';
@@ -49,9 +50,11 @@ export class NotesPage implements OnInit, OnDestroy {
   sortMode: SortMode = 'newest';
   viewMode: ViewMode = 'grid';
   showFilters = false;
+  activeFacultyFilter = '';
 
   sessionUserName = 'Utente';
   myFacultyLabel = '';
+  myCourseLabel = '';
   showAllFaculties = true;
 
   loading = false;
@@ -70,7 +73,9 @@ export class NotesPage implements OnInit, OnDestroy {
   filteredNotes: Appunto[] = [];
   selectedNote: Appunto | null = null;
 
-  subjectOptions: string[] = [];
+  uploadSubjectOptions: string[] = [];
+  browseSubjectOptions: string[] = [];
+  facultyOptions: string[] = [];
   readonly fileAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
   readonly uploadExtensions = [
     'PDF 10MB',
@@ -108,6 +113,7 @@ export class NotesPage implements OnInit, OnDestroy {
   this.activeTab = 'all';
   this.activeFileFilter = '';
   this.activeSubjectFilter = '';
+  this.activeFacultyFilter = '';
   this.sortMode = 'newest';
   this.query = '';
   this.selectedNote = null;
@@ -138,9 +144,17 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   setSubjectFilter(subject: string): void {
+    if (!this.canFilterBySubject) return;
     this.activeSubjectFilter =
       this.activeSubjectFilter === subject ? '' : subject;
-    this.applyNoteFilters();
+    this.eseguiRicerca();
+  }
+
+  setFacultyFilter(faculty: string): void {
+    const nextValue = this.activeFacultyFilter === faculty ? '' : faculty;
+    this.activeFacultyFilter = nextValue;
+    this.activeSubjectFilter = '';
+    this.refreshBrowseFiltersAndNotes();
   }
 
   setSortMode(mode: SortMode): void {
@@ -159,25 +173,31 @@ export class NotesPage implements OnInit, OnDestroy {
   get activeFilterCount(): number {
     let count = 0;
     if (this.activeFileFilter) count++;
-    if (this.activeSubjectFilter) count++;
+    if (this.activeFacultyFilter) count++;
+    if (this.canFilterBySubject && this.activeSubjectFilter) count++;
     if (this.sortMode !== 'newest') count++;
     return count;
   }
 
   clearAllFilters(): void {
     this.activeFileFilter = '';
+    this.activeFacultyFilter = '';
     this.activeSubjectFilter = '';
     this.sortMode = 'newest';
-    this.applyNoteFilters();
+    this.refreshBrowseFiltersAndNotes();
   }
 
   onFacultyScopeChange(showAll: boolean): void {
     if (!this.myFacultyLabel) return;
     if (this.showAllFaculties === showAll) return;
     this.showAllFaculties = showAll;
+    this.activeSubjectFilter = '';
+    if (!showAll) {
+      this.activeFacultyFilter = '';
+    }
     this.allNotes = [];
     this.filteredNotes = [];
-    this.eseguiRicerca();
+    this.refreshBrowseFiltersAndNotes();
   }
 
   get facultyScopeTitle(): string {
@@ -194,6 +214,10 @@ export class NotesPage implements OnInit, OnDestroy {
       return `${count} ${label} da tutte le facoltà`;
     }
     return `${count} ${label} della tua facoltà`;
+  }
+
+  get canFilterBySubject(): boolean {
+    return this.currentScope === 'faculty' && this.browseSubjectOptions.length > 0;
   }
 
   get resultCountLabel(): string {
@@ -306,6 +330,13 @@ export class NotesPage implements OnInit, OnDestroy {
 
   async submitUpload(): Promise<void> {
     if (this.uploading) return;
+    if (!this.uploadSubjectOptions.length) {
+      await this.showToast(
+        'Completa il corso di laurea triennale nel profilo per scegliere una materia valida',
+        'warning'
+      );
+      return;
+    }
     if (!this.selectedFile) {
       await this.showToast('Seleziona un file prima di caricare', 'warning');
       return;
@@ -315,6 +346,10 @@ export class NotesPage implements OnInit, OnDestroy {
     const materia = this.uploadSubject.trim();
     if (!titolo || !materia) {
       await this.showToast('Titolo e materia sono obbligatori', 'warning');
+      return;
+    }
+    if (!this.uploadSubjectOptions.includes(materia)) {
+      await this.showToast('Seleziona una materia valida per il tuo corso', 'warning');
       return;
     }
 
@@ -546,9 +581,17 @@ export class NotesPage implements OnInit, OnDestroy {
   eseguiRicerca() {
     const requestId = ++this.notesRequestId;
     const scope = this.currentScope;
+    const subjectFilter = scope === 'faculty' ? this.activeSubjectFilter : '';
     this.loading = true;
 
-    this.apiService.getAppunti(this.query, '', scope).subscribe({
+    this.apiService
+      .getAppunti(
+        this.query,
+        subjectFilter,
+        scope,
+        this.currentBrowseFacultyFilter
+      )
+      .subscribe({
       next: (res) => {
         if (requestId !== this.notesRequestId) return;
         this.allNotes = Array.isArray(res) ? res : [];
@@ -566,7 +609,7 @@ export class NotesPage implements OnInit, OnDestroy {
         this.applyNoteFilters();
         this.loading = false;
       },
-    });
+      });
   }
 
   private applyNoteFilters(): void {
@@ -584,6 +627,12 @@ export class NotesPage implements OnInit, OnDestroy {
     if (this.activeFileFilter) {
       filtered = filtered.filter(
         (n) => n.tipoFile === this.activeFileFilter
+      );
+    }
+
+    if (this.currentBrowseFacultyFilter) {
+      filtered = filtered.filter(
+        (n) => this.normalizeText(this.getNoteFaculty(n)) === this.normalizeText(this.currentBrowseFacultyFilter)
       );
     }
 
@@ -621,6 +670,11 @@ export class NotesPage implements OnInit, OnDestroy {
 
   private get currentScope(): 'all' | 'faculty' {
     return this.myFacultyLabel && !this.showAllFaculties ? 'faculty' : 'all';
+  }
+
+  private get currentBrowseFacultyFilter(): string {
+    if (this.currentScope !== 'all') return '';
+    return String(this.activeFacultyFilter || '').trim();
   }
 
   private normalizeText(value: unknown): string {
@@ -664,10 +718,8 @@ export class NotesPage implements OnInit, OnDestroy {
     this.apiService.getNoteSubjects('faculty', 'upload').subscribe({
       next: (result) => {
         if (requestId !== this.uploadSubjectsRequestId) return;
-        const subjects = Array.isArray(result?.subjects)
-          ? result.subjects
-          : [];
-        this.subjectOptions = subjects;
+        const subjects = Array.isArray(result?.subjects) ? result.subjects : [];
+        this.uploadSubjectOptions = subjects;
         if (
           this.uploadSubject &&
           !subjects.includes(this.uploadSubject)
@@ -676,16 +728,71 @@ export class NotesPage implements OnInit, OnDestroy {
         }
         this.syncDefaultUploadSubject();
         this.myFacultyLabel = String(result?.faculty || '').trim();
+        this.myCourseLabel = String(result?.course || '').trim();
         if (!this.myFacultyLabel) {
           this.showAllFaculties = true;
         }
-        this.eseguiRicerca();
+        this.refreshBrowseFiltersAndNotes();
       },
       error: () => {
         if (requestId !== this.uploadSubjectsRequestId) return;
-        this.subjectOptions = [];
+        this.uploadSubjectOptions = [];
         this.myFacultyLabel = '';
+        this.myCourseLabel = '';
         this.showAllFaculties = true;
+        this.refreshBrowseFiltersAndNotes();
+      },
+    });
+  }
+
+  private refreshBrowseFiltersAndNotes(): void {
+    const requestId = ++this.browseFiltersRequestId;
+    const scope = this.currentScope;
+    const selectedFaculty = this.currentBrowseFacultyFilter;
+
+    this.apiService.getNoteSubjects(scope, 'browse', selectedFaculty).subscribe({
+      next: (result) => {
+        if (requestId !== this.browseFiltersRequestId) return;
+
+        const nextFaculties = Array.isArray(result?.faculties)
+          ? result.faculties
+          : [];
+        const nextSubjects = Array.isArray(result?.subjects)
+          ? result.subjects
+          : [];
+
+        this.facultyOptions = nextFaculties;
+        this.browseSubjectOptions = nextSubjects;
+
+        if (
+          this.activeFacultyFilter &&
+          this.currentScope === 'all' &&
+          !nextFaculties.includes(this.activeFacultyFilter)
+        ) {
+          this.activeFacultyFilter = '';
+          this.refreshBrowseFiltersAndNotes();
+          return;
+        }
+
+        if (
+          this.activeSubjectFilter &&
+          !nextSubjects.includes(this.activeSubjectFilter)
+        ) {
+          this.activeSubjectFilter = '';
+        }
+
+        this.eseguiRicerca();
+      },
+      error: () => {
+        if (requestId !== this.browseFiltersRequestId) return;
+        this.facultyOptions = [];
+        this.browseSubjectOptions = [];
+        if (this.activeFacultyFilter) {
+          this.activeFacultyFilter = '';
+        }
+        if (this.activeSubjectFilter) {
+          this.activeSubjectFilter = '';
+        }
         this.eseguiRicerca();
       },
     });
@@ -748,8 +855,8 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   private syncDefaultUploadSubject(): void {
-    if (!this.uploadSubject && this.subjectOptions.length === 1) {
-      this.uploadSubject = this.subjectOptions[0];
+    if (!this.uploadSubject && this.uploadSubjectOptions.length === 1) {
+      this.uploadSubject = this.uploadSubjectOptions[0];
     }
   }
 
