@@ -3,20 +3,20 @@
 }
 
 .editor-shell {
-  --surface: #ffffff;
-  --surface-soft: #f6f9ff;
-  --line: #d8e5ff;
-  --text: #15233a;
-  --muted: #60708a;
-  --primary: #6f8ef6;
-  --primary-strong: #5577ef;
-  --shadow: 0 18px 40px rgba(68, 102, 187, 0.16);
+  --surface: var(--app-surface);
+  --surface-soft: var(--app-surface-soft);
+  --line: var(--app-line-strong);
+  --text: var(--app-text-primary);
+  --muted: var(--app-text-secondary);
+  --primary: var(--app-primary);
+  --primary-strong: var(--app-primary-strong);
+  --shadow: var(--app-shadow-floating);
   background:
-    radial-gradient(circle at top left, rgba(146, 178, 255, 0.18), transparent 42%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%);
+    radial-gradient(circle at top left, var(--app-editor-glow), transparent 42%),
+    linear-gradient(180deg, var(--app-editor-gradient-start) 0%, var(--app-editor-gradient-end) 100%);
   color: var(--text);
   border-radius: 28px 28px 0 0;
-  border: 1px solid rgba(216, 229, 255, 0.9);
+  border: 1px solid var(--app-card-border);
   box-shadow: var(--shadow);
   padding: 14px 20px 22px;
 }
@@ -32,7 +32,7 @@
   width: 52px;
   height: 5px;
   border-radius: 999px;
-  background: #b8c9ef;
+  background: var(--app-line-strong);
   margin: 0 auto 18px;
 }
 
@@ -61,7 +61,7 @@
 
 .close-btn {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--app-surface-glass);
   color: var(--muted);
   border-radius: 14px;
   padding: 10px 14px;
@@ -81,14 +81,14 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6f7f98;
+  color: var(--app-text-secondary);
 }
 
 .field > span em {
   text-transform: none;
   letter-spacing: normal;
   font-style: normal;
-  color: #8fa0bb;
+  color: var(--app-text-muted);
   font-weight: 700;
 }
 
@@ -104,10 +104,10 @@
   width: 88px;
   height: 88px;
   border-radius: 24px;
-  background: linear-gradient(180deg, #f4f7ff 0%, #e8f0ff 100%);
+  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-primary-soft) 100%);
   border: 1px solid var(--line);
   padding: 6px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 var(--app-card-border);
 
   img {
     width: 100%;
@@ -120,8 +120,8 @@
 
 .upload-area {
   width: 100%;
-  border: 1px dashed #b8c9ef;
-  background: rgba(255, 255, 255, 0.58);
+  border: 1px dashed var(--line);
+  background: var(--app-surface-elevated);
   border-radius: 22px;
   padding: 18px 20px;
   text-align: left;
@@ -164,7 +164,7 @@
   textarea {
     width: 100%;
     border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.88);
+    background: var(--app-surface-elevated);
     border-radius: 18px;
     padding: 14px 16px;
     margin-top: 8px;
@@ -172,14 +172,14 @@
     font-size: 0.96rem;
     font-family: inherit;
     outline: none;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    box-shadow: inset 0 1px 0 var(--app-card-border);
   }
 
   select {
     appearance: none;
     background-image:
-      linear-gradient(45deg, transparent 50%, #7d91b8 50%),
-      linear-gradient(135deg, #7d91b8 50%, transparent 50%);
+      linear-gradient(45deg, transparent 50%, var(--app-text-muted) 50%),
+      linear-gradient(135deg, var(--app-text-muted) 50%, transparent 50%);
     background-position:
       calc(100% - 18px) calc(50% - 2px),
       calc(100% - 12px) calc(50% - 2px);
@@ -202,7 +202,7 @@
   text-align: right;
   margin-top: 8px;
   font-size: 0.76rem;
-  color: #8fa0bb;
+  color: var(--app-text-muted);
 }
 
 .editor-footer {
@@ -218,7 +218,7 @@
   font-size: 1rem;
   font-weight: 800;
   padding: 16px 18px;
-  box-shadow: 0 14px 28px rgba(111, 142, 246, 0.28);
+  box-shadow: var(--app-shadow-button);
 }
 
 .save-btn:disabled {

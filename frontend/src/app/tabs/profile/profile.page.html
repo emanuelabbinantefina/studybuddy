@@ -104,7 +104,16 @@
             <ion-icon name="contrast-outline"></ion-icon>
             <span>Tema</span>
           </div>
-          <span class="setting-value">Light</span>
+          <div class="setting-actions">
+            <span class="setting-value">{{ themeLabel }}</span>
+            <button
+              class="toggle-btn"
+              [class.toggle-btn--on]="isDarkMode"
+              (click)="toggleTheme()"
+            >
+              <span class="toggle-dot"></span>
+            </button>
+          </div>
         </div>
       </div>
     </section>

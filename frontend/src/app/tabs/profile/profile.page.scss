@@ -1,25 +1,25 @@
-$bg-page: #f7f8fc;
-$bg-card: #ffffff;
-$bg-card-hover: #f1f3f9;
-$text-primary: #1f2940;
-$text-secondary: #65708b;
-$text-muted: #9aa3ba;
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface);
+$bg-card-hover: var(--app-surface-alt);
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
 
-$primary: #4f6bff;
-$primary-soft: #e8edff;
-$accent: #ff9f6e;
-$accent-soft: #fff1e8;
-$green: #23b38a;
-$green-soft: #ddf8ef;
-$red: #ef6b73;
-$red-soft: #ffe4e7;
+$primary: var(--app-primary);
+$primary-soft: var(--app-primary-soft);
+$accent: var(--app-accent);
+$accent-soft: var(--app-accent-soft);
+$green: var(--app-green);
+$green-soft: var(--app-green-soft);
+$red: var(--app-red);
+$red-soft: var(--app-red-soft);
 
 $radius-sm: 14px;
 $radius-md: 18px;
 $radius-lg: 24px;
 $radius-xl: 28px;
 $radius-full: 9999px;
-$shadow-card: 0 4px 16px rgba(79, 107, 255, 0.05);
+$shadow-card: var(--app-shadow-card);
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -167,7 +167,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 12px;
   padding: 8px 16px;
   background: $bg-card;
-  border: 1px solid #eef0f7;
+  border: 1px solid var(--app-line-soft);
   border-radius: $radius-full;
   font-family: $font-body;
   font-size: 0.76rem;
@@ -216,7 +216,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   gap: 3px;
   padding: 10px 8px;
-  background: #fafbfc;
+  background: var(--app-surface-soft);
   border-radius: 14px;
   min-height: 64px;
 }
@@ -343,12 +343,18 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: $text-muted;
 }
 
+.setting-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .toggle-btn {
   width: 44px;
   height: 26px;
   border-radius: $radius-full;
   border: none;
-  background: #dce0ed;
+  background: var(--app-line-strong);
   position: relative;
   cursor: pointer;
   transition: background $transition;
@@ -365,7 +371,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #fff;
+  background: $bg-card;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: transform $transition;
 
@@ -377,7 +383,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .account-section {
   margin-top: 24px;
   padding: 18px 0 28px;
-  border-top: 1px solid #eef0f7;
+  border-top: 1px solid var(--app-line-soft);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -453,7 +459,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .modal-handle {
   width: 36px;
   height: 4px;
-  background: #d3d8e8;
+  background: var(--app-line-strong);
   border-radius: $radius-full;
   margin: 0 auto 24px;
 }
@@ -534,7 +540,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 20px;
   padding: 0 16px;
   background: $bg-card;
-  border: 1.5px solid #eef0f7;
+  border: 1.5px solid var(--app-line-soft);
   border-radius: $radius-md;
   font-size: 0.95rem;
   font-weight: 600;
@@ -593,7 +599,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 14px;
   background: $bg-card;
   color: $text-secondary;
-  border: 1.5px solid #eef0f7;
+  border: 1.5px solid var(--app-line-soft);
   border-radius: $radius-full;
   font-weight: 600;
   cursor: pointer;

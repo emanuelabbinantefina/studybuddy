@@ -1,23 +1,23 @@
-$bg-page: #f2f2f7;
-$bg-card: #ffffff;
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface);
 
-$text-primary: #1a1a2e;
-$text-secondary: #6b6b80;
-$text-muted: #a0a0b2;
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
 
-$primary: #4f6bff;
-$primary-light: #e8edff;
+$primary: var(--app-primary);
+$primary-light: var(--app-primary-soft);
 
-$pink: #ec4899;
-$pink-light: #fce7f3;
+$pink: var(--app-pink);
+$pink-light: var(--app-pink-soft);
 
-$blue: #3b82f6;
-$blue-light: #dbeafe;
+$blue: var(--app-blue);
+$blue-light: var(--app-blue-soft);
 
-$green: #10b981;
-$green-light: #d1fae5;
+$green: var(--app-green);
+$green-light: var(--app-green-soft);
 
-$orange: #f59e0b;
+$orange: var(--app-orange);
 
 $radius-sm: 14px;
 $radius-md: 18px;
@@ -25,10 +25,8 @@ $radius-lg: 24px;
 $radius-xl: 28px;
 $radius-full: 9999px;
 
-$shadow-card: 0 2px 16px rgba(0, 0, 0, 0.04),
-  0 1px 4px rgba(0, 0, 0, 0.03);
-$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.06),
-  0 2px 8px rgba(0, 0, 0, 0.03);
+$shadow-card: var(--app-shadow-card);
+$shadow-lg: var(--app-shadow-lg);
 
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;

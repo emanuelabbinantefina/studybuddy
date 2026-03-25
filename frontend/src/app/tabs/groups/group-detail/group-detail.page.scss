@@ -1,28 +1,28 @@
-$bg-page: #f7f8fc;
-$bg-card: #ffffff;
-$bg-card-hover: #f1f3f9;
-$bg-soft: #fafbfc;
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface);
+$bg-card-hover: var(--app-surface-alt);
+$bg-soft: var(--app-surface-soft);
 
-$text-primary: #1f2940;
-$text-secondary: #65708b;
-$text-muted: #9aa3ba;
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
 
-$primary: #4f6bff;
-$primary-soft: #e8edff;
+$primary: var(--app-primary);
+$primary-soft: var(--app-primary-soft);
 
-$accent: #ff9f6e;
-$accent-soft: #fff1e8;
+$accent: var(--app-accent);
+$accent-soft: var(--app-accent-soft);
 
-$green: #23b38a;
-$green-soft: #ddf8ef;
+$green: var(--app-green);
+$green-soft: var(--app-green-soft);
 
-$orange: #f4b740;
-$orange-soft: #fff4d6;
+$orange: var(--app-orange);
+$orange-soft: var(--app-orange-soft);
 
-$red: #ef6b73;
-$red-soft: #ffe4e7;
+$red: var(--app-red);
+$red-soft: var(--app-red-soft);
 
-$line: #e6eaf5;
+$line: var(--app-line);
 
 $radius-sm: 14px;
 $radius-md: 16px;
@@ -30,9 +30,9 @@ $radius-lg: 20px;
 $radius-xl: 24px;
 $radius-full: 9999px;
 
-$shadow-card: 0 6px 20px rgba(79, 107, 255, 0.06);
-$shadow-card-soft: 0 4px 16px rgba(79, 107, 255, 0.04);
-$shadow-btn: 0 4px 16px rgba(79, 107, 255, 0.18);
+$shadow-card: var(--app-shadow-card);
+$shadow-card-soft: var(--app-shadow-card-soft);
+$shadow-btn: var(--app-shadow-button);
 
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;

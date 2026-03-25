@@ -12,7 +12,7 @@
   justify-content: center;
   align-items: flex-start;
   padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 90px);
-  background: rgba(248, 250, 252, 0.62);
+  background: var(--app-surface-overlay);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   pointer-events: auto;
@@ -32,12 +32,12 @@
   gap: 10px;
   border-radius: 16px;
   padding: 0 10px 0 14px;
-  border: 1px solid #93c5fd;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+  border: 1px solid var(--app-line-strong);
+  background: var(--app-surface-elevated);
+  box-shadow: var(--app-shadow-card);
 
   ion-icon {
-    color: #2563eb;
+    color: var(--app-primary);
     font-size: 1.15rem;
     flex-shrink: 0;
   }
@@ -47,12 +47,12 @@
   flex: 1;
   border: 0;
   background: transparent;
-  color: #0f172a;
+  color: var(--app-text-primary);
   font-size: 1rem;
   outline: none;
 
   &::placeholder {
-    color: #64748b;
+    color: var(--app-text-secondary);
   }
 }
 
@@ -61,8 +61,8 @@
   height: 34px;
   border: 0;
   border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,19 +75,19 @@
 }
 
 .chip {
-  border: 1px solid #cbd5e1;
-  background: rgba(255, 255, 255, 0.9);
-  color: #475569;
+  border: 1px solid var(--app-line);
+  background: var(--app-surface-elevated);
+  color: var(--app-text-secondary);
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 0.85rem;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
   &.active {
-    border-color: #2563eb;
-    color: #1d4ed8;
-    background: #dbeafe;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    border-color: var(--app-primary);
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    box-shadow: 0 0 0 2px rgba(79, 107, 255, 0.14);
   }
 }
 
@@ -99,16 +99,16 @@
 .tab-btn {
   flex: 1;
   height: 38px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--app-line);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #64748b;
+  background: var(--app-surface-elevated);
+  color: var(--app-text-secondary);
   font-weight: 600;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 
   &.active {
-    border-color: #2563eb;
-    background: #2563eb;
+    border-color: var(--app-primary);
+    background: var(--app-primary);
     color: #ffffff;
   }
 }
@@ -131,9 +131,9 @@
   gap: 12px;
   padding: 12px;
   border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--app-line);
+  background: var(--app-surface-elevated);
+  box-shadow: var(--app-shadow-card);
 }
 
 .icon-box {
@@ -229,11 +229,11 @@
 
 .empty-state {
   margin: 6px 0 0;
-  color: #64748b;
+  color: var(--app-text-secondary);
   font-size: 0.9rem;
   text-align: center;
   padding: 18px 8px;
   border-radius: 12px;
-  border: 1px dashed #cbd5e1;
-  background: rgba(255, 255, 255, 0.8);
+  border: 1px dashed var(--app-line);
+  background: var(--app-surface-elevated);
 }

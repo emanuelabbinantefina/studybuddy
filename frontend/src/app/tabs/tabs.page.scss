@@ -1,13 +1,13 @@
-$bg-page: #f7f8fc;
-$bg-card: #ffffff;
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface);
 
-$text-primary: #1f2940;
-$text-secondary: #65708b;
-$text-muted: #9aa3ba;
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
 
-$primary: #4f6bff;
-$primary-soft: #e8edff;
-$accent: #ff9f6e;
+$primary: var(--app-primary);
+$primary-soft: var(--app-primary-soft);
+$accent: var(--app-accent);
 
 $radius-xl: 28px;
 $radius-full: 9999px;

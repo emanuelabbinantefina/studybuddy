@@ -33,16 +33,129 @@
  */
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.class.css";
 
 :root {
   color-scheme: light;
+  --app-bg-page: #f7f8fc;
+  --app-page-gradient-start: #ffffff;
+  --app-page-gradient-end: #f7f8fc;
+  --app-surface: #ffffff;
+  --app-surface-soft: #fafbfc;
+  --app-surface-alt: #f1f3f9;
+  --app-surface-glass: rgba(255, 255, 255, 0.72);
+  --app-surface-glass-strong: rgba(255, 255, 255, 0.96);
+  --app-surface-elevated: rgba(255, 255, 255, 0.88);
+  --app-surface-overlay: rgba(248, 250, 252, 0.62);
+  --app-card-border: rgba(255, 255, 255, 0.6);
+  --app-text-primary: #1f2940;
+  --app-text-secondary: #65708b;
+  --app-text-muted: #9aa3ba;
+  --app-line: #e6eaf5;
+  --app-line-soft: #eef0f7;
+  --app-line-strong: #d8e5ff;
+  --app-primary: #4f6bff;
+  --app-primary-strong: #5577ef;
+  --app-primary-soft: #e8edff;
+  --app-accent: #ff9f6e;
+  --app-accent-soft: #fff1e8;
+  --app-green: #23b38a;
+  --app-green-soft: #ddf8ef;
+  --app-red: #ef6b73;
+  --app-red-soft: #ffe4e7;
+  --app-orange: #f4b740;
+  --app-orange-soft: #fff4d6;
+  --app-blue: #3b82f6;
+  --app-blue-soft: #dbeafe;
+  --app-pink: #ec4899;
+  --app-pink-soft: #fce7f3;
+  --app-cyan: #38bdf8;
+  --app-cyan-soft: #e0f2fe;
+  --app-shadow-card: 0 4px 16px rgba(79, 107, 255, 0.05);
+  --app-shadow-card-soft: 0 4px 16px rgba(79, 107, 255, 0.04);
+  --app-shadow-floating: 0 18px 50px rgba(79, 107, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.04);
+  --app-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  --app-shadow-button: 0 4px 16px rgba(79, 107, 255, 0.22);
+  --app-blob-primary: rgba(79, 107, 255, 0.2);
+  --app-blob-secondary: rgba(35, 179, 138, 0.15);
+  --app-blob-accent: rgba(255, 159, 110, 0.15);
+  --app-editor-glow: rgba(146, 178, 255, 0.18);
+  --app-editor-gradient-start: #f8fbff;
+  --app-editor-gradient-end: #f2f7ff;
+  --ion-background-color: var(--app-bg-page);
+  --ion-background-color-rgb: 247, 248, 252;
+  --ion-text-color: var(--app-text-primary);
+  --ion-text-color-rgb: 31, 41, 64;
+  --ion-card-background: var(--app-surface);
+  --ion-toolbar-background: var(--app-surface);
+  --ion-item-background: var(--app-surface);
+  --ion-color-primary: var(--app-primary);
+}
+
+html.app-theme-dark,
+body.app-theme-dark {
+  color-scheme: dark;
+  --app-bg-page: #0a1120;
+  --app-page-gradient-start: #101a30;
+  --app-page-gradient-end: #0a1120;
+  --app-surface: #121a2b;
+  --app-surface-soft: #162033;
+  --app-surface-alt: #1a253a;
+  --app-surface-glass: rgba(18, 26, 43, 0.8);
+  --app-surface-glass-strong: rgba(15, 22, 36, 0.96);
+  --app-surface-elevated: rgba(20, 29, 47, 0.92);
+  --app-surface-overlay: rgba(7, 10, 18, 0.72);
+  --app-card-border: rgba(145, 163, 204, 0.12);
+  --app-text-primary: #e8eefb;
+  --app-text-secondary: #b6c2dc;
+  --app-text-muted: #8390ac;
+  --app-line: #283650;
+  --app-line-soft: #202c44;
+  --app-line-strong: #36496e;
+  --app-primary: #7d93ff;
+  --app-primary-strong: #95a6ff;
+  --app-primary-soft: rgba(125, 147, 255, 0.18);
+  --app-accent: #ffb07c;
+  --app-accent-soft: rgba(255, 176, 124, 0.18);
+  --app-green: #34d3a2;
+  --app-green-soft: rgba(52, 211, 162, 0.16);
+  --app-red: #ff808a;
+  --app-red-soft: rgba(255, 128, 138, 0.16);
+  --app-orange: #ffc76d;
+  --app-orange-soft: rgba(255, 199, 109, 0.18);
+  --app-blue: #60a5fa;
+  --app-blue-soft: rgba(96, 165, 250, 0.16);
+  --app-pink: #f472b6;
+  --app-pink-soft: rgba(244, 114, 182, 0.16);
+  --app-cyan: #67e8f9;
+  --app-cyan-soft: rgba(103, 232, 249, 0.16);
+  --app-shadow-card: 0 10px 28px rgba(0, 0, 0, 0.28);
+  --app-shadow-card-soft: 0 8px 24px rgba(0, 0, 0, 0.22);
+  --app-shadow-floating: 0 22px 60px rgba(0, 0, 0, 0.42), 0 8px 22px rgba(0, 0, 0, 0.24);
+  --app-shadow-lg: 0 22px 56px rgba(0, 0, 0, 0.38), 0 8px 22px rgba(0, 0, 0, 0.24);
+  --app-shadow-button: 0 8px 24px rgba(15, 23, 42, 0.45);
+  --app-blob-primary: rgba(125, 147, 255, 0.18);
+  --app-blob-secondary: rgba(52, 211, 162, 0.12);
+  --app-blob-accent: rgba(255, 176, 124, 0.12);
+  --app-editor-glow: rgba(125, 147, 255, 0.2);
+  --app-editor-gradient-start: #121b2e;
+  --app-editor-gradient-end: #0e1525;
+  --ion-background-color: var(--app-bg-page);
+  --ion-background-color-rgb: 10, 17, 32;
+  --ion-text-color: var(--app-text-primary);
+  --ion-text-color-rgb: 232, 238, 251;
+  --ion-card-background: var(--app-surface);
+  --ion-toolbar-background: var(--app-surface);
+  --ion-item-background: var(--app-surface);
 }
 
 html,
 body,
 ion-app {
-  color-scheme: light;
+  color-scheme: inherit;
+  background: var(--app-bg-page);
+  color: var(--app-text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 button,
@@ -55,6 +168,36 @@ select {
 img {
   max-width: 100%;
   display: block;
+}
+
+ion-content,
+ion-modal,
+ion-app {
+  --background: var(--app-bg-page);
+  --color: var(--app-text-primary);
+}
+
+html.app-theme-dark .login-page,
+html.app-theme-dark .register-page,
+html.app-theme-dark .forgot-page,
+html.app-theme-dark .complete-profile-layout,
+html.app-theme-dark .modal-bg,
+html.app-theme-dark .notes-upload-sheet {
+  color: var(--app-text-primary);
+}
+
+html.app-theme-dark .global-topbar {
+  background: rgba(10, 17, 32, 0.84);
+  border-bottom-color: rgba(145, 163, 204, 0.12);
+}
+
+html.app-theme-dark .custom-tab-bar {
+  border-top-color: rgba(145, 163, 204, 0.12) !important;
+  box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.35);
+}
+
+html.app-theme-dark ion-modal.create-group-modal::part(content) {
+  --background: transparent;
 }
 
 ion-modal.create-group-modal::part(content) {

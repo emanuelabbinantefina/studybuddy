@@ -1,14 +1,14 @@
-$bg-page: #f7f8fc;
-$bg-card: rgba(255, 255, 255, 0.72);
-$bg-input: rgba(255, 255, 255, 0.88);
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface-glass);
+$bg-input: var(--app-surface-elevated);
 
-$text-primary: #1f2940;
-$text-secondary: #65708b;
-$text-muted: #9aa3ba;
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
 
-$primary: #4f6bff;
-$accent: #ff9f6e;
-$red: #ef6b73;
+$primary: var(--app-primary);
+$accent: var(--app-accent);
+$red: var(--app-red);
 
 $radius-sm: 14px;
 $radius-md: 18px;
@@ -16,7 +16,7 @@ $radius-lg: 24px;
 $radius-xl: 32px;
 $radius-full: 9999px;
 
-$shadow-card: 0 18px 50px rgba(79, 107, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.04);
+$shadow-card: var(--app-shadow-floating);
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
@@ -30,10 +30,10 @@ $font-body: 'Inter', -apple-system, sans-serif;
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at 15% 20%, rgba(79, 107, 255, 0.15), transparent 28%),
-    radial-gradient(circle at 85% 18%, rgba(35, 179, 138, 0.1), transparent 24%),
-    radial-gradient(circle at 70% 75%, rgba(255, 159, 110, 0.15), transparent 24%),
-    linear-gradient(180deg, #ffffff 0%, #f7f8fc 100%);
+    radial-gradient(circle at 15% 20%, var(--app-blob-primary), transparent 28%),
+    radial-gradient(circle at 85% 18%, var(--app-blob-secondary), transparent 24%),
+    radial-gradient(circle at 70% 75%, var(--app-blob-accent), transparent 24%),
+    linear-gradient(180deg, var(--app-page-gradient-start) 0%, var(--app-page-gradient-end) 100%);
 }
 
 .register-shell {
@@ -58,7 +58,7 @@ $font-body: 'Inter', -apple-system, sans-serif;
   &--1 {
     width: 220px;
     height: 220px;
-    background: rgba(79, 107, 255, 0.2);
+    background: var(--app-blob-primary);
     top: -40px;
     left: -70px;
   }
@@ -66,7 +66,7 @@ $font-body: 'Inter', -apple-system, sans-serif;
   &--2 {
     width: 180px;
     height: 180px;
-    background: rgba(35, 179, 138, 0.15);
+    background: var(--app-blob-secondary);
     top: 35%;
     right: -60px;
   }
@@ -74,7 +74,7 @@ $font-body: 'Inter', -apple-system, sans-serif;
   &--3 {
     width: 200px;
     height: 200px;
-    background: rgba(255, 159, 110, 0.15);
+    background: var(--app-blob-accent);
     bottom: -40px;
     left: 20%;
   }
@@ -118,7 +118,7 @@ $font-body: 'Inter', -apple-system, sans-serif;
   background: $bg-card;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--app-card-border);
   border-radius: $radius-xl;
   padding: 22px 18px 20px;
   box-shadow: $shadow-card;

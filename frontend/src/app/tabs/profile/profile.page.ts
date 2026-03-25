@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { Appunto, Gruppo, UserProfile } from '../../core/interfaces/models';
 import { ApiService } from '../../core/services/api.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { UserService } from '../../core/services/user.service';
 import { ProfileEditorComponent } from '../../shared/profile-editor/profile-editor.component';
 
@@ -44,6 +45,7 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   // === SETTINGS ===
   notificationsEnabled = true;
+  isDarkMode = false;
 
   // === EDIT ===
   isEditModalOpen = false;
@@ -59,12 +61,23 @@ export class ProfilePage implements OnInit, OnDestroy {
   constructor(
     private readonly userService: UserService,
     private readonly apiService: ApiService,
+    private readonly themeService: ThemeService,
     private readonly navCtrl: NavController,
     private readonly toastCtrl: ToastController,
     private readonly router: Router
   ) {}
 
   ngOnInit(): void {
+    this.notificationsEnabled =
+      localStorage.getItem('notifications_enabled') !== 'false';
+
+    this.themeService
+      .mode$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((mode) => {
+        this.isDarkMode = mode === 'dark';
+      });
+
     this.userService
       .getProfile()
       .pipe(takeUntil(this.destroy$))
@@ -145,6 +158,14 @@ export class ProfilePage implements OnInit, OnDestroy {
       'notifications_enabled',
       this.notificationsEnabled.toString()
     );
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleMode();
+  }
+
+  get themeLabel(): string {
+    return this.isDarkMode ? 'Dark' : 'Light';
   }
 
   // ═══════════════════════════
