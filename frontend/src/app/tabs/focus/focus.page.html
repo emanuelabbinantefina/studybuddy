@@ -1,21 +1,32 @@
 <ion-content [fullscreen]="true" class="focus-content">
 
   <!-- ═══ HEADER ═══ -->
-<div class="focus-page-header">
-  <button class="back-btn" (click)="goBack()">
-    <ion-icon name="arrow-back"></ion-icon>
-  </button>
-  <div class="header-center">
-    <h1 class="page-title">Focus del giorno</h1>
-    <p class="page-date">{{ todayDateLabel }}</p>
+  <div class="focus-page-header">
+    <button class="back-btn" (click)="goBack()">
+      <ion-icon name="arrow-back"></ion-icon>
+    </button>
+    <div class="header-center">
+      <h1 class="page-title">Focus del giorno</h1>
+      <p class="page-date">{{ todayDateLabel }}</p>
+    </div>
   </div>
-</div>
 
   <!-- ═══ POMODORO TIMER ═══ -->
   <div class="timer-section">
-    <div class="timer-card" [class.timer-card--break]="isBreak">
+    <div 
+      class="timer-card" 
+      [class.timer-card--break]="isBreak"
+      [class.timer-card--completed]="showCompletionAnimation"
+    >
 
-      <div class="timer-ring-wrapper">
+      <!-- ✅ Animazione completamento -->
+      <div class="completion-overlay" *ngIf="showCompletionAnimation">
+        <div class="completion-icon">🎉</div>
+        <div class="completion-text">Ottimo lavoro!</div>
+        <div class="completion-subtext">+1 Pomodoro completato</div>
+      </div>
+
+      <div class="timer-ring-wrapper" [class.timer-ring-wrapper--hidden]="showCompletionAnimation">
         <svg viewBox="0 0 36 36" class="timer-ring">
           <path
             class="timer-ring-bg"
@@ -45,10 +56,10 @@
         placeholder="Cosa studi? (opzionale)"
         [(ngModel)]="currentSessionSubject"
         [disabled]="timerState === 'running'"
-        *ngIf="!isBreak"
+        *ngIf="!isBreak && !showCompletionAnimation"
       />
 
-      <div class="timer-controls">
+      <div class="timer-controls" *ngIf="!showCompletionAnimation">
         <button
           class="timer-btn timer-btn--reset"
           (click)="resetTimer()"
@@ -72,7 +83,7 @@
         </button>
       </div>
 
-      <div class="pomodoro-dots">
+      <div class="pomodoro-dots" *ngIf="!showCompletionAnimation">
         <span
           class="pomo-dot"
           [class.pomo-dot--filled]="i < completedPomodoros"

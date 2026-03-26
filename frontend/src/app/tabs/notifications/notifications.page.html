@@ -13,32 +13,74 @@
         <p *ngIf="unreadCount === 0">Tutto aggiornato ✨</p>
       </div>
 
+      <!-- Pulsanti azioni -->
+      <div class="top-actions" *ngIf="notifications.length > 0">
+        <button
+          type="button"
+          class="action-btn action-btn--clear"
+          (click)="confirmClearAll()"
+        >
+          <ion-icon name="trash-outline"></ion-icon>
+          <span>Elimina tutte</span>
+        </button>
+
+        <button
+          type="button"
+          class="action-btn action-btn--mark"
+          *ngIf="unreadCount > 0"
+          (click)="markAllAsRead()"
+        >
+          <ion-icon name="checkmark-done-outline"></ion-icon>
+          <span>Segna tutte</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtri -->
+    <div class="filters-bar" *ngIf="notifications.length > 0">
       <button
         type="button"
-        class="mark-btn"
-        *ngIf="notifications.length > 0"
-        (click)="markAllAsRead()"
+        class="filter-chip"
+        [class.filter-chip--active]="currentFilter === 'all'"
+        (click)="setFilter('all')"
       >
-        Segna tutte
+        Tutte ({{ notifications.length }})
+      </button>
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip--active]="currentFilter === 'unread'"
+        (click)="setFilter('unread')"
+      >
+        Non lette ({{ unreadCount }})
+      </button>
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip--active]="currentFilter === 'read'"
+        (click)="setFilter('read')"
+      >
+        Lette ({{ readCount }})
       </button>
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" *ngIf="notifications.length === 0">
+    <div class="empty-state" *ngIf="filteredNotifications.length === 0" @fadeIn>
       <div class="empty-icon">
         <ion-icon name="notifications-off-outline"></ion-icon>
       </div>
-      <h3>Nessuna notifica</h3>
-      <p>Quando succede qualcosa di importante, la vedrai qui.</p>
+      <h3>{{ emptyStateTitle }}</h3>
+      <p>{{ emptyStateMessage }}</p>
     </div>
 
     <!-- List -->
-    <div class="notifications-list" *ngIf="notifications.length > 0">
+    <div class="notifications-list" *ngIf="filteredNotifications.length > 0">
       <article
         class="notification-card"
         [class.notification-card--unread]="!notification.read"
-        *ngFor="let notification of notifications; trackBy: trackById"
+        *ngFor="let notification of filteredNotifications; trackBy: trackById"
         (click)="openNotification(notification)"
+        @listItem
       >
         <div class="notif-icon" [ngClass]="notificationClass(notification.type)">
           <ion-icon [name]="notificationIcon(notification.type)"></ion-icon>
@@ -62,10 +104,10 @@
         <button
           type="button"
           class="notif-remove"
-          (click)="removeNotification(notification, $event)"
+          (click)="confirmRemoveNotification(notification, $event)"
           aria-label="Rimuovi notifica"
         >
-          <ion-icon name="close-outline"></ion-icon>
+          <ion-icon name="close-circle-outline"></ion-icon>
         </button>
       </article>
     </div>

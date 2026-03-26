@@ -76,41 +76,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   letter-spacing: -0.03em;
 }
 
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: $radius-sm;
-  background: $bg-card;
-  border: none;
-  box-shadow: $shadow-card;
-  position: relative;
-  cursor: pointer;
-  transition: transform $transition;
-
-  ion-icon {
-    font-size: 20px;
-    color: $text-primary;
-  }
-
-  &:active {
-    transform: scale(0.92);
-  }
-}
-
-.notif-dot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
-  background: $accent;
-  border-radius: 50%;
-  border: 2px solid $bg-card;
-}
-
 // ═══════════════════════════
 //   HERO CARD
 // ═══════════════════════════

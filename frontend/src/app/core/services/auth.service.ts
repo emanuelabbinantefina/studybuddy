@@ -3,18 +3,19 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { UserService } from './user.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  // Indirizzo del tuo backend Node.js
   private apiUrl = 'http://localhost:3000/api/auth';
 
   constructor(
     private http: HttpClient,
-    private userService: UserService
+    private userService: UserService,
+    private notificationService: NotificationService // ✅ Aggiunto
   ) { }
 
   private persistSession(response: any) {
@@ -24,6 +25,9 @@ export class AuthService {
     if (response.user) {
       localStorage.setItem('user_data', JSON.stringify(response.user));
     }
+    
+    // ✅ Avvia polling notifiche dopo login
+    this.notificationService.startPolling();
   }
 
   getFaculties(): Observable<any[]>{
@@ -42,45 +46,21 @@ export class AuthService {
     );
   }
 
-  /**
-   * Metodo richiesto dall'AuthGuard:
-   * Ritorna true se l'utente ha un token salvato, false altrimenti
-   */
   isLoggedIn(): boolean {
     const token = localStorage.getItem('auth_token');
-    return !!token; // Trasforma il valore in booleano (true se esiste, false se è null)
+    return !!token;
   }
 
-  /**
-   * Rimuove i dati di sessione e disconnette l'utente
-   */
   logout() {
+    // ✅ Ferma polling quando fai logout
+    this.notificationService.stopPolling();
     this.userService.logout();
   }
 
-  /**
-   * Invia richiesta di reset password
-   */
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/forgot-password`, { email });
   }
-
-  /**
-   * Placeholder per Social Login (da implementare con Firebase/Capacitor se necessario)
-   */
-  async loginWithGoogle() {
-    console.log('Login Google: logica da implementare');
-    return true;
-  }
-
-  async loginWithFacebook() {
-    console.log('Login Facebook: logica da implementare');
-    return true;
-  }
-
-  /**
-   * Utility per recuperare i dati dell'utente loggato
-   */
+  
   getUserData() {
     const data = localStorage.getItem('user_data');
     return data ? JSON.parse(data) : null;

@@ -1,4 +1,4 @@
-const { all, run } = require('./connection');
+const { all, get, run } = require('./connection');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 const { buildSubjectsForCourse, canonicalAcademicKey } = require('../utils/academic-catalog');
 const { getBachelorCatalogEntries } = require('../utils/unipa-bachelor-courses');
@@ -256,22 +256,22 @@ async function repairUsersAcademicFields() {
 
     const matches = currentFaculty
       ? await all(
-          `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
            from Courses
            join Faculties on Faculties.id = Courses.facultyId
            where lower(trim(Faculties.name)) = lower(trim(?))
              and lower(trim(Courses.name)) = lower(trim(?))
            limit 2`,
-          [currentFaculty, currentCourse]
-        )
+        [currentFaculty, currentCourse]
+      )
       : await all(
-          `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
+        `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
            from Courses
            join Faculties on Faculties.id = Courses.facultyId
            where lower(trim(Courses.name)) = lower(trim(?))
            limit 2`,
-          [currentCourse]
-        );
+        [currentCourse]
+      );
 
     if (matches.length === 1) {
       const selected = matches[0];
@@ -501,6 +501,48 @@ async function initDb() {
     )
   `);
 
+  try {
+  await run(`alter table Events add column reminder24hSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) {
+    throw err;
+  }
+}
+
+try {
+  await run(`alter table Events add column reminder1hSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) {
+    throw err;
+  }
+}
+
+try {
+  await run(`alter table Events add column reminderNowSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) {
+    throw err;
+  }
+}
+
+try {
+  await run(`alter table Events add column reminder24hSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+}
+
+try {
+  await run(`alter table Events add column reminder1hSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+}
+
+try {
+  await run(`alter table Events add column reminderNowSent integer not null default 0`);
+} catch (err) {
+  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+}
+
   // notes uploaded by users
   await run(`
     create table if not exists Notes (
@@ -690,6 +732,57 @@ async function initDb() {
       throw err;
     }
   }
+  // notifications
+  await run(`
+    create table if not exists Notifications (
+      id integer primary key autoincrement,
+      userId integer not null,
+      title text not null,
+      message text not null,
+      type text not null default 'system',
+      actionUrl text,
+      isRead integer not null default 0,
+      readAt text,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (userId) references Users(id) on delete cascade
+    )
+  `);
+
+  try {
+    await run(`alter table Notifications add column actionUrl text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Notifications add column isRead integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Notifications add column readAt text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table Notifications add column updatedAt text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  await run(`update Notifications set isRead = 0 where isRead is null`);
+  await run(`update Notifications set updatedAt = createdAt where updatedAt is null`);
 
   await run(`create index if not exists idx_courses_facultyId on Courses(facultyId)`);
   await run(`create index if not exists idx_events_user_start on Events(userId, startAt)`);
@@ -706,6 +799,8 @@ async function initDb() {
   await run(`create index if not exists idx_groupquestions_group_created on GroupQuestions(groupId, createdAt desc)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
   await run(`create index if not exists idx_groupmessages_parent on GroupMessages(parentMessageId)`);
+  await run(`create index if not exists idx_notifications_user_created on Notifications(userId, createdAt)`);
+  await run(`create index if not exists idx_notifications_user_read on Notifications(userId, isRead)`);
 
   await syncBachelorCourseCatalog();
   await repairUsersAcademicFields();

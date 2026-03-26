@@ -1,389 +1,128 @@
 $bg-page: var(--app-bg-page);
 $bg-card: var(--app-surface);
+$bg-card-hover: var(--app-surface-alt);
 
 $text-primary: var(--app-text-primary);
 $text-secondary: var(--app-text-secondary);
 $text-muted: var(--app-text-muted);
 
 $primary: var(--app-primary);
-$primary-light: var(--app-primary-soft);
+$primary-soft: var(--app-primary-soft);
 
-$pink: var(--app-pink);
-$pink-light: var(--app-pink-soft);
-
-$blue: var(--app-blue);
-$blue-light: var(--app-blue-soft);
+$accent: var(--app-accent);
+$accent-soft: var(--app-accent-soft);
 
 $green: var(--app-green);
-$green-light: var(--app-green-soft);
+$green-soft: var(--app-green-soft);
 
 $orange: var(--app-orange);
+$orange-soft: var(--app-orange-soft);
+
+$red: var(--app-red);
+$red-soft: var(--app-red-soft);
+
+$line: var(--app-line);
 
 $radius-sm: 14px;
 $radius-md: 18px;
-$radius-lg: 24px;
+$radius-lg: 22px;
 $radius-xl: 28px;
 $radius-full: 9999px;
 
 $shadow-card: var(--app-shadow-card);
-$shadow-lg: var(--app-shadow-lg);
 
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
 
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-$spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-// ═══ PAGE ═══
-
-.focus-content {
+.notifications-page {
   --background: #{$bg-page};
-  --padding-start: 20px;
-  --padding-end: 20px;
 }
 
-// ═══ HEADER ═══
-
-.focus-page-header {
+.notifications-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 85px 20px 120px;
   display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// ═══ TOP BAR ═══
+
+.top-bar {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  padding: 80px 0 8px;
-  margin-top: env(safe-area-inset-top);
 }
 
 .back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  border: none;
   border-radius: $radius-sm;
   background: $bg-card;
-  border: none;
+  color: $text-primary;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: $shadow-card;
   cursor: pointer;
   transition: transform $transition;
+
+  &:active {
+    transform: scale(0.95);
+  }
 
   ion-icon {
-    font-size: 20px;
-    color: $text-primary;
-  }
-
-  &:active {
-    transform: scale(0.92);
+    font-size: 1.2rem;
   }
 }
 
-.header-center {
+.top-copy {
   flex: 1;
-}
+  min-width: 0;
 
-.page-title {
-  font-family: $font-display;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: $text-primary;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.page-date {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: $text-muted;
-  margin: 2px 0 0;
-}
-
-
-// ═══ TIMER ═══
-
-.timer-section {
-  margin: 20px 0 24px;
-}
-
-.timer-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32px 24px 24px;
-  background: $bg-card;
-  border-radius: $radius-xl;
-  box-shadow: $shadow-lg;
-  transition: background $transition;
-
-  &--break {
-    background: linear-gradient(145deg, #fef3c7 0%, #fce7f3 100%);
+  h1 {
+    margin: 0;
+    font-family: $font-display;
+    color: $text-primary;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
   }
-}
 
-.timer-ring-wrapper {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin-bottom: 24px;
-}
-
-.timer-ring {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.timer-ring-bg {
-  fill: none;
-  stroke: #e6e6eb;
-  stroke-width: 2.5;
-}
-
-.timer-ring-fill {
-  fill: none;
-  stroke: $primary;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  transition: stroke-dasharray 1s linear;
-
-  &--break {
-    stroke: $orange;
-  }
-}
-
-.timer-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.timer-display {
-  font-family: $font-display;
-  font-size: 3rem;
-  font-weight: 900;
-  color: $text-primary;
-  line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.timer-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: $primary;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 6px;
-
-  &--break {
-    color: $orange;
-  }
-}
-
-// Subject input
-.subject-input {
-  width: 100%;
-  max-width: 260px;
-  padding: 10px 16px;
-  background: $bg-page;
-  border: 1.5px solid transparent;
-  border-radius: $radius-full;
-  font-family: $font-body;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: $text-primary;
-  text-align: center;
-  outline: none;
-  margin-bottom: 20px;
-  transition: border-color $transition;
-
-  &::placeholder {
+  p {
+    margin: 4px 0 0;
     color: $text-muted;
-  }
-
-  &:focus {
-    border-color: $primary;
+    font-size: 0.85rem;
+    font-weight: 600;
   }
 }
 
-// Controls
-.timer-controls {
+// ═══ PULSANTI AZIONI ═══
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.timer-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  cursor: pointer;
-  transition: transform $spring;
-
-  &:active {
-    transform: scale(0.93);
-  }
-
-  &--reset {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: $bg-page;
-
-    ion-icon {
-      font-size: 20px;
-      color: $text-secondary;
-    }
-  }
-
-  &--main {
-    padding: 14px 32px;
-    background: $primary;
-    color: #fff;
-    border-radius: $radius-full;
-    font-family: $font-body;
-    font-size: 0.95rem;
-    font-weight: 700;
-    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
-
-    ion-icon {
-      font-size: 20px;
-    }
-
-    &-break {
-      background: $orange;
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-    }
-  }
-}
-
-// Pomodoro dots
-.pomodoro-dots {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.pomo-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #dcdce1;
-  transition: all $spring;
-
-  &--filled {
-    background: $primary;
-    box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
-    transform: scale(1.1);
-  }
-}
-
-.pomo-count {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: $text-muted;
-  margin-left: 4px;
-}
-
-// ═══ STATS STRIP ═══
-
-.stats-strip {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 28px;
-}
-
-.stat-pill {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  background: $bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
-}
-
-.stat-pill-icon {
-  font-size: 1.2rem;
-}
-
-.stat-pill-info {
-  display: flex;
-  align-items: baseline;
   gap: 6px;
-}
-
-.stat-pill-value {
-  font-family: $font-display;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: $text-primary;
-}
-
-.stat-pill-label {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: $text-muted;
-}
-
-.stat-pill-bar {
-  width: 100%;
-  height: 6px;
-  background: #e6e6eb;
-  border-radius: $radius-full;
-  overflow: hidden;
-}
-
-.stat-pill-bar-fill {
-  height: 100%;
-  background: $primary;
-  border-radius: $radius-full;
-  transition: width 0.6s ease;
-  min-width: 2%;
-
-  &--green {
-    background: $green;
-  }
-}
-
-// ═══ SECTIONS ═══
-
-.section {
-  margin-bottom: 28px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.section-title {
-  font-family: $font-display;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: $text-primary;
-  margin: 0;
-}
-
-.add-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
-  background: $primary-light;
-  color: $primary;
+  padding: 8px 14px;
   border: none;
   border-radius: $radius-full;
   font-family: $font-body;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform $transition;
+  transition: all $transition;
 
   ion-icon {
     font-size: 16px;
@@ -392,293 +131,342 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &:active {
     transform: scale(0.95);
   }
+
+  &--clear {
+    background: $red-soft;
+    color: $red;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+  }
+
+  &--mark {
+    background: $primary-soft;
+    color: $primary;
+
+    &:hover {
+      background: rgba(79, 107, 255, 0.15);
+    }
+  }
 }
 
-// ═══ ADD GOAL FORM ═══
+// ═══ FILTRI ═══
 
-.add-goal-form {
+.filters-bar {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-  background: $bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
-  margin-bottom: 14px;
-  animation: slideDown 0.3s ease-out;
-}
+  gap: 8px;
+  padding: 0 0 4px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 
-.goal-input {
-  width: 100%;
-  padding: 12px 16px;
-  background: $bg-page;
-  border: 1.5px solid transparent;
-  border-radius: $radius-sm;
-  font-family: $font-body;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: $text-primary;
-  outline: none;
-  transition: border-color $transition;
-
-  &::placeholder {
-    color: $text-muted;
-  }
-
-  &:focus {
-    border-color: $primary;
-  }
-
-  &--small {
-    padding: 10px 16px;
-    font-size: 0.82rem;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
-.add-goal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.action-btn {
-  padding: 8px 18px;
-  border: none;
+.filter-chip {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1.5px solid $line;
   border-radius: $radius-full;
-  font-family: $font-body;
+  background: $bg-card;
+  color: $text-secondary;
+  font: inherit;
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform $transition;
+  transition: all $transition;
 
   &:active {
-    transform: scale(0.95);
-  }
-
-  &--cancel {
-    background: transparent;
-    color: $text-muted;
-  }
-
-  &--confirm {
-    background: $primary;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    transform: scale(0.96);
   }
 }
 
-// ═══ GOALS LIST ═══
-
-.goals-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.filter-chip--active {
+  border-color: $primary;
+  background: $primary;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(79, 107, 255, 0.25);
 }
 
-.goal-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+// ═══ EMPTY STATE ═══
+
+.empty-state {
+  margin-top: 20px;
+  padding: 40px 24px;
+  border-radius: $radius-xl;
+  border: 1px dashed $line;
   background: $bg-card;
-  border-radius: $radius-md;
-  box-shadow: $shadow-card;
-  transition: all $transition;
-  animation: cardFadeIn 0.3s ease-out both;
-
-  &--done {
-    opacity: 0.6;
-
-    .goal-text {
-      text-decoration: line-through;
-      color: $text-muted;
-    }
-  }
+  text-align: center;
 }
 
-.goal-check {
-  display: flex;
+.empty-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  background: $primary-soft;
+  color: $primary;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform $spring;
 
   ion-icon {
-    font-size: 24px;
-    color: #b9b9be;
+    font-size: 2rem;
+  }
+}
+
+.empty-state h3 {
+  margin: 0;
+  color: $text-primary;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.empty-state p {
+  max-width: 360px;
+  margin: 8px auto 0;
+  color: $text-muted;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+// ═══ NOTIFICATIONS LIST ═══
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 40px;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  border-radius: $radius-lg;
+  background: $bg-card;
+  border: 1px solid $line;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  transition: transform $transition, background $transition, box-shadow $transition;
+
+  &:active {
+    transform: scale(0.98);
+    background: $bg-card-hover;
+  }
+}
+
+.notification-card--unread {
+  border-color: rgba(79, 107, 255, 0.28);
+  background: linear-gradient(180deg,
+    var(--app-surface-glass-strong, #{$bg-card}) 0%,
+    var(--app-primary-soft, #{$primary-soft}) 100%);
+  box-shadow: 0 4px 20px rgba(79, 107, 255, 0.12);
+}
+
+// ═══ NOTIFICATION ICON ═══
+
+.notif-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+
+  ion-icon {
+    font-size: 1.35rem;
+  }
+}
+
+.notif-icon--notes {
+  background: $primary-soft;
+  color: $primary;
+}
+
+.notif-icon--group {
+  background: $accent-soft;
+  color: $accent;
+}
+
+.notif-icon--planner {
+  background: $orange-soft;
+  color: $orange;
+}
+
+.notif-icon--focus {
+  background: $green-soft;
+  color: $green;
+}
+
+.notif-icon--system {
+  background: var(--app-surface-alt, #f0f0f5);
+  color: $text-secondary;
+}
+
+// ═══ NOTIFICATION CONTENT ═══
+
+.notif-copy {
+  min-width: 0;
+}
+
+.notif-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    color: $text-primary;
+    font-size: 0.98rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+}
+
+.notif-time {
+  color: $text-muted;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.notif-copy p {
+  margin: 6px 0 0;
+  color: $text-secondary;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.notif-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: $text-muted;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $primary;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+// ═══ REMOVE BUTTON ═══
+
+.notif-remove {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: $text-muted;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition;
+  opacity: 0.5;
+
+  ion-icon {
+    font-size: 1.3rem;
+  }
+
+  &:hover {
+    opacity: 1;
+    background: $red-soft;
+    color: $red;
   }
 
   &:active {
     transform: scale(0.85);
-  }
-
-  .goal-item--done & ion-icon {
-    color: $green;
-  }
-}
-
-.goal-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.goal-text {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: $text-primary;
-  transition: all $transition;
-}
-
-.goal-subject {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: $text-muted;
-}
-
-.goal-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.3;
-  transition: opacity $transition;
-  flex-shrink: 0;
-
-  ion-icon {
-    font-size: 18px;
-    color: $text-secondary;
-  }
-
-  &:active {
     opacity: 1;
+    background: $red-soft;
+    color: $red;
   }
 }
 
-// ═══ EMPTY GOALS ═══
+// ═══ RESPONSIVE ═══
 
-.empty-goals {
-  text-align: center;
-  padding: 28px 16px;
-  background: $bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+@media (max-width: 720px) {
+  .notifications-shell {
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 14px 110px;
+  }
 
-  p {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: $text-secondary;
-    margin: 0 0 4px;
+  .notification-card {
+    grid-template-columns: 46px minmax(0, 1fr) 36px;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .notif-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  .top-copy h1 {
+    font-size: 1.35rem;
+  }
+
+  .top-bar {
+    gap: 10px;
+  }
+
+  .top-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  .action-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+
+    ion-icon {
+      font-size: 14px;
+    }
   }
 }
 
-.empty-hint {
-  font-size: 0.78rem;
-  color: $text-muted;
-}
-
-// ═══ SESSIONS TIMELINE ═══
-
-.sessions-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.session-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  animation: cardFadeIn 0.3s ease-out both;
-}
-
-.session-time {
-  width: 48px;
-  font-family: $font-display;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: $text-muted;
-  padding-top: 2px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.session-dot-line {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.session-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: $primary;
-  flex-shrink: 0;
-}
-
-.session-line {
-  width: 2px;
-  height: 32px;
-  background: #d7d7dc;
-}
-
-.session-info {
-  flex: 1;
-  padding-bottom: 20px;
-}
-
-.session-subject {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: $text-primary;
-}
-
-.session-duration {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: $text-muted;
-}
-
-// ═══ ANIMATIONS ═══
-
-@keyframes cardFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+@media (max-width: 380px) {
+  .action-btn span {
+    display: none;
   }
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+  .action-btn {
+    padding: 8px;
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+    ion-icon {
+      font-size: 18px;
+    }
   }
 }

@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
 import { UserService } from '../core/services/user.service';
+import { NotificationService } from '../core/services/notification.service'; 
 import { SearchOverlayComponent } from './search-overlay/search-overlay.component';
 
 @Component({
@@ -18,12 +19,14 @@ export class TabsPage implements OnInit, OnDestroy {
   profileAvatar = this.fallbackAvatar;
   isProfileRoute = false;
   isSearchOpen = false;
+  notificationBadge = 0;
 
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly router: Router,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService 
   ) {}
 
   ngOnInit(): void {
@@ -44,6 +47,13 @@ export class TabsPage implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((profile) => {
         this.profileAvatar = profile?.avatar || this.fallbackAvatar;
+      });
+
+    //Ascolta conteggio notifiche
+    this.notificationService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((count) => {
+        this.notificationBadge = count;
       });
   }
 
@@ -68,6 +78,12 @@ export class TabsPage implements OnInit, OnDestroy {
   openProfile(): void {
     this.closeSearchOverlay();
     this.router.navigate(['/tabs/profile']);
+  }
+
+  //metodo per aprire notifiche
+  openNotifications(): void {
+    this.closeSearchOverlay();
+    this.router.navigate(['/tabs/notifications']);
   }
 
   onAvatarError(event: Event): void {

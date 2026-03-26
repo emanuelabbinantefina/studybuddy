@@ -2,6 +2,7 @@ const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 const { canonicalAcademicKey } = require('../utils/academic-catalog');
+const notificationsService = require('./notifications.services');
 
 const FILE_SIZE_LIMITS = {
   pdf: 10 * 1024 * 1024,
@@ -551,6 +552,33 @@ async function create(userId, body = {}) {
       now,
     ]
   );
+
+  if (groupId) {
+    try {
+      const group = await get(`select name from Groups where id = ?`, [groupId]);
+      const uploader = await get(
+        `select coalesce(nickname, name) as name from Users where id = ?`,
+        [userId]
+      );
+      const memberIds = await all(
+        `select userId from GroupMembers where groupId = ? and userId != ?`,
+        [groupId, userId]
+      );
+
+      if (group && uploader && memberIds.length > 0) {
+        const userIds = memberIds.map((row) => row.userId);
+
+        await notificationsService.createForUsers(userIds, {
+          title: 'Nuovo appunto',
+          message: `${uploader.name} ha caricato "${titolo}" in ${group.name}`,
+          type: 'notes',
+          actionUrl: `/tabs/groups/${groupId}`,
+        });
+      }
+    } catch (err) {
+      console.error('Errore invio notifica nuovo appunto:', err);
+    }
+  }
 
   return { id: out.lastID };
 }

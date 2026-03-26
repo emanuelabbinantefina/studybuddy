@@ -2,6 +2,7 @@ const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 const { getItalianExamDateValidationError } = require('../utils/exam-date');
+const plannerReminders = require('./planner-reminders.service');
 
 function badRequest(msg) {
   const err = new Error(msg);
@@ -213,6 +214,10 @@ async function update(userId, eventId, patch) {
       userId
     ]
   );
+
+  if (patch.startAt !== undefined && patch.startAt !== current.startAt) {
+    await plannerReminders.resetReminderFlags(eventId);
+  }
 
   return getByIdForUser(userId, eventId);
 }

@@ -2,6 +2,7 @@ const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue } = require('../utils/academic-values');
 const { getItalianExamDateValidationError } = require('../utils/exam-date');
+const notificationsService = require('./notifications.services'); // ✅ Aggiunto
 
 function badRequest(message) {
   const err = new Error(message);
@@ -266,7 +267,6 @@ function mapGroupRow(row) {
     lastMessageUserName: row.lastMessageUserName || '',
     lastMessageAt: row.lastMessageAt || null,
     hasPlannerItem: !!row.examDate,
-    // legacy keys
     ultimoMessaggio: row.lastMessage || 'Nessun messaggio',
     autoreMessaggio: row.lastMessageUserName || (row.lastMessage ? 'Utente' : 'Sistema'),
     tempoTrascorso: 'Ora',
@@ -425,6 +425,7 @@ async function publicGroups(userId, query = {}) {
   return listGroups(userId, { scope: 'all', q: query.q || query.cerca || '' });
 }
 
+// ✅ JOIN GROUP - Notifica all'owner
 async function joinGroup(userId, groupId) {
   await ensureGroupExists(groupId);
 
@@ -435,6 +436,27 @@ async function joinGroup(userId, groupId) {
     [groupId, userId, now]
   );
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
+
+  // ✅ Notifica all'owner quando qualcuno si unisce
+  try {
+    const group = await get(`select ownerId, name from Groups where id = ?`, [groupId]);
+    const newMember = await get(
+      `select coalesce(nickname, name) as name from Users where id = ?`,
+      [userId]
+    );
+
+    if (group && group.ownerId && newMember && Number(group.ownerId) !== Number(userId)) {
+      await notificationsService.createForUser({
+        userId: group.ownerId,
+        title: 'Nuovo membro',
+        message: `${newMember.name} si è unito a "${group.name}"`,
+        type: 'group',
+        actionUrl: `/tabs/groups/${groupId}`,
+      });
+    }
+  } catch (err) {
+    console.error('Errore invio notifica joinGroup:', err);
+  }
 
   return { ok: true };
 }
@@ -616,6 +638,7 @@ async function listMessages(userId, groupId, query = {}) {
   );
 }
 
+// ✅ SEND MESSAGE - Notifica a tutti tranne chi ha scritto
 async function sendMessage(userId, groupId, body = {}) {
   const text = sanitizeText(body.text, 1000);
   const parentMessageId = Number(body.parentMessageId || 0) || null;
@@ -664,6 +687,29 @@ async function sendMessage(userId, groupId, body = {}) {
     `,
     [out.lastID]
   );
+
+  // ✅ Notifica a tutti i membri tranne chi ha scritto
+  try {
+    const group = await get(`select name from Groups where id = ?`, [groupId]);
+    const memberIds = await all(
+      `select userId from GroupMembers where groupId = ? and userId != ?`,
+      [groupId, userId]
+    );
+
+    if (group && memberIds.length > 0) {
+      const userIds = memberIds.map((row) => row.userId);
+      const preview = text.slice(0, 50) + (text.length > 50 ? '...' : '');
+
+      await notificationsService.createForUsers(userIds, {
+        title: `Nuovo messaggio in ${group.name}`,
+        message: `${saved.userName}: "${preview}"`,
+        type: 'group',
+        actionUrl: `/tabs/groups/${groupId}`,
+      });
+    }
+  } catch (err) {
+    console.error('Errore invio notifica sendMessage:', err);
+  }
 
   return saved || { id: out.lastID, groupId, userId, parentMessageId, text, createdAt: now };
 }

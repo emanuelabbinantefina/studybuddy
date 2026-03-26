@@ -1,131 +1,112 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-
-export type NotificationType = 'notes' | 'group' | 'planner' | 'focus' | 'system';
-
-export interface AppNotification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  createdAt: string;
-  read: boolean;
-  actionUrl?: string;
-}
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, interval, Subscription } from 'rxjs';
+import { AppNotification } from '../interfaces/models';
 
 @Injectable({
   providedIn: 'root',
 })
-export class NotificationService {
-  private readonly storageKey = 'studybuddy_notifications';
+export class NotificationService implements OnDestroy {
+  private readonly apiUrl = 'http://localhost:3000/api/notifications';
+  private readonly notificationsSubject = new BehaviorSubject<AppNotification[]>([]);
+  private readonly unreadCountSubject = new BehaviorSubject<number>(0);
+  
+  private pollingSubscription?: Subscription;
+  private pollingInterval = 30000; // 30 secondi
 
-  private readonly notificationsSubject = new BehaviorSubject<AppNotification[]>(
-    this.loadNotifications()
-  );
+  readonly notifications$ = this.notificationsSubject.asObservable();
+  readonly unreadCount$ = this.unreadCountSubject.asObservable();
 
-  notifications$ = this.notificationsSubject.asObservable();
+  constructor(private readonly http: HttpClient) {}
 
-  getNotifications(): AppNotification[] {
-    return this.notificationsSubject.value;
+  ngOnDestroy(): void {
+    this.stopPolling();
   }
 
-  getUnreadCount(): number {
-    return this.getNotifications().filter((n) => !n.read).length;
+  // Avvia polling automatico
+  startPolling(): void {
+    if (this.pollingSubscription) return; // già attivo
+
+    // primo fetch subito
+    this.fetchNotifications();
+
+    // poi ogni 30 secondi
+    this.pollingSubscription = interval(this.pollingInterval).subscribe(() => {
+      this.fetchNotifications();
+    });
   }
 
-  add(notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'>): void {
-    const next: AppNotification = {
-      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-      createdAt: new Date().toISOString(),
-      read: false,
-      ...notification,
-    };
-
-    const updated = [next, ...this.getNotifications()];
-    this.saveNotifications(updated);
-  }
-
-  markAsRead(id: string): void {
-    const updated = this.getNotifications().map((n) =>
-      n.id === id ? { ...n, read: true } : n
-    );
-    this.saveNotifications(updated);
-  }
-
-  markAllAsRead(): void {
-    const updated = this.getNotifications().map((n) => ({
-      ...n,
-      read: true,
-    }));
-    this.saveNotifications(updated);
-  }
-
-  remove(id: string): void {
-    const updated = this.getNotifications().filter((n) => n.id !== id);
-    this.saveNotifications(updated);
-  }
-
-  clearAll(): void {
-    this.saveNotifications([]);
-  }
-
-  seedDemoNotifications(): void {
-    if (this.getNotifications().length > 0) return;
-
-    const demo: AppNotification[] = [
-      {
-        id: '1',
-        type: 'planner',
-        title: 'Esame in arrivo',
-        message: 'Diritto Costituzionale è tra 5 giorni.',
-        createdAt: new Date().toISOString(),
-        read: false,
-        actionUrl: '/tabs/planner',
-      },
-      {
-        id: '2',
-        type: 'group',
-        title: 'Nuovo messaggio nel gruppo',
-        message: 'Nel gruppo "Sessione studio" è stato pubblicato un nuovo messaggio.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-        read: false,
-        actionUrl: '/tabs/groups',
-      },
-      {
-        id: '3',
-        type: 'notes',
-        title: 'Nuovo appunto disponibile',
-        message: 'È stato aggiunto un nuovo appunto di Reti di calcolatori.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-        read: true,
-        actionUrl: '/tabs/notes',
-      },
-      {
-        id: '4',
-        type: 'focus',
-        title: 'Continua il focus',
-        message: 'Hai ancora obiettivi da completare oggi.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        read: true,
-        actionUrl: '/tabs/focus',
-      },
-    ];
-
-    this.saveNotifications(demo);
-  }
-
-  private loadNotifications(): AppNotification[] {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
+  // Ferma polling
+  stopPolling(): void {
+    if (this.pollingSubscription) {
+      this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = undefined;
     }
   }
 
-  private saveNotifications(notifications: AppNotification[]): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(notifications));
-    this.notificationsSubject.next(notifications);
+  fetchNotifications(): void {
+    this.http.get<AppNotification[]>(this.apiUrl).subscribe({
+      next: (notifications) => {
+        this.notificationsSubject.next(notifications);
+        this.updateUnreadCount(notifications);
+      },
+      error: (err) => {
+        console.error('Errore caricamento notifiche:', err);
+      },
+    });
+  }
+
+  private updateUnreadCount(notifications: AppNotification[]): void {
+    const count = notifications.filter((n) => !n.read).length;
+    this.unreadCountSubject.next(count);
+  }
+
+  markAllAsRead(): void {
+    this.http.patch(`${this.apiUrl}/read-all`, {}).subscribe({
+      next: () => {
+        const updated = this.notificationsSubject.value.map((n) => ({
+          ...n,
+          read: true,
+        }));
+        this.notificationsSubject.next(updated);
+        this.updateUnreadCount(updated);
+      },
+      error: (err) => {
+        console.error('Errore markAllAsRead:', err);
+      },
+    });
+  }
+
+  markAsRead(id: number): void {
+    this.http.patch<AppNotification>(`${this.apiUrl}/${id}/read`, {}).subscribe({
+      next: () => {
+        const updated = this.notificationsSubject.value.map((n) =>
+          n.id === id ? { ...n, read: true } : n
+        );
+        this.notificationsSubject.next(updated);
+        this.updateUnreadCount(updated);
+      },
+      error: (err) => {
+        console.error('Errore markAsRead:', err);
+      },
+    });
+  }
+
+  remove(id: number): void {
+    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+      next: () => {
+        const updated = this.notificationsSubject.value.filter((n) => n.id !== id);
+        this.notificationsSubject.next(updated);
+        this.updateUnreadCount(updated);
+      },
+      error: (err) => {
+        console.error('Errore remove notification:', err);
+      },
+    });
+  }
+
+  // Metodo per ottenere il conteggio attuale (sincrono)
+  get unreadCount(): number {
+    return this.unreadCountSubject.value;
   }
 }

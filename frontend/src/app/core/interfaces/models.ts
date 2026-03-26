@@ -102,3 +102,12 @@ export interface Appunto {
   canDelete?: boolean;
   isSaved?: boolean;
 }
+export interface AppNotification {
+  id: number;
+  title: string;
+  message: string;
+  type: 'notes' | 'group' | 'planner' | 'focus' | 'system';
+  read: boolean;
+  createdAt: string;
+  actionUrl?: string;
+}
