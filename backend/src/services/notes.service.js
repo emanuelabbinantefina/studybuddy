@@ -486,10 +486,6 @@ async function create(userId, body = {}) {
   }
 
   if (!titolo) throw badRequest('titolo obbligatorio');
-  if (!rawMateria) throw badRequest('materia obbligatoria');
-  if (!isMeaningfulSubjectValue(rawMateria)) {
-    throw badRequest('materia non valida');
-  }
   if (!fileName) throw badRequest('nome file obbligatorio');
   if (!fileData) throw badRequest('contenuto file obbligatorio');
   if (!Number.isFinite(sizeBytes) || sizeBytes <= 0) {
@@ -506,14 +502,9 @@ async function create(userId, body = {}) {
     throw badRequest('completa il corso di laurea triennale nel profilo prima di caricare appunti');
   }
 
-  const allowedSubjects = await loadCatalogSubjects(facultyName, courseName, true);
-  if (!allowedSubjects.length) {
-    throw badRequest('nessuna materia disponibile per il tuo corso');
-  }
-
-  const materia = findCanonicalSubjectMatch(rawMateria, allowedSubjects);
-  if (!materia) {
-    throw badRequest('materia non valida per il tuo corso');
+  const materia = normalizeAcademicValue(rawMateria) || courseName;
+  if (!isMeaningfulSubjectValue(materia)) {
+    throw badRequest('corso di laurea triennale non valido');
   }
 
   const parsedFile = parseDataUrl(fileData, mimeType);

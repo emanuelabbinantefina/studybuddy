@@ -326,9 +326,9 @@ export class NotesPage implements OnInit, OnDestroy {
 
   async submitUpload(): Promise<void> {
     if (this.uploading) return;
-    if (!this.uploadSubjectOptions.length) {
+    if (!this.myCourseLabel) {
       await this.showToast(
-        'Completa il corso di laurea triennale nel profilo per scegliere una materia valida',
+        'Completa il corso di laurea triennale nel profilo prima di caricare appunti',
         'warning'
       );
       return;
@@ -339,13 +339,8 @@ export class NotesPage implements OnInit, OnDestroy {
     }
 
     const titolo = this.uploadTitle.trim();
-    const materia = this.uploadSubject.trim();
-    if (!titolo || !materia) {
-      await this.showToast('Titolo e materia sono obbligatori', 'warning');
-      return;
-    }
-    if (!this.uploadSubjectOptions.includes(materia)) {
-      await this.showToast('Seleziona una materia valida per il tuo corso', 'warning');
+    if (!titolo) {
+      await this.showToast('Titolo obbligatorio', 'warning');
       return;
     }
 
@@ -356,7 +351,7 @@ export class NotesPage implements OnInit, OnDestroy {
       await firstValueFrom(
         this.apiService.uploadAppunto({
           titolo,
-          materia,
+          materia: this.myCourseLabel,
           tipoFile: this.resolveTipoFile(this.selectedFile),
           fileName: this.selectedFile.name,
           mimeType: this.selectedFile.type || undefined,

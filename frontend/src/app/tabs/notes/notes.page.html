@@ -262,8 +262,7 @@
         </header>
 
         <section class="upload-panel">
-          <div class="upload-context" *ngIf="myFacultyLabel || myCourseLabel">
-            <span class="context-chip" *ngIf="myFacultyLabel">{{ myFacultyLabel }}</span>
+          <div class="upload-context" *ngIf="myCourseLabel">
             <span class="context-chip" *ngIf="myCourseLabel">{{ myCourseLabel }}</span>
           </div>
 
@@ -311,19 +310,8 @@
               [(ngModel)]="uploadTitle"
             />
 
-            <select
-              class="field-input"
-              [disabled]="uploading || uploadSubjectOptions.length === 0"
-              [(ngModel)]="uploadSubject"
-            >
-              <option value="" disabled>Seleziona materia</option>
-              <option *ngFor="let subject of uploadSubjectOptions" [value]="subject">
-                {{ subject }}
-              </option>
-            </select>
-
-            <p class="field-hint field-hint--warn" *ngIf="uploadSubjectOptions.length === 0">
-              Nessuna materia disponibile. Completa il corso di laurea triennale nel profilo per caricare appunti.
+            <p class="field-hint field-hint--warn" *ngIf="!myCourseLabel">
+              Completa il corso di laurea triennale nel profilo per caricare appunti.
             </p>
           </div>
 
@@ -331,7 +319,7 @@
             <button type="button" class="btn-ghost" [disabled]="uploading" (click)="resetUploadForm()">
               Annulla
             </button>
-            <button type="button" class="btn-primary" [disabled]="uploading || uploadSubjectOptions.length === 0" (click)="submitUpload()">
+            <button type="button" class="btn-primary" [disabled]="uploading || !myCourseLabel" (click)="submitUpload()">
               {{ uploading ? 'Caricamento...' : 'Carica' }}
             </button>
           </div>

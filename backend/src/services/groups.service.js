@@ -181,6 +181,12 @@ async function ensureGroupExists(groupId) {
   if (!group) throw notFound('gruppo non trovato');
 }
 
+async function getGroupOwnerId(groupId) {
+  const group = await get(`select ownerId from Groups where id = ?`, [groupId]);
+  if (!group) throw notFound('gruppo non trovato');
+  return Number(group.ownerId || 0) || null;
+}
+
 async function resolveCourseSelection(body = {}) {
   const facoltaIn = sanitizeText(body.facolta ?? body.faculty, 80);
   const corsoIn = sanitizeText(body.corso ?? body.course ?? body.subject ?? body.materia, 80);
@@ -227,6 +233,11 @@ async function resolveCourseSelection(body = {}) {
 }
 
 async function getMemberRole(groupId, userId) {
+  const ownerId = await getGroupOwnerId(groupId);
+  if (Number(ownerId) === Number(userId)) {
+    return 'owner';
+  }
+
   const row = await get(
     `select role
      from GroupMembers
@@ -234,6 +245,31 @@ async function getMemberRole(groupId, userId) {
     [groupId, userId]
   );
   return row ? row.role : null;
+}
+
+async function syncGroupOwnerMembership(groupId) {
+  const ownerId = await getGroupOwnerId(groupId);
+  if (!ownerId) return false;
+  const now = nowIso();
+  const insertOut = await run(
+    `insert or ignore into GroupMembers (groupId, userId, role, createdAt)
+     values (?, ?, 'owner', ?)`,
+    [groupId, ownerId, now]
+  );
+  const updateOut = await run(
+    `update GroupMembers
+     set role = 'owner'
+     where groupId = ? and userId = ? and role != 'owner'`,
+    [groupId, ownerId]
+  );
+
+  return (insertOut.changes || 0) > 0 || (updateOut.changes || 0) > 0;
+}
+
+async function syncOwnerMembership(groupId, userId) {
+  const ownerId = await getGroupOwnerId(groupId);
+  if (Number(ownerId) !== Number(userId)) return false;
+  return syncGroupOwnerMembership(groupId);
 }
 
 async function ensureMember(groupId, userId) {
@@ -297,11 +333,18 @@ async function listGroups(userId, opts = {}) {
   const scope = String(opts.scope || 'all').toLowerCase();
   const onlyNotMember = !!opts.onlyNotMember;
 
-  const params = [Number(userId || 0)];
+  const viewerId = Number(userId || 0);
+  const params = [viewerId, viewerId];
   const where = [];
 
-  if (scope === 'my') where.push(`gm.userId is not null`);
-  if (onlyNotMember) where.push(`gm.userId is null`);
+  if (scope === 'my') {
+    where.push(`(gm.userId is not null or g.ownerId = ?)`);
+    params.push(viewerId);
+  }
+  if (onlyNotMember) {
+    where.push(`gm.userId is null and g.ownerId != ?`);
+    params.push(viewerId);
+  }
   if (q) {
     where.push(`(g.name like ? or g.faculty like ? or g.subject like ? or g.description like ?)`);
     params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
@@ -314,8 +357,22 @@ async function listGroups(userId, opts = {}) {
     select
       g.id, g.name, g.description, g.course, g.faculty, g.subject, g.examDate, g.visibility, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       coalesce(owner.nickname, owner.name, 'Studente') as ownerName,
-      case when gm.userId is null then 0 else 1 end as isMember,
-      (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
+      case when gm.userId is null and g.ownerId != ? then 0 else 1 end as isMember,
+      (
+        select count(*)
+        from GroupMembers gm2
+        where gm2.groupId = g.id
+      ) + (
+        case
+          when g.ownerId is null then 0
+          when exists(
+            select 1
+            from GroupMembers ownerMember
+            where ownerMember.groupId = g.id and ownerMember.userId = g.ownerId
+          ) then 0
+          else 1
+        end
+      ) as membersCount,
       (select count(*) from Notes n where n.groupId = g.id) as notesCount,
       (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
       (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
@@ -428,14 +485,28 @@ async function publicGroups(userId, query = {}) {
 
 async function joinGroup(userId, groupId) {
   await ensureGroupExists(groupId);
-
+  const ownerSynced = await syncOwnerMembership(groupId, userId);
+  if (!ownerSynced) {
+    await syncGroupOwnerMembership(groupId);
+  }
+  const existingRole = await getMemberRole(groupId, userId);
   const now = nowIso();
-  await run(
-    `insert or ignore into GroupMembers (groupId, userId, role, createdAt)
-     values (?, ?, 'member', ?)`,
-    [groupId, userId, now]
-  );
-  await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
+  let changed = false;
+
+  if (!existingRole) {
+    await run(
+      `insert or ignore into GroupMembers (groupId, userId, role, createdAt)
+       values (?, ?, 'member', ?)`,
+      [groupId, userId, now]
+    );
+    changed = true;
+  } else if (ownerSynced) {
+    changed = true;
+  }
+
+  if (changed) {
+    await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
+  }
 
   try {
     const group = await get(`select ownerId, name from Groups where id = ?`, [groupId]);
@@ -444,7 +515,7 @@ async function joinGroup(userId, groupId) {
       [userId]
     );
 
-    if (group && group.ownerId && newMember && Number(group.ownerId) !== Number(userId)) {
+    if (changed && group && group.ownerId && newMember && Number(group.ownerId) !== Number(userId)) {
       await notificationsService.createForUser({
         userId: group.ownerId,
         title: 'Nuovo membro',
@@ -457,12 +528,23 @@ async function joinGroup(userId, groupId) {
     console.error('Errore invio notifica joinGroup:', err);
   }
 
-  return { ok: true };
+  return {
+    ok: true,
+    changed,
+    group: await groupDetail(userId, groupId),
+  };
 }
 
 async function leaveGroup(userId, groupId) {
+  await ensureGroupExists(groupId);
   const role = await getMemberRole(groupId, userId);
-  if (!role) return { ok: true };
+  if (!role) {
+    return {
+      ok: true,
+      changed: false,
+      group: await groupDetail(userId, groupId),
+    };
+  }
 
   if (role === 'owner') {
     throw badRequest('owner non puo uscire dal gruppo');
@@ -474,17 +556,39 @@ async function leaveGroup(userId, groupId) {
     [groupId, userId]
   );
 
-  return { ok: true };
+  await run(`update Groups set updatedAt = ? where id = ?`, [nowIso(), groupId]);
+
+  return {
+    ok: true,
+    changed: true,
+    group: await groupDetail(userId, groupId),
+  };
 }
 
 async function groupDetail(userId, groupId) {
+  await syncGroupOwnerMembership(groupId);
+  const viewerId = Number(userId || 0);
   const row = await get(
     `
     select
       g.id, g.name, g.description, g.course, g.faculty, g.subject, g.examDate, g.visibility, g.colorClass, g.ownerId, g.createdAt, g.updatedAt,
       coalesce(owner.nickname, owner.name, 'Studente') as ownerName,
-      case when gm.userId is null then 0 else 1 end as isMember,
-      (select count(*) from GroupMembers gm2 where gm2.groupId = g.id) as membersCount,
+      case when gm.userId is null and g.ownerId != ? then 0 else 1 end as isMember,
+      (
+        select count(*)
+        from GroupMembers gm2
+        where gm2.groupId = g.id
+      ) + (
+        case
+          when g.ownerId is null then 0
+          when exists(
+            select 1
+            from GroupMembers ownerMember
+            where ownerMember.groupId = g.id and ownerMember.userId = g.ownerId
+          ) then 0
+          else 1
+        end
+      ) as membersCount,
       (select count(*) from Notes n where n.groupId = g.id) as notesCount,
       (select count(*) from GroupMessages mm where mm.groupId = g.id) as messagesCount,
       (select count(*) from GroupQuestions qq where qq.groupId = g.id) as questionsCount,
@@ -497,7 +601,7 @@ async function groupDetail(userId, groupId) {
       on gm.groupId = g.id and gm.userId = ?
     where g.id = ?
     `,
-    [userId, groupId]
+    [viewerId, viewerId, groupId]
   );
 
   if (!row) return null;
@@ -731,6 +835,7 @@ async function deleteMessage(userId, groupId, messageId) {
 
 async function listMembers(userId, groupId) {
   await ensureGroupExists(groupId);
+  await syncGroupOwnerMembership(groupId);
   await ensureMember(groupId, userId);
 
   const rows = await all(

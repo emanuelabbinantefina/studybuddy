@@ -6,7 +6,7 @@ import { Gruppo, Appunto, GroupBoardMessage, GroupQuestion } from '../interfaces
 
 interface UploadAppuntoPayload {
   titolo: string;
-  materia: string;
+  materia?: string;
   tipoFile?: 'pdf' | 'doc' | 'img';
   fileName: string;
   mimeType?: string;
@@ -33,6 +33,12 @@ interface NoteSubjectsResponse {
   selectedFaculty?: string | null;
   faculties?: string[];
   subjects: string[];
+}
+
+interface GroupMembershipResponse {
+  ok: boolean;
+  changed?: boolean;
+  group?: Gruppo;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -141,20 +147,36 @@ export class ApiService {
       );
   }
 
-  joinPublicGroup(groupId: number): Observable<{ ok: boolean }> {
-    return this.http.post<{ ok: boolean }>(
-      `${this.baseUrl}/groups/${groupId}/join`,
-      {},
-      { headers: this.authHeaders() }
-    );
+  joinPublicGroup(groupId: number): Observable<GroupMembershipResponse> {
+    return this.http
+      .post<any>(
+        `${this.baseUrl}/groups/${groupId}/join`,
+        {},
+        { headers: this.authHeaders() }
+      )
+      .pipe(
+        map((raw) => ({
+          ok: !!raw?.ok,
+          changed: !!raw?.changed,
+          group: raw?.group ? this.toGruppoDto(raw.group) : undefined,
+        }))
+      );
   }
 
-  leaveGroup(groupId: number): Observable<any> {
-    return this.http.post(
-      `${this.baseUrl}/groups/${groupId}/leave`,
-      {},
-      { headers: this.authHeaders() }
-    );
+  leaveGroup(groupId: number): Observable<GroupMembershipResponse> {
+    return this.http
+      .post<any>(
+        `${this.baseUrl}/groups/${groupId}/leave`,
+        {},
+        { headers: this.authHeaders() }
+      )
+      .pipe(
+        map((raw) => ({
+          ok: !!raw?.ok,
+          changed: !!raw?.changed,
+          group: raw?.group ? this.toGruppoDto(raw.group) : undefined,
+        }))
+      );
   }
 
   getGroupMembers(groupId: number): Observable<any[]> {

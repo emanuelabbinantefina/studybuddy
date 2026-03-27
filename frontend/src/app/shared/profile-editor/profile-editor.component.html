@@ -20,7 +20,7 @@
           <img [src]="profileData.avatarUrl || fallbackAvatar" (error)="onAvatarError($event)" alt="Foto profilo">
         </div>
 
-        <button type="button" class="upload-area" (click)="uploadPhoto()">
+        <button type="button" class="upload-area" (click)="uploadPhoto()" [disabled]="isLimitedProfileEdit">
           <strong>Carica un'immagine</strong>
           <span>oppure clicca per scegliere</span>
           <small>JPG, PNG, WEBP - max 5 MB</small>
@@ -31,12 +31,12 @@
     <section class="form-grid">
       <label class="field">
         <span>Nome</span>
-        <input type="text" maxlength="60" [(ngModel)]="profileData.firstName" placeholder="Marco">
+        <input type="text" maxlength="60" [(ngModel)]="profileData.firstName" placeholder="Marco" [disabled]="isLimitedProfileEdit">
       </label>
 
       <label class="field">
         <span>Cognome</span>
-        <input type="text" maxlength="60" [(ngModel)]="profileData.lastName" placeholder="Rossi">
+        <input type="text" maxlength="60" [(ngModel)]="profileData.lastName" placeholder="Rossi" [disabled]="isLimitedProfileEdit">
       </label>
 
       <label class="field field--full">
@@ -44,22 +44,19 @@
         <input type="text" maxlength="40" [(ngModel)]="profileData.username" placeholder="@marco.r">
       </label>
 
-      <label class="field field--full">
+      <label class="field field--full" *ngIf="isLimitedProfileEdit">
+        <span>Corso di laurea triennale</span>
+        <input type="text" [value]="profileData.corso || '-'" readonly>
+      </label>
+
+      <label class="field field--full" *ngIf="!isLimitedProfileEdit">
         <span>Corso di laurea triennale</span>
         <select
           [(ngModel)]="profileData.courseKey"
           (ngModelChange)="onCourseChange($event)"
-          [disabled]="courseOptions.length === 0">
+          [disabled]="isLimitedProfileEdit || courseOptions.length === 0 || academicSelectionLocked">
           <option value="" disabled>Seleziona corso</option>
           <option *ngFor="let course of courseOptions" [value]="course.key">{{ course.label }}</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Anno</span>
-        <select [(ngModel)]="profileData.courseYear">
-          <option value="" disabled>Seleziona anno</option>
-          <option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option>
         </select>
       </label>
 

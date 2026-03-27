@@ -82,11 +82,12 @@ export class SearchOverlayComponent implements OnInit, AfterViewInit, OnDestroy 
       .joinPublicGroup(group.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: async () => {
+        next: async (response) => {
           this.filteredGroups = this.filteredGroups.filter((item) => item.id !== group.id);
+          const groupName = response.group?.nome || group.nome;
 
           const toast = await this.toastCtrl.create({
-            message: `Entrato in "${group.nome}"`,
+            message: `Entrato in "${groupName}"`,
             duration: 1400,
             color: 'success',
             position: 'bottom',

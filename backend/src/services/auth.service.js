@@ -283,7 +283,6 @@ async function updateProfile(userId, body) {
   const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() || undefined : undefined;
   const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() || undefined : undefined;
   const courseKeyIn = body && typeof body.courseKey === 'string' ? body.courseKey.trim() || undefined : undefined;
-  const courseYearIn = body && typeof body.courseYear === 'string' ? body.courseYear.trim() : undefined;
   const avatarUrlIn = body && typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined;
 
   const updates = [];
@@ -312,12 +311,6 @@ async function updateProfile(userId, body) {
     params.push(bioIn || null);
   }
 
-  if (courseYearIn !== undefined) {
-    if (!courseYearIn) throw badRequest('anno obbligatorio');
-    updates.push('courseYear = ?');
-    params.push(courseYearIn);
-  }
-
   if (avatarUrlIn !== undefined) {
     updates.push('avatarUrl = ?');
     params.push(avatarUrlIn || null);
@@ -330,11 +323,14 @@ async function updateProfile(userId, body) {
 
   const shouldResolveSelection =
     facoltaIn !== undefined || corsoIn !== undefined || courseKeyIn !== undefined;
+  const currentFaculty = String(current.facolta || '').trim();
+  const currentCourse = String(current.corso || '').trim();
+  const hasLockedAcademicSelection = !!(currentFaculty && currentCourse);
   const selection = shouldResolveSelection
     ? await resolveAcademicSelection(body, { required: true })
     : {
-        faculty: String(current.facolta || '').trim(),
-        course: String(current.corso || '').trim(),
+        faculty: currentFaculty,
+        course: currentCourse,
       };
 
   if (!selection.faculty || !selection.course) {
@@ -342,10 +338,19 @@ async function updateProfile(userId, body) {
   }
 
   if (shouldResolveSelection) {
-    updates.push('facolta = ?');
-    params.push(selection.faculty);
-    updates.push('corso = ?');
-    params.push(selection.course);
+    const isSameSelection =
+      selection.faculty === currentFaculty && selection.course === currentCourse;
+
+    if (hasLockedAcademicSelection && !isSameSelection) {
+      throw badRequest('facolta e corso di laurea non possono essere modificati dopo la prima selezione');
+    }
+
+    if (!hasLockedAcademicSelection) {
+      updates.push('facolta = ?');
+      params.push(selection.faculty);
+      updates.push('corso = ?');
+      params.push(selection.course);
+    }
   }
 
   if (!updates.length) throw badRequest('nessun campo da aggiornare');

@@ -246,13 +246,23 @@ export class UserService {
         ? newData.courseKey.trim()
         : '';
 
-    const payload: Record<string, string> = {
-      firstName: String(newData?.firstName || '').trim(),
-      lastName: String(newData?.lastName || '').trim(),
-      username: typeof newData?.username === 'string' ? newData.username.trim() : '',
-      courseYear: String(newData?.courseYear || '').trim(),
-      bio: typeof newData?.bio === 'string' ? newData.bio.trim().slice(0, 120) : '',
-    };
+    const payload: Record<string, string> = {};
+
+    if (typeof newData?.firstName === 'string') {
+      payload['firstName'] = newData.firstName.trim();
+    }
+
+    if (typeof newData?.lastName === 'string') {
+      payload['lastName'] = newData.lastName.trim();
+    }
+
+    if (typeof newData?.username === 'string') {
+      payload['username'] = newData.username.trim();
+    }
+
+    if (typeof newData?.bio === 'string') {
+      payload['bio'] = newData.bio.trim().slice(0, 120);
+    }
 
     if (courseKey) {
       payload['courseKey'] = courseKey;

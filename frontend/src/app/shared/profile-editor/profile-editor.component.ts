@@ -29,7 +29,6 @@ interface ProfileFormState {
   courseKey: string;
   facolta: string;
   corso: string;
-  courseYear: string;
   bio: string;
 }
 
@@ -51,10 +50,10 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
   readonly fallbackAvatar = 'assets/images/logo-uni.png';
-  readonly yearOptions = ['1 anno', '2 anno', '3 anno', '4 anno', '5 anno', 'Fuori corso'];
 
   saving = false;
   loadingProfile = true;
+  academicSelectionLocked = false;
   faculties: FacultyRow[] = [];
   courseOptions: CourseOption[] = [];
   profileData: ProfileFormState = {
@@ -65,7 +64,6 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     courseKey: '',
     facolta: '',
     corso: '',
-    courseYear: '',
     bio: '',
   };
 
@@ -99,19 +97,27 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     return (this.profileData.bio || '').length;
   }
 
+  get isLimitedProfileEdit(): boolean {
+    return this.variant === 'sheet';
+  }
+
   canSave(): boolean {
+    const hasAcademicSelection = !!(
+      this.profileData.courseKey.trim() &&
+      this.profileData.facolta.trim() &&
+      this.profileData.corso.trim()
+    );
+
     return !!(
       !this.saving &&
       this.profileData.firstName.trim() &&
       this.profileData.lastName.trim() &&
-      this.profileData.courseKey.trim() &&
-      this.profileData.facolta.trim() &&
-      this.profileData.corso.trim() &&
-      this.profileData.courseYear.trim()
+      (this.academicSelectionLocked || hasAcademicSelection)
     );
   }
 
   uploadPhoto(): void {
+    if (this.isLimitedProfileEdit) return;
     this.fileInput?.nativeElement.click();
   }
 
@@ -152,22 +158,26 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   async saveProfile(): Promise<void> {
     if (!this.canSave()) {
-      await this.presentToast('Compila nome, cognome, corso di laurea e anno', 'warning');
+      await this.presentToast('Compila nome, cognome e corso di laurea', 'warning');
       return;
     }
 
     this.saving = true;
     try {
       const avatarUrl = this.normalizedAvatarUrl();
+      const courseKey = this.academicSelectionLocked ? '' : this.profileData.courseKey.trim();
       const updated = await lastValueFrom(
         this.userService.updateProfile({
-          firstName: this.profileData.firstName.trim(),
-          lastName: this.profileData.lastName.trim(),
           username: this.cleanUsername(this.profileData.username),
-          courseKey: this.profileData.courseKey.trim(),
-          courseYear: this.profileData.courseYear.trim(),
           bio: this.profileData.bio.trim().slice(0, 120),
-          ...(avatarUrl ? { avatarUrl } : {}),
+          ...(!this.isLimitedProfileEdit
+            ? {
+                firstName: this.profileData.firstName.trim(),
+                lastName: this.profileData.lastName.trim(),
+                ...(courseKey ? { courseKey } : {}),
+                ...(avatarUrl ? { avatarUrl } : {}),
+              }
+            : {}),
         })
       );
 
@@ -181,6 +191,11 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   }
 
   private applyProfile(profile: UserProfile): void {
+    this.academicSelectionLocked = !!(
+      String(profile.facolta || '').trim() &&
+      String(profile.corso || '').trim()
+    );
+
     this.profileData = {
       avatarUrl: this.isCustomAvatar(profile.avatar) ? profile.avatar : '',
       firstName: profile.firstName || '',
@@ -189,7 +204,6 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
       courseKey: '',
       facolta: profile.facolta || '',
       corso: profile.corso || '',
-      courseYear: profile.courseYear || '',
       bio: (profile.bio || '').slice(0, 120),
     };
 

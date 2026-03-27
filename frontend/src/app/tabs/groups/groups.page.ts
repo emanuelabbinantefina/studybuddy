@@ -84,9 +84,12 @@ export class GroupsPage implements OnInit {
     // Se non sei membro, entra nel gruppo
     if (!group.isMember) {
       try {
-        await firstValueFrom(this.apiService.joinPublicGroup(group.id));
-        // Aggiorna lo stato locale
-        group.isMember = true;
+        const response = await firstValueFrom(this.apiService.joinPublicGroup(group.id));
+        if (response.group) {
+          Object.assign(group, response.group);
+        } else {
+          group.isMember = true;
+        }
       } catch (err: any) {
         await this.showToast(
           err?.error?.message || 'Impossibile entrare nel gruppo',
