@@ -1,6 +1,6 @@
 <ion-content [fullscreen]="true" class="focus-content">
 
-  <!-- ═══ HEADER ═══ -->
+  <!-- HEADER -->
   <div class="focus-page-header">
     <button class="back-btn" (click)="goBack()">
       <ion-icon name="arrow-back"></ion-icon>
@@ -11,15 +11,15 @@
     </div>
   </div>
 
-  <!-- ═══ POMODORO TIMER ═══ -->
+  <!-- POMODORO TIMER -->
   <div class="timer-section">
-    <div 
-      class="timer-card" 
+    <div
+      class="timer-card"
       [class.timer-card--break]="isBreak"
       [class.timer-card--completed]="showCompletionAnimation"
     >
 
-      <!-- ✅ Animazione completamento -->
+      <!-- Animazione completamento -->
       <div class="completion-overlay" *ngIf="showCompletionAnimation">
         <div class="completion-icon">🎉</div>
         <div class="completion-text">Ottimo lavoro!</div>
@@ -94,7 +94,7 @@
     </div>
   </div>
 
-  <!-- ═══ DAILY STATS ═══ -->
+  <!-- DAILY STATS -->
   <div class="stats-strip">
     <div class="stat-pill">
       <span class="stat-pill-icon">⏱️</span>
@@ -125,7 +125,7 @@
     </div>
   </div>
 
-  <!-- ═══ DAILY GOALS ═══ -->
+  <!-- DAILY GOALS -->
   <section class="section">
     <div class="section-header">
       <h3 class="section-title">🎯 Obiettivi di oggi</h3>
@@ -192,7 +192,7 @@
     </div>
   </section>
 
-  <!-- ═══ TODAY'S SESSIONS ═══ -->
+  <!-- TODAY'S SESSIONS -->
   <section class="section" *ngIf="todaySessions.length > 0">
     <div class="section-header">
       <h3 class="section-title">📖 Sessioni di oggi</h3>

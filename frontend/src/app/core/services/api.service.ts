@@ -39,7 +39,7 @@ interface NoteSubjectsResponse {
 export class ApiService {
   private baseUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token') || '';
@@ -68,7 +68,7 @@ export class ApiService {
         ultimoMessaggio: raw.ultimoMessaggio || 'Nessun messaggio',
         autoreMessaggio: raw.autoreMessaggio || raw.lastMessageUserName || 'Sistema',
         tempoTrascorso: raw.tempoTrascorso || 'Ora',
-        membriPreview: raw.membriPreview || []
+        membriPreview: raw.membriPreview || [],
       };
     }
 
@@ -91,7 +91,7 @@ export class ApiService {
       ultimoMessaggio: raw?.lastMessage || 'Nessun messaggio',
       autoreMessaggio: raw?.lastMessageUserName || (raw?.lastMessage ? 'Utente' : 'Sistema'),
       tempoTrascorso: 'Ora',
-      membriPreview: []
+      membriPreview: [],
     };
   }
 
@@ -105,14 +105,16 @@ export class ApiService {
     return this.http
       .get<any[]>(url, {
         headers: this.authHeaders(),
-        params: q ? { q } : undefined
+        params: q ? { q } : undefined,
       })
       .pipe(
-        map(rows => rows.map(r => {
-          const dto = this.toGruppoDto(r);
-          if (filter === 'my') dto.isMember = true;
-          return dto;
-        }))
+        map((rows) =>
+          rows.map((r) => {
+            const dto = this.toGruppoDto(r);
+            if (filter === 'my') dto.isMember = true;
+            return dto;
+          })
+        )
       );
   }
 
@@ -125,16 +127,18 @@ export class ApiService {
     if (!token) return of([]);
 
     const q = (query || '').trim();
-    return this.http.get<any[]>(`${this.baseUrl}/groups/suggested`, {
-      headers: this.authHeaders(),
-      params: q ? { q } : undefined
-    }).pipe(
-      map(rows =>
-        rows
-          .map(r => ({ ...this.toGruppoDto(r), isMember: false }))
-          .filter(g => !q || g.nome.toLowerCase().includes(q.toLowerCase()))
-      )
-    );
+    return this.http
+      .get<any[]>(`${this.baseUrl}/groups/suggested`, {
+        headers: this.authHeaders(),
+        params: q ? { q } : undefined,
+      })
+      .pipe(
+        map((rows) =>
+          rows
+            .map((r) => ({ ...this.toGruppoDto(r), isMember: false }))
+            .filter((g) => !q || g.nome.toLowerCase().includes(q.toLowerCase()))
+        )
+      );
   }
 
   joinPublicGroup(groupId: number): Observable<{ ok: boolean }> {
@@ -145,41 +149,61 @@ export class ApiService {
     );
   }
 
-  creaGruppo(nuovoGruppo: Partial<Gruppo>): Observable<Gruppo> {
-    return this.http.post<Gruppo>(`${this.baseUrl}/groups`, nuovoGruppo, {
-      headers: this.authHeaders()
-    });
-  }
-
-  createStudyGroup(payload: CreateGroupPayload): Observable<{ id: number }> {
-    return this.http.post<{ id: number }>(
-      `${this.baseUrl}/groups`,
-      payload,
+  leaveGroup(groupId: number): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/groups/${groupId}/leave`,
+      {},
       { headers: this.authHeaders() }
     );
   }
 
-  getGroupDetail(groupId: number): Observable<Gruppo> {
-    return this.http.get<any>(`${this.baseUrl}/groups/${groupId}`, {
-      headers: this.authHeaders()
-    }).pipe(map((row) => this.toGruppoDto(row)));
-  }
-
-  updateGroupExamDate(groupId: number, examDate?: string | null): Observable<Gruppo> {
-    return this.http.patch<any>(
-      `${this.baseUrl}/groups/${groupId}`,
-      { examDate: examDate || null },
-      { headers: this.authHeaders() }
-    ).pipe(map((row) => this.toGruppoDto(row)));
-  }
-
-  getGroupQuestions(groupId: number): Observable<GroupQuestion[]> {
-    return this.http.get<GroupQuestion[]>(`${this.baseUrl}/groups/${groupId}/questions`, {
-      headers: this.authHeaders()
+  getGroupMembers(groupId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/groups/${groupId}/members`, {
+      headers: this.authHeaders(),
     });
   }
 
-  addGroupQuestion(groupId: number, payload: { question: string; answer?: string; session?: string; year?: string }): Observable<GroupQuestion> {
+  creaGruppo(nuovoGruppo: Partial<Gruppo>): Observable<Gruppo> {
+    return this.http.post<Gruppo>(`${this.baseUrl}/groups`, nuovoGruppo, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  createStudyGroup(payload: CreateGroupPayload): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.baseUrl}/groups`, payload, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  getGroupDetail(groupId: number): Observable<Gruppo> {
+    return this.http
+      .get<any>(`${this.baseUrl}/groups/${groupId}`, {
+        headers: this.authHeaders(),
+      })
+      .pipe(map((row) => this.toGruppoDto(row)));
+  }
+
+  updateGroupExamDate(groupId: number, examDate?: string | null): Observable<Gruppo> {
+    return this.http
+      .patch<any>(
+        `${this.baseUrl}/groups/${groupId}`,
+        { examDate: examDate || null },
+        { headers: this.authHeaders() }
+      )
+      .pipe(map((row) => this.toGruppoDto(row)));
+  }
+
+  getGroupQuestions(groupId: number): Observable<GroupQuestion[]> {
+    return this.http.get<GroupQuestion[]>(
+      `${this.baseUrl}/groups/${groupId}/questions`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  addGroupQuestion(
+    groupId: number,
+    payload: { question: string; answer?: string; session?: string; year?: string }
+  ): Observable<GroupQuestion> {
     return this.http.post<GroupQuestion>(
       `${this.baseUrl}/groups/${groupId}/questions`,
       payload,
@@ -188,12 +212,17 @@ export class ApiService {
   }
 
   getGroupMessages(groupId: number): Observable<GroupBoardMessage[]> {
-    return this.http.get<GroupBoardMessage[]>(`${this.baseUrl}/groups/${groupId}/messages`, {
-      headers: this.authHeaders()
-    });
+    return this.http.get<GroupBoardMessage[]>(
+      `${this.baseUrl}/groups/${groupId}/messages`,
+      { headers: this.authHeaders() }
+    );
   }
 
-  addGroupMessage(groupId: number, text: string, parentMessageId?: number | null): Observable<GroupBoardMessage> {
+  addGroupMessage(
+    groupId: number,
+    text: string,
+    parentMessageId?: number | null
+  ): Observable<GroupBoardMessage> {
     return this.http.post<GroupBoardMessage>(
       `${this.baseUrl}/groups/${groupId}/messages`,
       { text, parentMessageId: parentMessageId || undefined },
@@ -202,15 +231,16 @@ export class ApiService {
   }
 
   deleteGroupMessage(groupId: number, messageId: number): Observable<{ ok: boolean }> {
-    return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/groups/${groupId}/messages/${messageId}`, {
-      headers: this.authHeaders()
-    });
+    return this.http.delete<{ ok: boolean }>(
+      `${this.baseUrl}/groups/${groupId}/messages/${messageId}`,
+      { headers: this.authHeaders() }
+    );
   }
 
   getGroupAppunti(groupId: number): Observable<Appunto[]> {
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
       headers: this.authHeaders(),
-      params: { groupId: String(groupId) }
+      params: { groupId: String(groupId) },
     });
   }
 
@@ -233,7 +263,7 @@ export class ApiService {
 
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
       headers: this.authHeaders(),
-      params: Object.keys(params).length ? params : undefined
+      params: Object.keys(params).length ? params : undefined,
     });
   }
 
@@ -249,7 +279,7 @@ export class ApiService {
 
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti/saved`, {
       headers: this.authHeaders(),
-      params: Object.keys(params).length ? params : undefined
+      params: Object.keys(params).length ? params : undefined,
     });
   }
 
@@ -263,38 +293,42 @@ export class ApiService {
       return of({ faculty: null, course: null, selectedFaculty: null, faculties: [], subjects: [] });
     }
 
-    return this.http.get<any>(`${this.baseUrl}/appunti/subjects`, {
-      headers: this.authHeaders(),
-      params: {
-        scope,
-        source,
-        ...(faculty.trim() ? { faculty: faculty.trim() } : {})
-      }
-    }).pipe(
-      map((raw) => ({
-        faculty: typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
-        course: typeof raw?.course === 'string' && raw.course.trim() ? raw.course.trim() : null,
-        selectedFaculty:
-          typeof raw?.selectedFaculty === 'string' && raw.selectedFaculty.trim()
-            ? raw.selectedFaculty.trim()
-            : null,
-        faculties: Array.isArray(raw?.faculties)
-          ? raw.faculties
-            .map((value: unknown) => String(value || '').trim())
-            .filter((value: string) => !!value)
-          : [],
-        subjects: Array.isArray(raw?.subjects)
-          ? raw.subjects
-            .map((value: unknown) => String(value || '').trim())
-            .filter((value: string) => !!value)
-          : []
-      }))
-    );
+    return this.http
+      .get<any>(`${this.baseUrl}/appunti/subjects`, {
+        headers: this.authHeaders(),
+        params: {
+          scope,
+          source,
+          ...(faculty.trim() ? { faculty: faculty.trim() } : {}),
+        },
+      })
+      .pipe(
+        map((raw) => ({
+          faculty:
+            typeof raw?.faculty === 'string' && raw.faculty.trim() ? raw.faculty.trim() : null,
+          course:
+            typeof raw?.course === 'string' && raw.course.trim() ? raw.course.trim() : null,
+          selectedFaculty:
+            typeof raw?.selectedFaculty === 'string' && raw.selectedFaculty.trim()
+              ? raw.selectedFaculty.trim()
+              : null,
+          faculties: Array.isArray(raw?.faculties)
+            ? raw.faculties
+                .map((value: unknown) => String(value || '').trim())
+                .filter((value: string) => !!value)
+            : [],
+          subjects: Array.isArray(raw?.subjects)
+            ? raw.subjects
+                .map((value: unknown) => String(value || '').trim())
+                .filter((value: string) => !!value)
+            : [],
+        }))
+      );
   }
 
   uploadAppunto(payload: UploadAppuntoPayload): Observable<{ id: number }> {
     return this.http.post<{ id: number }>(`${this.baseUrl}/appunti`, payload, {
-      headers: this.authHeaders()
+      headers: this.authHeaders(),
     });
   }
 
@@ -302,13 +336,13 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/appunti/${noteId}/download`, {
       headers: this.authHeaders(),
       observe: 'response',
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 
   deleteAppunto(noteId: number): Observable<{ ok: boolean }> {
     return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}`, {
-      headers: this.authHeaders()
+      headers: this.authHeaders(),
     });
   }
 
@@ -322,7 +356,7 @@ export class ApiService {
 
   unsaveAppunto(noteId: number): Observable<{ ok: boolean }> {
     return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}/bookmark`, {
-      headers: this.authHeaders()
+      headers: this.authHeaders(),
     });
   }
 }

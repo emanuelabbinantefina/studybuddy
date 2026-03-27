@@ -63,9 +63,10 @@
     </button>
   </div>
 
-  <!-- FILTER PANEL -->
+  <!-- FILTER PANEL (semplificato) -->
   <div class="filters-panel" *ngIf="showFilters">
 
+    <!-- Tipo file -->
     <div class="filter-section">
       <span class="filter-label">Tipo file</span>
       <div class="filter-chips">
@@ -80,31 +81,7 @@
       </div>
     </div>
 
-    <div class="filter-section" *ngIf="showAllFaculties && facultyOptions.length > 0">
-      <span class="filter-label">Facoltà</span>
-      <div class="filter-chips filter-chips--wrap">
-        <button class="f-chip" [class.f-chip--active]="activeFacultyFilter === ''"
-          (click)="setFacultyFilter('')">Tutte</button>
-        <button class="f-chip" *ngFor="let faculty of facultyOptions"
-          [class.f-chip--active]="activeFacultyFilter === faculty"
-          (click)="setFacultyFilter(faculty)">
-          {{ faculty }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-section" *ngIf="canFilterBySubject">
-      <span class="filter-label">Materia</span>
-      <div class="filter-chips filter-chips--wrap">
-        <button class="f-chip" [class.f-chip--active]="activeSubjectFilter === ''"
-          (click)="setSubjectFilter('')">Tutte</button>
-        <button class="f-chip" *ngFor="let s of browseSubjectOptions" [class.f-chip--active]="activeSubjectFilter === s"
-          (click)="setSubjectFilter(s)">
-          {{ s }}
-        </button>
-      </div>
-    </div>
-
+    <!-- Ordina per -->
     <div class="filter-section">
       <span class="filter-label">Ordina per</span>
       <div class="filter-chips">
@@ -120,23 +97,6 @@
     <button class="clear-filters" *ngIf="activeFilterCount > 0" (click)="clearAllFilters()">
       Resetta filtri
     </button>
-  </div>
-
-  <!-- SCOPE -->
-  <div class="scope-card" *ngIf="myFacultyLabel">
-    <div class="scope-toggle">
-      <button class="scope-btn" [class.scope-btn--active]="!showAllFaculties" (click)="onFacultyScopeChange(false)">
-        La mia facoltà
-      </button>
-      <button class="scope-btn" [class.scope-btn--active]="showAllFaculties" (click)="onFacultyScopeChange(true)">
-        Tutti
-      </button>
-    </div>
-
-    <div class="scope-info">
-      <span class="scope-title">{{ facultyScopeTitle }}</span>
-      <span class="scope-desc">{{ facultyScopeDescription }}</span>
-    </div>
   </div>
 
   <!-- RESULT COUNT -->
@@ -168,7 +128,6 @@
 
       <p class="note-card-meta">
         di {{ getUploaderName(n) }}
-        <span *ngIf="getNoteFaculty(n)"> · {{ getNoteFaculty(n) }}</span>
         <span> · {{ n.materia }}</span>
       </p>
 
@@ -246,9 +205,7 @@
       <h3 class="detail-title">{{ selectedNote.titolo }}</h3>
 
       <p class="detail-meta">
-        {{ selectedNote.materia }}
-        <span *ngIf="getNoteFaculty(selectedNote)"> · {{ getNoteFaculty(selectedNote) }}</span>
-        · {{ getUploaderName(selectedNote) }}
+        {{ selectedNote.materia }} · {{ getUploaderName(selectedNote) }}
       </p>
 
       <div class="detail-actions">

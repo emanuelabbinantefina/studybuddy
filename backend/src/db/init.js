@@ -502,46 +502,46 @@ async function initDb() {
   `);
 
   try {
-  await run(`alter table Events add column reminder24hSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) {
-    throw err;
+    await run(`alter table Events add column reminder24hSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
   }
-}
 
-try {
-  await run(`alter table Events add column reminder1hSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) {
-    throw err;
+  try {
+    await run(`alter table Events add column reminder1hSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
   }
-}
 
-try {
-  await run(`alter table Events add column reminderNowSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) {
-    throw err;
+  try {
+    await run(`alter table Events add column reminderNowSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
   }
-}
 
-try {
-  await run(`alter table Events add column reminder24hSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-}
+  try {
+    await run(`alter table Events add column reminder24hSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+  }
 
-try {
-  await run(`alter table Events add column reminder1hSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-}
+  try {
+    await run(`alter table Events add column reminder1hSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+  }
 
-try {
-  await run(`alter table Events add column reminderNowSent integer not null default 0`);
-} catch (err) {
-  if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-}
+  try {
+    await run(`alter table Events add column reminderNowSent integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
+  }
 
   // notes uploaded by users
   await run(`
@@ -734,20 +734,20 @@ try {
   }
   // notifications
   await run(`
-    create table if not exists Notifications (
-      id integer primary key autoincrement,
-      userId integer not null,
-      title text not null,
-      message text not null,
-      type text not null default 'system',
-      actionUrl text,
-      isRead integer not null default 0,
-      readAt text,
-      createdAt text not null,
-      updatedAt text not null,
-      foreign key (userId) references Users(id) on delete cascade
-    )
-  `);
+  create table if not exists Notifications (
+    id integer primary key autoincrement,
+    userId integer not null,
+    title text not null,
+    message text not null,
+    type text not null default 'system',
+    actionUrl text,
+    isRead integer not null default 0,
+    readAt text,
+    createdAt text not null,
+    updatedAt text not null,
+    foreign key (userId) references Users(id) on delete cascade
+  )
+`);
 
   try {
     await run(`alter table Notifications add column actionUrl text`);

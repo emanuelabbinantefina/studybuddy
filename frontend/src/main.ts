@@ -1,13 +1,15 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { RouteReuseStrategy, provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
-import { LOCALE_ID, enableProdMode } from '@angular/core';
+import { LOCALE_ID } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import localeIt from '@angular/common/locales/it';
 import { registerLocaleData } from '@angular/common';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { addIcons } from 'ionicons';
+import { authInterceptor } from './app/core/interceptors/auth.interceptor';
 
 registerLocaleData(localeIt);
 
@@ -33,7 +35,7 @@ import {
   refreshOutline, closeOutline, trophyOutline, flameOutline,
   listOutline, optionsOutline, chevronDown, warningOutline,
   checkmarkDoneOutline, calendarClearOutline, contrastOutline,
-  alertCircleOutline,
+  alertCircleOutline, closeCircleOutline, chevronDownOutline, chevronUpOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -110,6 +112,7 @@ addIcons({
   'play-circle': playCircle,
   'refresh-outline': refreshOutline,
   'close-outline': closeOutline,
+  'close-circle-outline': closeCircleOutline,
   'trophy-outline': trophyOutline,
   'flame-outline': flameOutline,
   'list-outline': listOutline,
@@ -119,7 +122,9 @@ addIcons({
   'checkmark-done-outline': checkmarkDoneOutline,
   'calendar-clear-outline': calendarClearOutline,
   'contrast-outline': contrastOutline,
-  'alertCircleOutline,': alertCircleOutline,
+  'alert-circle-outline': alertCircleOutline,
+  'chevron-down-outline': chevronDownOutline,
+  'chevron-up-outline': chevronUpOutline,
 });
 
 bootstrapApplication(AppComponent, {
@@ -127,7 +132,8 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular({ mode: 'ios' }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideAnimations(),
     { provide: LOCALE_ID, useValue: 'it-IT' }
   ],
 });

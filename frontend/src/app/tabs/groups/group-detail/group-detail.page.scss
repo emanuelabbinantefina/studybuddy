@@ -68,15 +68,39 @@ ion-content.detail-page::part(background) {
   gap: 16px;
 }
 
-// Top bar
+// TOP BAR
 .top-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
   min-height: 44px;
 }
 
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: $bg-card;
+  border: none;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 20px;
+    color: $text-primary;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
 .page-title {
+  flex: 1;
   text-align: center;
   color: $text-primary;
   font-size: 0.96rem;
@@ -84,7 +108,12 @@ ion-content.detail-page::part(background) {
   letter-spacing: -0.02em;
 }
 
-// Hero
+.top-bar-spacer {
+  width: 40px;
+  flex-shrink: 0;
+}
+
+// HERO
 .group-hero {
   padding: 22px;
   border-radius: $radius-xl;
@@ -152,7 +181,23 @@ ion-content.detail-page::part(background) {
   }
 }
 
-// Exam box
+.meta-chip--clickable {
+  cursor: pointer;
+  transition: all $transition;
+
+  &:active {
+    transform: scale(0.96);
+    background: rgba(79, 107, 255, 0.15);
+  }
+}
+
+.meta-chip-arrow {
+  font-size: 0.85rem;
+  margin-left: 2px;
+  color: $primary;
+}
+
+// EXAM BOX
 .exam-box {
   margin-top: 16px;
   padding: 16px 18px;
@@ -194,60 +239,119 @@ ion-content.detail-page::part(background) {
   }
 }
 
-.exam-edit-btn {
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid $line;
-  border-radius: $radius-sm;
-  background: $bg-card;
-  color: $primary;
-  font: inherit;
-  font-size: 0.86rem;
-  font-weight: 700;
+// LISTA MEMBRI
+.members-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid $line;
 }
 
-.exam-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.members-header {
+  margin-bottom: 12px;
 
-  input {
-    width: 100%;
-    min-height: 46px;
-    border: 1px solid $line;
-    border-radius: $radius-sm;
-    background: $bg-card;
-    padding: 0 14px;
+  strong {
     color: $text-primary;
-    font: inherit;
-    outline: none;
-
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
-    }
+    font-size: 0.92rem;
+    font-weight: 800;
   }
 }
 
-.exam-editor-hint {
-  margin: -4px 0 0;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: $text-muted;
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.exam-editor-hint--warn {
-  color: $accent;
-}
-
-.exam-editor-actions {
+.member-item {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: $radius-md;
+  background: $bg-soft;
+  border: 1px solid $line;
+  transition: background $transition;
 }
 
-// Segment
+.member-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: $primary-soft;
+  color: $primary;
+  font-weight: 800;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.member-avatar--owner {
+  background: $accent-soft;
+  color: $accent;
+  box-shadow: 0 0 0 2px $accent;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-name {
+  color: $text-primary;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.member-role {
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  background: $accent-soft;
+  color: $accent;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+// LEAVE BUTTON
+.leave-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  border: 1.5px solid $red;
+  border-radius: $radius-md;
+  background: $red-soft;
+  color: $red;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all $transition;
+
+  ion-icon {
+    font-size: 1.1rem;
+  }
+
+  &:active {
+    transform: scale(0.98);
+    background: rgba(239, 68, 68, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// SEGMENT
 .custom-segment {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -302,7 +406,7 @@ ion-content.detail-page::part(background) {
   min-height: 220px;
 }
 
-// Appunti list
+// APPUNTI LIST
 .appunti-list {
   display: flex;
   flex-direction: column;
@@ -374,7 +478,7 @@ ion-content.detail-page::part(background) {
   font-size: 1rem;
 }
 
-// Shared cards
+// SHARED CARDS
 .composer-card,
 .loading-card,
 .message-card,
@@ -496,7 +600,7 @@ ion-content.detail-page::part(background) {
   margin-top: 14px;
 }
 
-// Buttons
+// BUTTONS
 .ghost-action,
 .primary-action,
 .outline-action,
@@ -545,7 +649,7 @@ ion-content.detail-page::part(background) {
   gap: 12px;
 }
 
-// Messages
+// MESSAGES
 .message-grid {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
@@ -685,7 +789,7 @@ ion-content.detail-page::part(background) {
   font-style: italic;
 }
 
-// Empty
+// EMPTY
 .empty-state {
   padding: 24px 20px;
   border-radius: $radius-xl;
@@ -752,7 +856,7 @@ ion-content.detail-page::part(background) {
   bottom: auto;
 }
 
-// Group colors
+// GROUP COLORS
 .bg-blue {
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
 }
@@ -773,7 +877,7 @@ ion-content.detail-page::part(background) {
   background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
 }
 
-// Responsive
+// RESPONSIVE
 @media (max-width: 720px) {
   .main-wrapper {
     padding: calc(14px + env(safe-area-inset-top, 0px)) 14px
@@ -799,11 +903,6 @@ ion-content.detail-page::part(background) {
 
   .group-hero h2 {
     font-size: 1.9rem;
-  }
-
-  .exam-summary {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .seg-btn {
@@ -865,5 +964,15 @@ ion-content.detail-page::part(background) {
     width: 48px;
     height: 48px;
     border-radius: 16px;
+  }
+
+  .member-item {
+    padding: 8px 12px;
+  }
+
+  .member-avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 0.82rem;
   }
 }

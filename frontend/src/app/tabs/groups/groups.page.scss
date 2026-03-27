@@ -43,9 +43,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 // ═══ SCHERMO INTERO ═══
 .groups-shell {
   width: 100%;
-  max-width: none; // Tolto il limite
+  max-width: none;
   margin: 0;
-  padding: 85px 20px 110px;
+  padding: calc(72px + env(safe-area-inset-top, 0px)) 20px 110px;
 }
 
 // Header
@@ -78,7 +78,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 500;
 }
 
-// ═══ BOTTONE CREA COERENTE ═══
+// ═══ BOTTONE CREA ═══
 .create-btn {
   border: none;
   border-radius: $radius-full;
@@ -89,7 +89,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: $primary; // Colore pieno, no gradiente
+  background: $primary;
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 800;
@@ -145,58 +145,15 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// Switch
-.groups-switch {
-  padding: 5px;
-  border-radius: 22px;
-  border: 1px solid var(--app-line-soft);
-  background: var(--app-surface-glass-strong);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  box-shadow: $shadow-card;
+// ═══ RESULT BAR ═══
+.result-bar {
+  padding: 8px 0 12px;
 }
 
-.switch-btn {
-  min-height: 48px;
-  border: none;
-  border-radius: 18px;
-  background: transparent;
+.result-count {
+  font-size: 0.85rem;
+  font-weight: 600;
   color: $text-muted;
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all $transition;
-
-  span {
-    min-width: 26px;
-    min-height: 26px;
-    padding: 0 8px;
-    border-radius: 999px;
-    background: $primary-soft;
-    color: $primary;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    line-height: 1;
-  }
-
-  // ═══ SWITCH ACTIVE COERENTE ═══
-  &.active {
-    background: $primary; // Colore pieno
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(79, 107, 255, 0.18);
-
-    span {
-      background: rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-    }
-  }
 }
 
 // Loading
@@ -259,48 +216,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// Section
-.active-section {
-  margin-top: 18px;
-}
-
-.section-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
-
-  h2 {
-    margin: 0;
-    color: $text-primary;
-    font-size: 1.2rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
-
-  p {
-    margin: 6px 0 0;
-    color: $text-secondary;
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-}
-
-.section-count {
-  min-width: 34px;
-  min-height: 34px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: $primary-soft;
-  color: $primary;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-
 // Cards
 .cards-list {
   display: flex;
@@ -325,11 +240,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .group-card--member {
-  border-color: var(--app-line-strong);
+  border-color: rgba(52, 211, 153, 0.3);
   background: linear-gradient(
     180deg,
     var(--app-surface-glass-strong) 0%,
-    var(--app-primary-soft) 100%
+    var(--app-green-soft) 100%
   );
 }
 
@@ -358,10 +273,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .group-topline {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 
   h3 {
     margin: 0;
@@ -372,7 +288,22 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     letter-spacing: -0.02em;
     min-width: 0;
     overflow-wrap: anywhere;
+    flex: 1;
   }
+}
+
+// ═══ BADGE MEMBRO ═══
+.member-badge {
+  padding: 4px 10px;
+  background: $green-soft;
+  color: $green;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: $radius-full;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .group-meta {
@@ -389,6 +320,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   background: $accent-soft;
   text-align: center;
   color: $accent;
+  flex-shrink: 0;
 
   strong {
     display: block;
@@ -440,18 +372,18 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-width: 12px;
 }
 
-// Empty
+// ═══ EMPTY STATE ═══
 .empty-section {
   border: 1px dashed var(--app-line-strong);
   border-radius: $radius-lg;
-  padding: 26px 22px;
+  padding: 32px 22px;
   background: var(--app-surface-elevated);
   text-align: center;
 
   h3 {
     margin: 0;
     color: $text-primary;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 800;
   }
 
@@ -465,11 +397,36 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .empty-emoji {
   display: block;
-  font-size: 2rem;
-  margin-bottom: 10px;
+  font-size: 2.5rem;
+  margin-bottom: 12px;
 }
 
-// Color classes for groups (i gradienti qui possiamo tenerli perchè differenziano le icone dei gruppi)
+.empty-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 12px 22px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius-full;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79, 107, 255, 0.25);
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Color classes for groups
 .bg-blue {
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
 }
@@ -491,17 +448,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 // Animations
-@keyframes fadeInSlide {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -525,7 +471,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 // Responsive
 @media (max-width: 720px) {
   .groups-shell {
-    padding: 16px 14px 100px;
+    padding: calc(76px + env(safe-area-inset-top, 0px)) 14px 100px;
   }
 
   .page-title {
@@ -559,12 +505,16 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .group-topline {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 8px;
   }
 
+  .member-badge {
+    align-self: flex-start;
+  }
+
   .exam-badge {
-    justify-self: start;
+    align-self: flex-start;
   }
 
   .group-stats {

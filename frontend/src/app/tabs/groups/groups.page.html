@@ -34,27 +34,9 @@
       />
     </div>
 
-    <!-- SWITCH -->
-    <div class="groups-switch">
-      <button
-        type="button"
-        class="switch-btn"
-        [class.active]="activeSection === 'all'"
-        (click)="setSection('all')"
-      >
-        Tutti
-        <span>{{ publicGroups.length }}</span>
-      </button>
-
-      <button
-        type="button"
-        class="switch-btn"
-        [class.active]="activeSection === 'my'"
-        (click)="setSection('my')"
-      >
-        I miei
-        <span>{{ myGroups.length }}</span>
-      </button>
+    <!-- RESULT COUNT -->
+    <div class="result-bar" *ngIf="!loadingList">
+      <span class="result-count">{{ filteredGroups.length }} gruppi trovati</span>
     </div>
 
     <!-- LOADING -->
@@ -73,85 +55,73 @@
 
     <ng-container *ngIf="!loadingList">
 
-      <!-- SECTION HEAD -->
-      <section class="active-section">
-        <div class="section-head">
-          <div>
-            <h2>{{ visibleTitle }}</h2>
-            <p>{{ visibleSubtitle }}</p>
-          </div>
-          <span class="section-count">{{ totalVisibleGroups }}</span>
-        </div>
+      <!-- LIST -->
+      <div class="cards-list" *ngIf="filteredGroups.length > 0; else emptyGroups">
+        <article
+          class="group-card"
+          [class.group-card--member]="g.isMember"
+          *ngFor="let g of filteredGroups; trackBy: trackById; let i = index"
+          [style.animation-delay]="i * 50 + 'ms'"
+          (click)="openGroup(g)"
+        >
+          <div class="group-card-main">
+            <div class="group-icon" [ngClass]="groupColorClass(g)">
+              {{ g.nome ? g.nome.charAt(0).toUpperCase() : 'G' }}
+            </div>
 
-        <!-- LIST -->
-        <div class="cards-list" *ngIf="visibleGroups.length > 0; else emptyVisibleGroups">
-          <article
-            class="group-card"
-            [class.group-card--member]="activeSection === 'my'"
-            *ngFor="let g of visibleGroups; trackBy: trackById; let i = index"
-            [style.animation-delay]="i * 50 + 'ms'"
-            (click)="openGroup(g)"
-          >
-            <div class="group-card-main">
-              <div class="group-icon" [ngClass]="groupColorClass(g)">
-                {{ g.nome ? g.nome.charAt(0).toUpperCase() : 'G' }}
+            <div class="group-copy">
+              <div class="group-topline">
+                <h3>{{ g.nome }}</h3>
+
+                <!-- Badge "Membro" se sei già nel gruppo -->
+                <span class="member-badge" *ngIf="g.isMember">Membro</span>
+
+                <div class="exam-badge" *ngIf="g.examDate">
+                  <strong>{{ daysToExam(g.examDate) ?? 0 }}</strong>
+                  <span>gg</span>
+                </div>
               </div>
 
-              <div class="group-copy">
-                <div class="group-topline">
-                  <h3>{{ g.nome }}</h3>
+              <div class="group-meta">
+                {{ groupContextLabel(g) }}
+              </div>
 
-                  <div class="exam-badge" *ngIf="g.examDate">
-                    <strong>{{ daysToExam(g.examDate) ?? 0 }}</strong>
-                    <span>gg</span>
-                  </div>
-                </div>
-
-                <div class="group-meta">
-                  {{ groupContextLabel(g) }}
-                </div>
-
-                <div class="group-stats">
-                  <span class="stat">
-                    <ion-icon name="people-outline"></ion-icon>
-                    {{ g.membersCount || 1 }}
-                  </span>
-                  <span class="stat">
-                    <ion-icon name="document-text-outline"></ion-icon>
-                    {{ g.notesCount || 0 }}
-                  </span>
-                  <span class="stat">
-                    <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
-                    {{ g.messagesCount || 0 }}
-                  </span>
-                  <span class="stat question">
-                    <span class="question-mark">?</span>
-                    {{ g.questionsCount || 0 }}
-                  </span>
-                </div>
+              <div class="group-stats">
+                <span class="stat">
+                  <ion-icon name="people-outline"></ion-icon>
+                  {{ g.membersCount || 1 }}
+                </span>
+                <span class="stat">
+                  <ion-icon name="document-text-outline"></ion-icon>
+                  {{ g.notesCount || 0 }}
+                </span>
+                <span class="stat">
+                  <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+                  {{ g.messagesCount || 0 }}
+                </span>
+                <span class="stat question">
+                  <span class="question-mark">?</span>
+                  {{ g.questionsCount || 0 }}
+                </span>
               </div>
             </div>
-          </article>
-        </div>
-
-        <!-- EMPTY -->
-        <ng-template #emptyVisibleGroups>
-          <div class="empty-section">
-            <span class="empty-emoji" *ngIf="activeSection === 'my'">👥</span>
-            <span class="empty-emoji" *ngIf="activeSection === 'all'">✨</span>
-
-            <h3 *ngIf="activeSection === 'my'">Nessun gruppo nei tuoi</h3>
-            <h3 *ngIf="activeSection === 'all'">Nessun gruppo trovato</h3>
-
-            <p *ngIf="activeSection === 'my'">
-              Quando entrerai in un gruppo lo vedrai qui.
-            </p>
-            <p *ngIf="activeSection === 'all'">
-              Prova a cambiare ricerca oppure ripassa piu tardi.
-            </p>
           </div>
-        </ng-template>
-      </section>
+        </article>
+      </div>
+
+      <!-- EMPTY -->
+      <ng-template #emptyGroups>
+        <div class="empty-section">
+          <span class="empty-emoji">✨</span>
+          <h3>Nessun gruppo trovato</h3>
+          <p>Prova a cambiare ricerca oppure crea un nuovo gruppo.</p>
+          <button class="empty-action" (click)="onCreateGroup()">
+            <ion-icon name="add-outline"></ion-icon>
+            Crea gruppo
+          </button>
+        </div>
+      </ng-template>
+
     </ng-container>
   </div>
 </ion-content>

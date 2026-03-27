@@ -49,7 +49,7 @@ export class FocusPage implements OnInit, OnDestroy {
   totalTime = 25 * 60;
   completedPomodoros = 0;
   currentSessionSubject = '';
-  showCompletionAnimation = false; // ✅ Per animazione completamento
+  showCompletionAnimation = false;
 
   // === GOALS ===
   goals: DailyGoal[] = [];
@@ -93,7 +93,7 @@ export class FocusPage implements OnInit, OnDestroy {
     this.loadGoals();
     this.loadSessions();
     this.loadPomodoros();
-    this.preloadAudio(); // ✅ Precarica audio
+    this.preloadAudio();
   }
 
   ngOnDestroy(): void {
@@ -106,24 +106,21 @@ export class FocusPage implements OnInit, OnDestroy {
 
   private preloadAudio(): void {
     try {
-      // Suono per fine focus (più celebrativo)
       this.focusCompleteAudio = new Audio('assets/sounds/focus-complete.mp3');
       this.focusCompleteAudio.volume = 0.6;
       this.focusCompleteAudio.load();
 
-      // Suono per fine pausa (più soft)
       this.breakCompleteAudio = new Audio('assets/sounds/break-complete.mp3');
       this.breakCompleteAudio.volume = 0.5;
       this.breakCompleteAudio.load();
     } catch (err) {
       console.log('Audio preload not available:', err);
-      // Fallback: usa lo stesso suono per entrambi
       try {
         this.focusCompleteAudio = new Audio('assets/sounds/notification.mp3');
         this.focusCompleteAudio.volume = 0.6;
         this.breakCompleteAudio = this.focusCompleteAudio;
       } catch {
-        // Audio non disponibile
+        // ignore
       }
     }
   }
@@ -132,7 +129,7 @@ export class FocusPage implements OnInit, OnDestroy {
     try {
       if (this.focusCompleteAudio) {
         this.focusCompleteAudio.currentTime = 0;
-        this.focusCompleteAudio.play().catch(err => {
+        this.focusCompleteAudio.play().catch((err) => {
           console.log('Focus audio play failed:', err);
         });
       }
@@ -145,7 +142,7 @@ export class FocusPage implements OnInit, OnDestroy {
     try {
       if (this.breakCompleteAudio) {
         this.breakCompleteAudio.currentTime = 0;
-        this.breakCompleteAudio.play().catch(err => {
+        this.breakCompleteAudio.play().catch((err) => {
           console.log('Break audio play failed:', err);
         });
       }
@@ -160,7 +157,7 @@ export class FocusPage implements OnInit, OnDestroy {
         navigator.vibrate(pattern);
       }
     } catch {
-      // Vibration not supported
+      // ignore
     }
   }
 
@@ -221,34 +218,24 @@ export class FocusPage implements OnInit, OnDestroy {
     this.clearTimer();
 
     if (this.timerState === 'running') {
-      // ✅ FOCUS COMPLETATO
       this.completedPomodoros++;
       this.savePomodoros();
       this.addSession(this.pomodoroMinutes);
 
-      // ✅ Mostra animazione completamento
       this.showCompletionAnimation = true;
-      
-      // ✅ Suono + Vibrazione
       this.playFocusCompleteSound();
       this.vibrateDevice([200, 100, 200, 100, 200]);
 
-      // Dopo 2 secondi, passa alla pausa
       setTimeout(() => {
         this.showCompletionAnimation = false;
         this.timerState = 'break';
         this.timeLeft = this.breakMinutes * 60;
         this.totalTime = this.breakMinutes * 60;
       }, 2000);
-
     } else if (this.timerState === 'break') {
-      // ✅ PAUSA COMPLETATA
-      
-      // ✅ Suono + Vibrazione
       this.playBreakCompleteSound();
       this.vibrateDevice(300);
 
-      // Reset al prossimo pomodoro
       this.timerState = 'idle';
       this.timeLeft = this.pomodoroMinutes * 60;
       this.totalTime = this.pomodoroMinutes * 60;

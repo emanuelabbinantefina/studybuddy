@@ -173,16 +173,12 @@ export class NotesPage implements OnInit, OnDestroy {
   get activeFilterCount(): number {
     let count = 0;
     if (this.activeFileFilter) count++;
-    if (this.activeFacultyFilter) count++;
-    if (this.canFilterBySubject && this.activeSubjectFilter) count++;
     if (this.sortMode !== 'newest') count++;
     return count;
   }
 
   clearAllFilters(): void {
     this.activeFileFilter = '';
-    this.activeFacultyFilter = '';
-    this.activeSubjectFilter = '';
     this.sortMode = 'newest';
     this.refreshBrowseFiltersAndNotes();
   }

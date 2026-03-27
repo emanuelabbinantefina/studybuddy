@@ -2,7 +2,7 @@ const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue } = require('../utils/academic-values');
 const { getItalianExamDateValidationError } = require('../utils/exam-date');
-const notificationsService = require('./notifications.services'); // ✅ Aggiunto
+const notificationsService = require('./notifications.services');
 
 function badRequest(message) {
   const err = new Error(message);
@@ -30,6 +30,7 @@ const ALLOWED_COLOR_CLASSES = new Set([
   'bg-pink',
   'bg-orange',
 ]);
+
 const QUESTION_SESSIONS = [
   'Sessione invernale',
   'Sessione primaverile',
@@ -425,7 +426,6 @@ async function publicGroups(userId, query = {}) {
   return listGroups(userId, { scope: 'all', q: query.q || query.cerca || '' });
 }
 
-// ✅ JOIN GROUP - Notifica all'owner
 async function joinGroup(userId, groupId) {
   await ensureGroupExists(groupId);
 
@@ -437,7 +437,6 @@ async function joinGroup(userId, groupId) {
   );
   await run(`update Groups set updatedAt = ? where id = ?`, [now, groupId]);
 
-  // ✅ Notifica all'owner quando qualcuno si unisce
   try {
     const group = await get(`select ownerId, name from Groups where id = ?`, [groupId]);
     const newMember = await get(
@@ -451,7 +450,7 @@ async function joinGroup(userId, groupId) {
         title: 'Nuovo membro',
         message: `${newMember.name} si è unito a "${group.name}"`,
         type: 'group',
-        actionUrl: `/tabs/groups/${groupId}`,
+        actionUrl: `/groups/${groupId}`,
       });
     }
   } catch (err) {
@@ -513,31 +512,9 @@ async function groupDetail(userId, groupId) {
 async function updateGroup(userId, groupId, body = {}) {
   await ensureMember(groupId, userId);
 
-  if (!Object.prototype.hasOwnProperty.call(body || {}, 'examDate')) {
-    throw badRequest('nessun dato da aggiornare');
+  if (Object.prototype.hasOwnProperty.call(body || {}, 'examDate')) {
+    throw badRequest('la data esame non può essere modificata dopo la creazione del gruppo');
   }
-
-  const nextExamDate =
-    body.examDate === null || body.examDate === ''
-      ? null
-      : sanitizeExamDate(body.examDate);
-
-  if (body.examDate) {
-    const examDateError = getItalianExamDateValidationError(body.examDate);
-    if (examDateError) throw badRequest(examDateError);
-  }
-
-  if (body.examDate && !nextExamDate) {
-    throw badRequest('data esame non valida');
-  }
-
-  const now = nowIso();
-  await run(
-    `update Groups
-     set examDate = ?, updatedAt = ?
-     where id = ?`,
-    [nextExamDate, now, groupId]
-  );
 
   const updated = await groupDetail(userId, groupId);
   if (!updated) throw notFound('gruppo non trovato');
@@ -572,6 +549,7 @@ async function createQuestion(userId, groupId, body = {}) {
   const yearRaw = String(body.year || '').trim();
   const meta = resolveQuestionMeta(body || {});
   const hasPartialExplicitMeta = (!!sessionRaw && !yearRaw) || (!sessionRaw && !!yearRaw);
+
   if (!question) throw badRequest('testo domanda obbligatorio');
   if (hasPartialExplicitMeta) {
     throw badRequest('se indichi la sessione devi specificare anche l anno, e viceversa');
@@ -638,7 +616,6 @@ async function listMessages(userId, groupId, query = {}) {
   );
 }
 
-// ✅ SEND MESSAGE - Notifica a tutti tranne chi ha scritto
 async function sendMessage(userId, groupId, body = {}) {
   const text = sanitizeText(body.text, 1000);
   const parentMessageId = Number(body.parentMessageId || 0) || null;
@@ -688,7 +665,6 @@ async function sendMessage(userId, groupId, body = {}) {
     [out.lastID]
   );
 
-  // ✅ Notifica a tutti i membri tranne chi ha scritto
   try {
     const group = await get(`select name from Groups where id = ?`, [groupId]);
     const memberIds = await all(
@@ -704,7 +680,7 @@ async function sendMessage(userId, groupId, body = {}) {
         title: `Nuovo messaggio in ${group.name}`,
         message: `${saved.userName}: "${preview}"`,
         type: 'group',
-        actionUrl: `/tabs/groups/${groupId}`,
+        actionUrl: `/groups/${groupId}`,
       });
     }
   } catch (err) {
@@ -753,6 +729,36 @@ async function deleteMessage(userId, groupId, messageId) {
   return { ok: true };
 }
 
+async function listMembers(userId, groupId) {
+  await ensureGroupExists(groupId);
+  await ensureMember(groupId, userId);
+
+  const rows = await all(
+    `select
+       Users.id,
+       coalesce(Users.nickname, Users.name) as name,
+       Users.avatarUrl as avatar,
+       GroupMembers.role,
+       GroupMembers.createdAt as joinedAt
+     from GroupMembers
+     join Users on Users.id = GroupMembers.userId
+     where GroupMembers.groupId = ?
+     order by
+       case when GroupMembers.role = 'owner' then 0 else 1 end,
+       GroupMembers.createdAt asc`,
+    [groupId]
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name || 'Studente',
+    avatar: row.avatar || null,
+    role: row.role || 'member',
+    joinedAt: row.joinedAt,
+    initial: String(row.name || 'S').charAt(0).toUpperCase(),
+  }));
+}
+
 function toLegacyGroup(row) {
   const g = mapGroupRow(row);
   return {
@@ -788,6 +794,7 @@ module.exports = {
   listMessages,
   sendMessage,
   deleteMessage,
+  listMembers,
   legacyGroupsList,
   toLegacyGroup,
   listGroups,

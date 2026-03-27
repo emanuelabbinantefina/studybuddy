@@ -3,13 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from '../../core/services/api.service';
 import { Gruppo } from '../../core/interfaces/models';
 import { NewGroupModalComponent } from './new-group-modal/new-group-modal.component';
-
-type GroupSection = 'my' | 'all';
 
 @Component({
   selector: 'app-groups',
@@ -20,9 +18,7 @@ type GroupSection = 'my' | 'all';
 })
 export class GroupsPage implements OnInit {
   loadingList = false;
-  activeSection: GroupSection = 'my';
-  myGroups: Gruppo[] = [];
-  publicGroups: Gruppo[] = [];
+  allGroups: Gruppo[] = [];
   query = '';
 
   constructor(
@@ -40,13 +36,13 @@ export class GroupsPage implements OnInit {
     this.loadGroups();
   }
 
-  get visibleGroups(): Gruppo[] {
-    const source = this.activeSection === 'my' ? this.myGroups : this.publicGroups;
+  // Gruppi filtrati per ricerca
+  get filteredGroups(): Gruppo[] {
     const q = this.query.trim().toLowerCase();
 
-    if (!q) return source;
+    if (!q) return this.allGroups;
 
-    return source.filter((group) => {
+    return this.allGroups.filter((group) => {
       const values = [
         group.nome,
         group.materia,
@@ -57,24 +53,6 @@ export class GroupsPage implements OnInit {
 
       return values.some((value) => value.includes(q));
     });
-  }
-
-  get visibleTitle(): string {
-    return this.activeSection === 'my' ? 'I miei gruppi' : 'Esplora gruppi';
-  }
-
-  get visibleSubtitle(): string {
-    return this.activeSection === 'my'
-      ? 'I gruppi a cui partecipi già'
-      : 'Scopri e unisciti a nuovi gruppi di studio';
-  }
-
-  get totalVisibleGroups(): number {
-    return this.visibleGroups.length;
-  }
-
-  setSection(section: GroupSection): void {
-    this.activeSection = section;
   }
 
   onSearchChange(event: Event): void {
@@ -103,9 +81,12 @@ export class GroupsPage implements OnInit {
   }
 
   async openGroup(group: Gruppo): Promise<void> {
+    // Se non sei membro, entra nel gruppo
     if (!group.isMember) {
       try {
         await firstValueFrom(this.apiService.joinPublicGroup(group.id));
+        // Aggiorna lo stato locale
+        group.isMember = true;
       } catch (err: any) {
         await this.showToast(
           err?.error?.message || 'Impossibile entrare nel gruppo',
@@ -147,48 +128,19 @@ export class GroupsPage implements OnInit {
   private loadGroups(event?: any): void {
     if (!event) this.loadingList = true;
 
-    forkJoin({
-      myGroups: this.apiService.getGruppi('my'),
-      publicGroups: this.apiService.getGruppi('all'),
-    }).subscribe({
-      next: ({ myGroups, publicGroups }) => {
-        this.myGroups = (myGroups || []).map((group) => ({
+    // Carica tutti i gruppi
+    this.apiService.getGruppi('all').subscribe({
+      next: (groups) => {
+        this.allGroups = (groups || []).map((group) => ({
           ...group,
-          isMember: true,
           colorClass: group.colorClass || this.resolveGroupColor(group.materia),
         }));
-
-        const myIds = new Set(this.myGroups.map((group) => group.id));
-        this.publicGroups = (publicGroups || [])
-          .filter((group) => !myIds.has(group.id))
-          .map((group) => ({
-            ...group,
-            isMember: !!group.isMember,
-            colorClass: group.colorClass || this.resolveGroupColor(group.materia),
-          }));
-
-        if (
-          this.activeSection === 'my' &&
-          this.myGroups.length === 0 &&
-          this.publicGroups.length > 0
-        ) {
-          this.activeSection = 'all';
-        }
-
-        if (
-          this.activeSection === 'all' &&
-          this.publicGroups.length === 0 &&
-          this.myGroups.length > 0
-        ) {
-          this.activeSection = 'my';
-        }
 
         this.loadingList = false;
         if (event) event.target.complete();
       },
       error: async (err) => {
-        this.myGroups = [];
-        this.publicGroups = [];
+        this.allGroups = [];
         this.loadingList = false;
         if (event) event.target.complete();
         await this.showToast(

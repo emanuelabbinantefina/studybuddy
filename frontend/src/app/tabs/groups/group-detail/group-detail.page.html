@@ -3,7 +3,11 @@
 
     <!-- TOP BAR -->
     <div class="top-bar">
+      <button type="button" class="back-btn" (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
       <span class="page-title">Dettaglio gruppo</span>
+      <div class="top-bar-spacer"></div>
     </div>
 
     <!-- HERO -->
@@ -21,46 +25,61 @@
               {{ gruppo.materia }}
             </span>
 
-            <span class="meta-chip">
+            <span class="meta-chip meta-chip--clickable" (click)="toggleMembers()">
               <ion-icon name="people-outline"></ion-icon>
               {{ gruppo.membersCount || 1 }} membri
+              <ion-icon
+                [name]="showMembers ? 'chevron-up-outline' : 'chevron-down-outline'"
+                class="meta-chip-arrow"
+              ></ion-icon>
             </span>
           </div>
         </div>
       </div>
 
-      <div class="exam-box" *ngIf="gruppo.isMember">
-        <div class="exam-summary" *ngIf="!editingExamDate">
+      <!-- DATA ESAME -->
+      <div class="exam-box" *ngIf="gruppo.examDate">
+        <div class="exam-summary">
           <div class="exam-copy">
-            <strong>{{ gruppo.examDate ? 'Data esame' : 'Aggiungi data esame' }}</strong>
+            <strong>Data esame</strong>
             <p>{{ formatExamDateLabel(gruppo.examDate) }}</p>
             <small>{{ examCountdownLabel(gruppo.examDate) }}</small>
           </div>
+        </div>
+      </div>
 
-          <button type="button" class="exam-edit-btn" (click)="openExamDateEditor()">
-            {{ gruppo.examDate ? 'Modifica' : 'Inserisci' }}
-          </button>
+      <!-- LISTA MEMBRI -->
+      <div class="members-section" *ngIf="showMembers && members.length > 0">
+        <div class="members-header">
+          <strong>Membri ({{ members.length }})</strong>
         </div>
 
-        <div class="exam-editor" *ngIf="editingExamDate">
-          <input type="date" [(ngModel)]="examDateDraft" />
-          <p class="exam-editor-hint exam-editor-hint--warn" *ngIf="examDateValidationMessage">
-            {{ examDateValidationMessage }}
-          </p>
-
-          <div class="exam-editor-actions">
-            <button type="button" class="ghost-action" (click)="cancelExamDateEditor()">Annulla</button>
-            <button
-              type="button"
-              class="primary-action"
-              [disabled]="savingExamDate || !!examDateValidationMessage"
-              (click)="saveExamDate()"
-            >
-              {{ savingExamDate ? 'Salvataggio...' : 'Salva data' }}
-            </button>
+        <div class="members-list">
+          <div class="member-item" *ngFor="let member of members">
+            <div class="member-avatar" [class.member-avatar--owner]="member.role === 'owner'">
+              {{ member.initial }}
+            </div>
+            <div class="member-info">
+              <span class="member-name">
+                {{ member.id === currentUserId ? 'Tu' : member.name }}
+              </span>
+              <span class="member-role" *ngIf="member.role === 'owner'">Admin</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- ABBANDONA GRUPPO -->
+      <button
+        type="button"
+        class="leave-btn"
+        *ngIf="gruppo.isMember && gruppo.currentRole !== 'owner'"
+        (click)="confirmLeaveGroup()"
+        [disabled]="leavingGroup"
+      >
+        <ion-icon name="log-out-outline"></ion-icon>
+        {{ leavingGroup ? 'Uscita...' : 'Abbandona gruppo' }}
+      </button>
     </div>
 
     <!-- SEGMENT -->
@@ -204,7 +223,9 @@
 
                     <div class="reply-bubble">
                       <div class="reply-meta">
-                        <div class="reply-avatar" [class.own]="reply.isOwn">{{ reply.authorInitial }}</div>
+                        <div class="reply-avatar" [class.own]="reply.isOwn">
+                          {{ reply.authorInitial }}
+                        </div>
                         <strong>{{ displayMessageAuthor(reply) }}</strong>
                         <span>{{ formatRelativeDate(reply.createdAt) }}</span>
                       </div>

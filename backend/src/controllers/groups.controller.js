@@ -166,6 +166,18 @@ async function deleteMessage(req, res) {
   }
 }
 
+async function members(req, res) {
+  const groupId = parseGroupId(req, res);
+  if (!groupId) return;
+
+  try {
+    const out = await groupsService.listMembers(req.userData.userId, groupId);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
 async function legacyList(req, res) {
   try {
     const out = await groupsService.legacyGroupsList();
@@ -200,6 +212,7 @@ module.exports = {
   messages,
   sendMessage,
   deleteMessage,
+  members,
   legacyList,
   legacyCreate,
 };

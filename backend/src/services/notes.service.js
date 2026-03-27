@@ -572,7 +572,7 @@ async function create(userId, body = {}) {
           title: 'Nuovo appunto',
           message: `${uploader.name} ha caricato "${titolo}" in ${group.name}`,
           type: 'notes',
-          actionUrl: `/tabs/groups/${groupId}`,
+          actionUrl: `/groups/${groupId}`,
         });
       }
     } catch (err) {
