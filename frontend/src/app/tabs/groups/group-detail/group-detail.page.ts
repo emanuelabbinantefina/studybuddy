@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
+import { UserService } from '../../../core/services/user.service';
 import {
   Appunto,
   GroupBoardMessage,
@@ -31,6 +32,8 @@ interface ThreadMessage extends GroupBoardMessage {
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class GroupDetailPage implements OnInit {
+  @ViewChild('groupNoteInput') groupNoteInput?: ElementRef<HTMLInputElement>;
+
   readonly questionSessionOptions = [
     'Sessione invernale',
     'Sessione primaverile',
@@ -39,6 +42,7 @@ export class GroupDetailPage implements OnInit {
   ];
   readonly minQuestionYear = 2000;
   readonly maxQuestionYear = new Date().getFullYear();
+  readonly groupUploadAccept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
 
   gruppo: Gruppo | null = null;
   appunti: Appunto[] = [];
@@ -46,6 +50,7 @@ export class GroupDetailPage implements OnInit {
   domande: GroupQuestion[] = [];
   members: any[] = [];
   showMembers = false;
+  isBuddyPro = false;
 
   threadMessages: ThreadMessage[] = [];
 
@@ -56,6 +61,8 @@ export class GroupDetailPage implements OnInit {
   sendingQuestion = false;
   leavingGroup = false;
   deletingMessageId: number | null = null;
+  pinningMessageId: number | null = null;
+  uploadingGroupNote = false;
 
   showMessageComposer = false;
   showQuestionComposer = false;
@@ -73,12 +80,16 @@ export class GroupDetailPage implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly apiService: ApiService,
+    private readonly userService: UserService,
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController
   ) {}
 
   ngOnInit() {
     this.currentUserId = this.readSessionUserId();
+    this.userService.getProfile().subscribe((profile) => {
+      this.isBuddyPro = !!profile?.isSpecialUser;
+    });
     const paramId = this.route.snapshot.paramMap.get('id');
     const id = Number(paramId);
     if (Number.isFinite(id) && id > 0) {
@@ -132,7 +143,12 @@ export class GroupDetailPage implements OnInit {
       this.leavingGroup = true;
       await firstValueFrom(this.apiService.leaveGroup(groupId));
       await this.presentToast('Hai abbandonato il gruppo', 'success');
-      this.router.navigate(['/tabs/groups']);
+      this.router.navigate(['/tabs/groups'], {
+        state: {
+          leftGroupId: groupId,
+          leftGroupAt: Date.now(),
+        },
+      });
     } catch (err: any) {
       await this.presentToast(
         err?.error?.message || 'Impossibile abbandonare il gruppo',
@@ -238,6 +254,76 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
+  openGroupUploadPicker(): void {
+    if (this.uploadingGroupNote || !this.gruppo?.isMember) return;
+    this.groupNoteInput?.nativeElement.click();
+  }
+
+  async onGroupNoteSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.item(0) || null;
+    if (!file) return;
+
+    if (!this.isAcceptedGroupFile(file)) {
+      await this.presentToast(
+        'Formato non supportato. Usa PDF, DOC, DOCX, JPG o PNG',
+        'warning'
+      );
+      if (input) input.value = '';
+      return;
+    }
+
+    const maxSizeBytes = this.getMaxGroupFileBytes(file);
+    if (file.size > maxSizeBytes) {
+      await this.presentToast(
+        `${this.getGroupUploadTypeLabel(file)} troppo grande. Massimo ${this.formatGroupFileLimit(maxSizeBytes)}`,
+        'warning'
+      );
+      if (input) input.value = '';
+      return;
+    }
+
+    const defaultTitle = this.buildDefaultFileTitle(file.name);
+    const alert = await this.alertCtrl.create({
+      header: 'Carica appunto nel gruppo',
+      message: 'Scegli un titolo per il file da condividere.',
+      inputs: [
+        {
+          name: 'title',
+          type: 'text',
+          placeholder: 'Titolo appunto',
+          value: defaultTitle,
+        },
+      ],
+      buttons: [
+        {
+          text: 'Annulla',
+          role: 'cancel',
+          handler: () => {
+            if (input) input.value = '';
+          },
+        },
+        {
+          text: 'Carica',
+          handler: async (value) => {
+            const title = String(value?.title || '').trim();
+            if (!title) {
+              await this.presentToast('Titolo obbligatorio', 'warning');
+              if (input) input.value = '';
+              return false;
+            }
+
+            await this.uploadGroupNote(file, title);
+            if (input) input.value = '';
+            return true;
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
   // ═══════════════════════════
   // TABS
   // ═══════════════════════════
@@ -254,6 +340,20 @@ export class GroupDetailPage implements OnInit {
 
   openMessageComposer(): void {
     this.showMessageComposer = true;
+  }
+
+  get canPinMessages(): boolean {
+    return this.isBuddyPro && !!this.gruppo?.isMember;
+  }
+
+  get pinnedMessages(): GroupBoardMessage[] {
+    return [...this.messaggi]
+      .filter((message) => !!message.isPinned)
+      .sort((left, right) => {
+        const leftTime = new Date(left.pinnedAt || left.createdAt || 0).getTime();
+        const rightTime = new Date(right.pinnedAt || right.createdAt || 0).getTime();
+        return rightTime - leftTime;
+      });
   }
 
   closeMessageComposer(): void {
@@ -336,6 +436,31 @@ export class GroupDetailPage implements OnInit {
     });
 
     await alert.present();
+  }
+
+  async togglePinned(message: GroupBoardMessage, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!groupId || !message?.id || !this.canPinMessages || this.pinningMessageId) return;
+
+    try {
+      this.pinningMessageId = message.id;
+      await firstValueFrom(
+        this.apiService.setGroupMessagePinned(groupId, message.id, !message.isPinned)
+      );
+      await this.presentToast(
+        message.isPinned ? 'Messaggio rimosso dai pin' : 'Messaggio pinnato',
+        'success'
+      );
+      this.loadBacheca(groupId);
+    } catch (err: any) {
+      await this.presentToast(
+        err?.error?.message || 'Impossibile aggiornare il pin del messaggio',
+        'danger'
+      );
+    } finally {
+      this.pinningMessageId = null;
+    }
   }
 
   // ═══════════════════════════
@@ -539,6 +664,90 @@ export class GroupDetailPage implements OnInit {
   private extractInitial(name?: string | null): string {
     const clean = String(name || '').trim();
     return clean ? clean.charAt(0).toUpperCase() : 'S';
+  }
+
+  private async uploadGroupNote(file: File, title: string): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!groupId || this.uploadingGroupNote) return;
+
+    try {
+      this.uploadingGroupNote = true;
+      const fileData = await this.readFileAsDataUrl(file);
+
+      await firstValueFrom(
+        this.apiService.uploadAppunto({
+          titolo: title.trim(),
+          materia: String(this.gruppo?.materia || '').trim(),
+          tipoFile: this.resolveGroupTipoFile(file),
+          fileName: file.name,
+          mimeType: file.type || undefined,
+          sizeBytes: file.size,
+          fileData,
+          groupId,
+        })
+      );
+
+      this.loadAppunti(groupId);
+      await this.presentToast('Appunto caricato nel gruppo', 'success');
+    } catch (err: any) {
+      await this.presentToast(
+        err?.error?.message || 'Impossibile caricare l appunto nel gruppo',
+        'danger'
+      );
+    } finally {
+      this.uploadingGroupNote = false;
+    }
+  }
+
+  private isAcceptedGroupFile(file: File): boolean {
+    const ext = this.getGroupFileExtension(file.name);
+    return ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'].includes(ext);
+  }
+
+  private resolveGroupTipoFile(file: File): 'pdf' | 'doc' | 'img' {
+    const ext = this.getGroupFileExtension(file.name);
+    if (ext === 'pdf') return 'pdf';
+    if (ext === 'doc' || ext === 'docx') return 'doc';
+    return 'img';
+  }
+
+  private getMaxGroupFileBytes(file: File): number {
+    const ext = this.getGroupFileExtension(file.name);
+    if (ext === 'pdf') return 10 * 1024 * 1024;
+    if (ext === 'doc' || ext === 'docx') return 8 * 1024 * 1024;
+    if (ext === 'jpg' || ext === 'jpeg') return 8 * 1024 * 1024;
+    return 4 * 1024 * 1024;
+  }
+
+  private getGroupUploadTypeLabel(file: File): string {
+    const ext = this.getGroupFileExtension(file.name);
+    if (ext === 'pdf') return 'PDF';
+    if (ext === 'doc' || ext === 'docx') return 'DOC/DOCX';
+    if (ext === 'jpg' || ext === 'jpeg') return 'JPG/JPEG';
+    return 'PNG';
+  }
+
+  private formatGroupFileLimit(sizeBytes: number): string {
+    return `${Math.round(sizeBytes / (1024 * 1024))} MB`;
+  }
+
+  private getGroupFileExtension(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf('.');
+    return dotIndex >= 0 ? fileName.slice(dotIndex + 1).toLowerCase() : '';
+  }
+
+  private buildDefaultFileTitle(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf('.');
+    return dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Lettura file fallita'));
+      reader.readAsDataURL(file);
+    });
   }
 
   private normalizeQuestionSession(value: string | null | undefined): string {

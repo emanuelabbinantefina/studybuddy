@@ -701,17 +701,22 @@ async function listMessages(userId, groupId, query = {}) {
       m.groupId,
       m.userId,
       m.parentMessageId,
+      coalesce(m.isPinned, 0) as isPinned,
+      m.pinnedAt,
+      m.pinnedByUserId,
       coalesce(u.nickname, u.name) as userName,
       u.avatarUrl as userAvatar,
       m.text,
       m.createdAt,
       parent.text as parentText,
       coalesce(parentUser.nickname, parentUser.name) as parentUserName,
-      parent.userId as parentUserId
+      parent.userId as parentUserId,
+      coalesce(pinUser.nickname, pinUser.name) as pinnedByName
     from GroupMessages m
     join Users u on u.id = m.userId
     left join GroupMessages parent on parent.id = m.parentMessageId
     left join Users parentUser on parentUser.id = parent.userId
+    left join Users pinUser on pinUser.id = m.pinnedByUserId
     where m.groupId = ?
     order by m.createdAt desc
     limit ?
@@ -753,17 +758,22 @@ async function sendMessage(userId, groupId, body = {}) {
       m.groupId,
       m.userId,
       m.parentMessageId,
+      coalesce(m.isPinned, 0) as isPinned,
+      m.pinnedAt,
+      m.pinnedByUserId,
       coalesce(u.nickname, u.name) as userName,
       u.avatarUrl as userAvatar,
       m.text,
       m.createdAt,
       parent.text as parentText,
       coalesce(parentUser.nickname, parentUser.name) as parentUserName,
-      parent.userId as parentUserId
+      parent.userId as parentUserId,
+      coalesce(pinUser.nickname, pinUser.name) as pinnedByName
     from GroupMessages m
     join Users u on u.id = m.userId
     left join GroupMessages parent on parent.id = m.parentMessageId
     left join Users parentUser on parentUser.id = parent.userId
+    left join Users pinUser on pinUser.id = m.pinnedByUserId
     where m.id = ?
     `,
     [out.lastID]
@@ -792,6 +802,74 @@ async function sendMessage(userId, groupId, body = {}) {
   }
 
   return saved || { id: out.lastID, groupId, userId, parentMessageId, text, createdAt: now };
+}
+
+async function pinMessage(userId, groupId, messageId, shouldPin = true) {
+  await ensureMember(groupId, userId);
+
+  const message = await get(
+    `
+    select id
+    from GroupMessages
+    where id = ? and groupId = ?
+    `,
+    [messageId, groupId]
+  );
+
+  if (!message) throw notFound('messaggio non trovato');
+
+  const now = nowIso();
+  if (shouldPin) {
+    await run(
+      `
+      update GroupMessages
+      set isPinned = 1,
+          pinnedAt = ?,
+          pinnedByUserId = ?
+      where id = ? and groupId = ?
+      `,
+      [now, userId, messageId, groupId]
+    );
+  } else {
+    await run(
+      `
+      update GroupMessages
+      set isPinned = 0,
+          pinnedAt = null,
+          pinnedByUserId = null
+      where id = ? and groupId = ?
+      `,
+      [messageId, groupId]
+    );
+  }
+
+  return get(
+    `
+    select
+      m.id,
+      m.groupId,
+      m.userId,
+      m.parentMessageId,
+      coalesce(m.isPinned, 0) as isPinned,
+      m.pinnedAt,
+      m.pinnedByUserId,
+      coalesce(u.nickname, u.name) as userName,
+      u.avatarUrl as userAvatar,
+      m.text,
+      m.createdAt,
+      parent.text as parentText,
+      coalesce(parentUser.nickname, parentUser.name) as parentUserName,
+      parent.userId as parentUserId,
+      coalesce(pinUser.nickname, pinUser.name) as pinnedByName
+    from GroupMessages m
+    join Users u on u.id = m.userId
+    left join GroupMessages parent on parent.id = m.parentMessageId
+    left join Users parentUser on parentUser.id = parent.userId
+    left join Users pinUser on pinUser.id = m.pinnedByUserId
+    where m.id = ?
+    `,
+    [messageId]
+  );
 }
 
 async function deleteMessage(userId, groupId, messageId) {
@@ -898,6 +976,7 @@ module.exports = {
   createQuestion,
   listMessages,
   sendMessage,
+  pinMessage,
   deleteMessage,
   listMembers,
   legacyGroupsList,

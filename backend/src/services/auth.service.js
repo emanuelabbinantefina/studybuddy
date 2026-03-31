@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const { all, get, run, withTransaction } = require('../db/connection');
 const { nowIso } = require('../db/init');
+const { buildAccountAccess } = require('../utils/account-role');
 
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
 
@@ -47,6 +48,7 @@ function normalizeUserRow(row) {
   const firstName = String(row.firstName || '').trim() || legacy.firstName;
   const lastName = String(row.lastName || '').trim() || legacy.lastName;
   const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || String(row.name || '').trim();
+  const accountAccess = buildAccountAccess(row.accountRole);
 
   return {
     ...row,
@@ -54,7 +56,29 @@ function normalizeUserRow(row) {
     firstName,
     lastName,
     username: row.username || null,
-    courseYear: row.courseYear || null
+    courseYear: row.courseYear || null,
+    ...accountAccess,
+  };
+}
+
+function toPublicUser(user) {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    name: user.name,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    username: user.username,
+    facolta: user.facolta,
+    corso: user.corso,
+    courseYear: user.courseYear,
+    nickname: user.nickname,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+    accountRole: user.accountRole,
+    isSpecialUser: user.isSpecialUser,
   };
 }
 
@@ -158,9 +182,9 @@ async function register(body) {
 
   const out = await run(
     `insert into Users
-      (name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, createdAt, updatedAt)
+      (name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, accountRole, createdAt, updatedAt)
      values
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       cleanName,
       cleanName,
@@ -174,10 +198,27 @@ async function register(body) {
       null,
       null,
       null,
+      'standard',
       now,
       now,
     ]
   );
+
+  const normalizedUser = normalizeUserRow({
+    id: out.lastID,
+    name: cleanName,
+    firstName: cleanName,
+    lastName: '',
+    email: cleanEmail,
+    username: null,
+    facolta: selection.faculty || null,
+    corso: selection.course || null,
+    courseYear: null,
+    nickname: null,
+    bio: null,
+    avatarUrl: null,
+    accountRole: 'standard',
+  });
 
   const token = jwt.sign(
     { id: out.lastID, userId: out.lastID, email: cleanEmail },
@@ -188,20 +229,7 @@ async function register(body) {
   return {
     userId: out.lastID,
     token,
-    user: {
-      id: out.lastID,
-      name: cleanName,
-      firstName: cleanName,
-      lastName: '',
-      email: cleanEmail,
-      username: null,
-      facolta: selection.faculty || null,
-      corso: selection.course || null,
-      courseYear: null,
-      nickname: null,
-      bio: null,
-      avatarUrl: null
-    }
+    user: toPublicUser(normalizedUser),
   };
 }
 
@@ -212,7 +240,7 @@ async function login(body) {
   if (!cleanEmail || !password) throw badRequest('email e password sono obbligatori');
 
   const user = await get(
-    `select id, name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl
+    `select id, name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, accountRole
      from Users
      where email = ?`,
     [cleanEmail]
@@ -240,26 +268,13 @@ async function login(body) {
 
   return {
     token,
-    user: {
-      id: normalizedUser.id,
-      name: normalizedUser.name,
-      firstName: normalizedUser.firstName,
-      lastName: normalizedUser.lastName,
-      email: normalizedUser.email,
-      username: normalizedUser.username,
-      facolta: normalizedUser.facolta,
-      corso: normalizedUser.corso,
-      courseYear: normalizedUser.courseYear,
-      nickname: normalizedUser.nickname,
-      bio: normalizedUser.bio,
-      avatarUrl: normalizedUser.avatarUrl
-    }
+    user: toPublicUser(normalizedUser),
   };
 }
 
 async function me(userId) {
   const user = await get(
-    `select id, name, firstName, lastName, email, username, facolta, corso, courseYear, nickname, bio, avatarUrl, createdAt, updatedAt
+    `select id, name, firstName, lastName, email, username, facolta, corso, courseYear, nickname, bio, avatarUrl, accountRole, createdAt, updatedAt
      from Users
      where id = ?`,
     [userId]

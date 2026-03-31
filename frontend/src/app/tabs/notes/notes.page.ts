@@ -11,7 +11,7 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
-import { Appunto } from '../../core/interfaces/models';
+import { Appunto, NoteCollection, NoteCollectionItem } from '../../core/interfaces/models';
 import { UserService } from '../../core/services/user.service';
 
 type NoteTab = 'all' | 'mine' | 'saved';
@@ -56,11 +56,14 @@ export class NotesPage implements OnInit, OnDestroy {
   myFacultyLabel = '';
   myCourseLabel = '';
   showAllFaculties = true;
+  isBuddyPro = false;
 
   loading = false;
   downloadingNoteId: number | null = null;
   deletingNoteId: number | null = null;
   savingNoteId: number | null = null;
+  savingBuddyMeta = false;
+  creatingCollection = false;
 
   showUploadPanel = false;
   uploading = false;
@@ -68,10 +71,18 @@ export class NotesPage implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   uploadTitle = '';
   uploadSubject = '';
+  showCollectionComposer = false;
 
   allNotes: Appunto[] = [];
   filteredNotes: Appunto[] = [];
   selectedNote: Appunto | null = null;
+  noteCollections: NoteCollection[] = [];
+  selectedCollection: NoteCollection | null = null;
+  collectionTitle = '';
+  collectionDescription = '';
+  selectedCollectionNoteIds: number[] = [];
+  buddyFeaturedDraft = false;
+  buddyVerifiedDraft = false;
 
   uploadSubjectOptions: string[] = [];
   browseSubjectOptions: string[] = [];
@@ -232,10 +243,129 @@ export class NotesPage implements OnInit, OnDestroy {
 
   openNoteDetail(note: Appunto) {
     this.selectedNote = note;
+    this.syncBuddyMetaDraft(note);
   }
 
   closeNoteDetail() {
     this.selectedNote = null;
+    this.syncBuddyMetaDraft(null);
+  }
+
+  openCollection(collection: NoteCollection): void {
+    this.selectedNote = null;
+    this.selectedCollection = collection;
+  }
+
+  closeCollection(): void {
+    this.selectedCollection = null;
+  }
+
+  get visibleCollections(): NoteCollection[] {
+    if (!this.activeSubjectFilter) return this.noteCollections;
+
+    const target = this.normalizeText(this.activeSubjectFilter);
+    return this.noteCollections.filter(
+      (collection) => this.normalizeText(collection.subject) === target
+    );
+  }
+
+  toggleCollectionComposer(): void {
+    if (!this.isBuddyPro) return;
+
+    this.showCollectionComposer = !this.showCollectionComposer;
+    if (this.showCollectionComposer && !this.selectedCollectionNoteIds.length) {
+      this.selectedCollectionNoteIds = this.filteredNotes.slice(0, 4).map((note) => note.id);
+    }
+  }
+
+  closeCollectionComposer(): void {
+    if (this.creatingCollection) return;
+    this.showCollectionComposer = false;
+    this.collectionTitle = '';
+    this.collectionDescription = '';
+    this.selectedCollectionNoteIds = [];
+  }
+
+  isCollectionNoteSelected(noteId: number): boolean {
+    return this.selectedCollectionNoteIds.includes(noteId);
+  }
+
+  toggleCollectionNoteSelection(noteId: number): void {
+    if (this.isCollectionNoteSelected(noteId)) {
+      this.selectedCollectionNoteIds = this.selectedCollectionNoteIds.filter((id) => id !== noteId);
+      return;
+    }
+
+    this.selectedCollectionNoteIds = [...this.selectedCollectionNoteIds, noteId];
+  }
+
+  async createCollection(): Promise<void> {
+    if (!this.isBuddyPro || this.creatingCollection) return;
+
+    const title = this.collectionTitle.trim();
+    if (!title) {
+      await this.showToast('Titolo raccolta obbligatorio', 'warning');
+      return;
+    }
+
+    if (!this.selectedCollectionNoteIds.length) {
+      await this.showToast('Seleziona almeno un appunto', 'warning');
+      return;
+    }
+
+    try {
+      this.creatingCollection = true;
+      const collection = await firstValueFrom(
+        this.apiService.createNoteCollection({
+          title,
+          description: this.collectionDescription.trim(),
+          noteIds: this.selectedCollectionNoteIds,
+        })
+      );
+
+      this.noteCollections = [collection, ...this.noteCollections];
+      this.closeCollectionComposer();
+      this.selectedCollection = collection;
+      await this.showToast('Raccolta BuddyPro pubblicata', 'success');
+    } catch (err: any) {
+      await this.showToast(
+        err?.error?.message || 'Impossibile creare la raccolta',
+        'danger'
+      );
+    } finally {
+      this.creatingCollection = false;
+    }
+  }
+
+  openCollectionItem(item: NoteCollectionItem, event?: Event): void {
+    event?.stopPropagation();
+    const note = this.findNoteById(item.noteId);
+    if (note) {
+      this.selectedCollection = null;
+      this.openNoteDetail(note);
+      return;
+    }
+
+    void this.downloadCollectionItem(item, event);
+  }
+
+  async downloadCollectionItem(item: NoteCollectionItem, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    await this.downloadNote(
+      {
+        id: item.noteId,
+        titolo: item.title,
+        materia: item.subject,
+        tipoFile: item.type,
+        autoreNome: item.authorName,
+        tempoUpload: '',
+      },
+      event
+    );
+  }
+
+  hasVisibleNote(noteId: number): boolean {
+    return !!this.findNoteById(noteId);
   }
 
   getFileLabel(tipo: Appunto['tipoFile']): string {
@@ -279,7 +409,6 @@ export class NotesPage implements OnInit, OnDestroy {
 
     this.openUploadModal();
   }
-
   openUploadModal(): void {
     this.showUploadPanel = true;
     this.syncDefaultUploadSubject();
@@ -426,6 +555,7 @@ export class NotesPage implements OnInit, OnDestroy {
         this.selectedNote = null;
       }
       this.eseguiRicerca();
+      this.loadCollections();
     } catch (err: any) {
       const message =
         err?.error?.message || 'Impossibile eliminare appunto';
@@ -471,6 +601,46 @@ export class NotesPage implements OnInit, OnDestroy {
       await this.showToast(message, 'danger');
     } finally {
       this.savingNoteId = null;
+    }
+  }
+
+  async saveBuddyMeta(note: Appunto, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!this.isBuddyPro || this.savingBuddyMeta) return;
+
+    try {
+      this.savingBuddyMeta = true;
+      const out = await firstValueFrom(
+        this.apiService.updateBuddyNoteMeta(note.id, {
+          isFeatured: this.buddyFeaturedDraft,
+          isVerified: this.buddyVerifiedDraft,
+        })
+      );
+
+      this.allNotes = this.allNotes.map((item) =>
+        item.id === note.id
+          ? {
+              ...item,
+              isFeatured: out.isFeatured,
+              isVerified: out.isVerified,
+            }
+          : item
+      );
+      this.selectedNote = {
+        ...note,
+        isFeatured: out.isFeatured,
+        isVerified: out.isVerified,
+      };
+      this.applyNoteFilters();
+
+      await this.showToast('Metadati BuddyPro salvati', 'success');
+    } catch (err: any) {
+      await this.showToast(
+        err?.error?.message || 'Impossibile salvare le info BuddyPro',
+        'danger'
+      );
+    } finally {
+      this.savingBuddyMeta = false;
     }
   }
 
@@ -590,7 +760,10 @@ export class NotesPage implements OnInit, OnDestroy {
         this.loading = false;
         if (this.pendingNoteId !== null) {
           const note = this.allNotes.find((n) => n.id === this.pendingNoteId);
-          if (note) this.selectedNote = note;
+          if (note) {
+            this.selectedNote = note;
+            this.syncBuddyMetaDraft(note);
+          }
           this.pendingNoteId = null;
         }
       },
@@ -657,6 +830,7 @@ export class NotesPage implements OnInit, OnDestroy {
     const nextSelectedNote =
       filtered.find((n) => n.id === this.selectedNote?.id) || null;
     this.selectedNote = nextSelectedNote;
+    this.syncBuddyMetaDraft(nextSelectedNote);
   }
 
   private get currentScope(): 'all' | 'faculty' {
@@ -683,6 +857,7 @@ export class NotesPage implements OnInit, OnDestroy {
           String(profile?.displayName || profile?.nome || '').trim() ||
           this.readSessionUserName();
         this.sessionUserName = nextName || 'Utente';
+        this.isBuddyPro = !!profile?.isSpecialUser;
 
         const nextFaculty = String(profile?.facolta || '').trim();
         const nextCourse = String(profile?.corso || '').trim();
@@ -701,6 +876,22 @@ export class NotesPage implements OnInit, OnDestroy {
 
   private loadNoteContext(): void {
     this.loadUploadSubjects();
+    this.loadCollections();
+  }
+
+  private loadCollections(): void {
+    this.apiService.getNoteCollections().subscribe({
+      next: (items) => {
+        this.noteCollections = Array.isArray(items) ? items : [];
+      },
+      error: () => {
+        this.noteCollections = [];
+      },
+    });
+  }
+
+  private findNoteById(noteId: number): Appunto | null {
+    return this.allNotes.find((note) => Number(note.id) === Number(noteId)) || null;
   }
 
   private loadUploadSubjects(): void {
@@ -849,6 +1040,11 @@ export class NotesPage implements OnInit, OnDestroy {
     if (!this.uploadSubject && this.uploadSubjectOptions.length === 1) {
       this.uploadSubject = this.uploadSubjectOptions[0];
     }
+  }
+
+  private syncBuddyMetaDraft(note: Appunto | null): void {
+    this.buddyFeaturedDraft = !!note?.isFeatured;
+    this.buddyVerifiedDraft = !!note?.isVerified;
   }
 
   private decrementStat(key: 'saved'): void {

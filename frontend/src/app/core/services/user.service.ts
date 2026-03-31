@@ -17,6 +17,8 @@ interface SessionUser {
   courseYear?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+  accountRole?: string | null;
+  isSpecialUser?: boolean | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -89,7 +91,15 @@ export class UserService {
       try {
         const parsed = JSON.parse(raw);
         if (Number(parsed?.id || 0) === userId) {
-          return parsed as UserProfile;
+          const accountRole = String(parsed?.accountRole || 'standard').trim() || 'standard';
+          return {
+            ...parsed,
+            accountRole,
+            isSpecialUser: Boolean(
+              parsed?.isSpecialUser
+              ?? (accountRole && accountRole !== 'standard')
+            ),
+          } as UserProfile;
         }
       } catch {
         // Ignore malformed cache entries
@@ -136,6 +146,12 @@ export class UserService {
         : this.hasOwnAvatar(sessionUser)
           ? sessionAvatar
           : this.readStoredAvatarForUser(userId);
+    const accountRole = String(user?.accountRole || sessionUser?.accountRole || 'standard').trim() || 'standard';
+    const isSpecialUser = Boolean(
+      user?.isSpecialUser
+      ?? sessionUser?.isSpecialUser
+      ?? (accountRole && accountRole !== 'standard')
+    );
 
     return {
       id: userId,
@@ -153,7 +169,9 @@ export class UserService {
       courseYear: String(user?.courseYear || sessionUser?.courseYear || '').trim(),
       media: 0,
       cfu: 0,
-      esamiTotali: 0
+      esamiTotali: 0,
+      accountRole,
+      isSpecialUser,
     };
   }
 
@@ -192,7 +210,9 @@ export class UserService {
         corso: profile.corso || session.corso || null,
         courseYear: profile.courseYear || null,
         bio: profile.bio || null,
-        avatarUrl: this.normalizeAvatarValue(profile.avatar) || null
+        avatarUrl: this.normalizeAvatarValue(profile.avatar) || null,
+        accountRole: profile.accountRole || 'standard',
+        isSpecialUser: !!profile.isSpecialUser,
       };
       localStorage.setItem('user_data', JSON.stringify(nextSession));
     } catch {

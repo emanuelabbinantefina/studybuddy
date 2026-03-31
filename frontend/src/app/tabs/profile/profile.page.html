@@ -19,6 +19,11 @@
         <p class="hero-username" *ngIf="displayUsername">{{ displayUsername }}</p>
 
         <div class="hero-chips">
+          <span class="chip chip--buddypro" *ngIf="user?.isSpecialUser">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            BuddyPro
+          </span>
+
           <span class="chip" *ngIf="user?.corso">
             <ion-icon name="school-outline"></ion-icon>
             {{ user?.corso }}

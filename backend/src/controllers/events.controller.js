@@ -63,4 +63,11 @@ async function remove(req, res) {
   }
 }
 
-module.exports = { create, upcoming, list, subjectsMine, update, remove };
+module.exports = {
+  create,
+  upcoming,
+  list,
+  subjectsMine,
+  update,
+  remove,
+};

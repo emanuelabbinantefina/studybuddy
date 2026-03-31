@@ -306,11 +306,16 @@ async function list(userId, query = {}) {
        ${NOTE_FACULTY_SQL} as facolta,
        ${NOTE_COURSE_SQL} as corso,
        coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
-       case when saved.noteId is not null then 1 else 0 end as isSaved
+       case when saved.noteId is not null then 1 else 0 end as isSaved,
+       coalesce(meta.isFeatured, 0) as isFeatured,
+       coalesce(meta.isVerified, 0) as isVerified,
+       meta.guideNote as guideNote
      from Notes
      left join Users on Users.id = Notes.userId
      left join NoteBookmarks saved
        on saved.noteId = Notes.id and saved.userId = ?
+     left join NoteBuddyMeta meta
+       on meta.noteId = Notes.id
      ${where.length ? `where ${where.join(' and ')}` : ''}
      order by Notes.createdAt desc
      limit ?`,
@@ -333,6 +338,9 @@ async function list(userId, query = {}) {
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
     isSaved: !!row.isSaved,
+    isFeatured: !!row.isFeatured,
+    isVerified: !!row.isVerified,
+    guideNote: String(row.guideNote || '').trim() || null,
   }));
 
   return mapped;
@@ -374,10 +382,14 @@ async function listSaved(userId, query = {}) {
        Notes.createdAt as createdAt,
        ${NOTE_FACULTY_SQL} as facolta,
        ${NOTE_COURSE_SQL} as corso,
-       coalesce(Users.nickname, Users.name, 'Studente') as autoreNome
+       coalesce(Users.nickname, Users.name, 'Studente') as autoreNome,
+       coalesce(meta.isFeatured, 0) as isFeatured,
+       coalesce(meta.isVerified, 0) as isVerified,
+       meta.guideNote as guideNote
      from NoteBookmarks
      inner join Notes on Notes.id = NoteBookmarks.noteId
      left join Users on Users.id = Notes.userId
+     left join NoteBuddyMeta meta on meta.noteId = Notes.id
      where ${where.join(' and ')}
      order by NoteBookmarks.createdAt desc
      limit ?`,
@@ -395,6 +407,9 @@ async function listSaved(userId, query = {}) {
     tempoUpload: formatRelativeTime(row.createdAt),
     canDelete: Number(row.userId) === Number(userId),
     isSaved: true,
+    isFeatured: !!row.isFeatured,
+    isVerified: !!row.isVerified,
+    guideNote: String(row.guideNote || '').trim() || null,
   }));
 
   return mapped;

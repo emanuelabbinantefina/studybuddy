@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Gruppo, Appunto, GroupBoardMessage, GroupQuestion } from '../interfaces/models';
+import {
+  Gruppo,
+  Appunto,
+  GroupBoardMessage,
+  GroupQuestion,
+  NoteCollection,
+} from '../interfaces/models';
 
 interface UploadAppuntoPayload {
   titolo: string;
@@ -39,6 +45,12 @@ interface GroupMembershipResponse {
   ok: boolean;
   changed?: boolean;
   group?: Gruppo;
+}
+
+interface CreateNoteCollectionPayload {
+  title: string;
+  description?: string;
+  noteIds: number[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -259,6 +271,18 @@ export class ApiService {
     );
   }
 
+  setGroupMessagePinned(
+    groupId: number,
+    messageId: number,
+    pinned: boolean
+  ): Observable<GroupBoardMessage> {
+    return this.http.patch<GroupBoardMessage>(
+      `${this.baseUrl}/groups/${groupId}/messages/${messageId}/pin`,
+      { pinned },
+      { headers: this.authHeaders() }
+    );
+  }
+
   getGroupAppunti(groupId: number): Observable<Appunto[]> {
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti`, {
       headers: this.authHeaders(),
@@ -380,5 +404,35 @@ export class ApiService {
     return this.http.delete<{ ok: boolean }>(`${this.baseUrl}/appunti/${noteId}/bookmark`, {
       headers: this.authHeaders(),
     });
+  }
+
+  updateBuddyNoteMeta(
+    noteId: number,
+    payload: { isFeatured: boolean; isVerified: boolean }
+  ): Observable<{ noteId: number; isFeatured: boolean; isVerified: boolean }> {
+    return this.http.patch<{ noteId: number; isFeatured: boolean; isVerified: boolean }>(
+      `${this.baseUrl}/appunti/${noteId}/buddy-meta`,
+      payload,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  getNoteCollections(subject = ''): Observable<NoteCollection[]> {
+    const params = subject.trim() ? { subject: subject.trim() } : undefined;
+    return this.http.get<NoteCollection[]>(
+      `${this.baseUrl}/appunti/buddy/collections`,
+      {
+        headers: this.authHeaders(),
+        params,
+      }
+    );
+  }
+
+  createNoteCollection(payload: CreateNoteCollectionPayload): Observable<NoteCollection> {
+    return this.http.post<NoteCollection>(
+      `${this.baseUrl}/appunti/buddy/collections`,
+      payload,
+      { headers: this.authHeaders() }
+    );
   }
 }

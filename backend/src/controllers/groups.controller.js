@@ -149,6 +149,28 @@ async function sendMessage(req, res) {
   }
 }
 
+async function pinMessage(req, res) {
+  const groupId = parseGroupId(req, res);
+  if (!groupId) return;
+
+  const messageId = Number(req.params.messageId);
+  if (!Number.isFinite(messageId) || messageId <= 0) {
+    return res.status(400).json({ message: 'id messaggio non valido' });
+  }
+
+  try {
+    const out = await groupsService.pinMessage(
+      req.userData.userId,
+      groupId,
+      messageId,
+      req.body?.pinned !== false
+    );
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
 async function deleteMessage(req, res) {
   const groupId = parseGroupId(req, res);
   if (!groupId) return;
@@ -177,6 +199,7 @@ async function members(req, res) {
     handleError(res, e);
   }
 }
+
 
 async function legacyList(req, res) {
   try {
@@ -211,6 +234,7 @@ module.exports = {
   addQuestion,
   messages,
   sendMessage,
+  pinMessage,
   deleteMessage,
   members,
   legacyList,

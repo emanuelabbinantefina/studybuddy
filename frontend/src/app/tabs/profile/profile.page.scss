@@ -142,6 +142,11 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     background: $green-soft;
     color: $green;
   }
+
+  &--buddypro {
+    background: rgba(255, 159, 110, 0.18);
+    color: #c76328;
+  }
 }
 
 .hero-member {

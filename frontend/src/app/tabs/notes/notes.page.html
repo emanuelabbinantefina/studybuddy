@@ -8,6 +8,11 @@
   <div class="notes-header">
     <h1 class="page-title">Appunti</h1>
     <div class="header-actions">
+      <button class="buddypro-btn" *ngIf="isBuddyPro" (click)="toggleCollectionComposer()">
+        <ion-icon name="sparkles-outline"></ion-icon>
+        Raccolta
+      </button>
+
       <button class="view-toggle" (click)="toggleViewMode()">
         <ion-icon [name]="viewMode === 'grid' ? 'list-outline' : 'grid-outline'"></ion-icon>
       </button>
@@ -18,6 +23,36 @@
       </button>
     </div>
   </div>
+
+  <section class="buddypro-panel" *ngIf="isBuddyPro && showCollectionComposer">
+    <div class="buddypro-panel__head">
+      <div>
+        <strong>Crea raccolta BuddyPro</strong>
+        <p>Seleziona appunti della stessa materia e rendili visibili a tutti.</p>
+      </div>
+      <button type="button" class="buddypro-close" (click)="closeCollectionComposer()">Chiudi</button>
+    </div>
+
+    <div class="buddypro-fields">
+      <input type="text" maxlength="120" [(ngModel)]="collectionTitle" placeholder="Titolo raccolta" />
+      <textarea rows="2" maxlength="300" [(ngModel)]="collectionDescription" placeholder="Descrizione breve"></textarea>
+    </div>
+
+    <div class="buddypro-note-picker">
+      <label class="buddypro-note-option" *ngFor="let note of filteredNotes | slice:0:12">
+        <input
+          type="checkbox"
+          [checked]="isCollectionNoteSelected(note.id)"
+          (change)="toggleCollectionNoteSelection(note.id)"
+        />
+        <span>{{ note.titolo }} · {{ note.materia }}</span>
+      </label>
+    </div>
+
+    <button class="buddypro-submit" [disabled]="creatingCollection" (click)="createCollection()">
+      {{ creatingCollection ? 'Pubblicazione...' : 'Pubblica raccolta' }}
+    </button>
+  </section>
 
   <!-- MINI STATS -->
   <div class="mini-stats">
@@ -35,6 +70,31 @@
       <span class="mini-stat-label">Salvati</span>
     </div>
   </div>
+
+  <section class="buddy-resource-strip" *ngIf="visibleCollections.length > 0">
+    <div class="section-mini-header">
+      <div class="section-mini-header__copy">
+        <span class="section-kicker">BuddyPro</span>
+        <h3>Raccolte per materia</h3>
+        <p>Selezioni BuddyPro visibili a tutti gli studenti.</p>
+      </div>
+    </div>
+
+    <div class="buddy-resource-list">
+      <article class="buddy-resource-card" *ngFor="let collection of visibleCollections | slice:0:6" (click)="openCollection(collection)">
+        <div class="buddy-resource-card__top">
+          <span class="buddy-resource-chip">{{ collection.subject }}</span>
+          <span class="buddy-resource-count">{{ collection.items.length }} appunti</span>
+        </div>
+        <strong>{{ collection.title }}</strong>
+        <p>{{ collection.description || 'Raccolta curata di appunti utili' }}</p>
+        <div class="buddy-resource-card__footer">
+          <span>{{ collection.authorName || 'BuddyPro' }}</span>
+          <span>Apri raccolta</span>
+        </div>
+      </article>
+    </div>
+  </section>
 
   <!-- SEARCH -->
   <div class="search-bar">
@@ -131,6 +191,11 @@
         <span> · {{ n.materia }}</span>
       </p>
 
+      <div class="note-card-flags" *ngIf="n.isFeatured || n.isVerified">
+        <span class="note-flag" *ngIf="n.isFeatured">In evidenza</span>
+        <span class="note-flag note-flag--verified" *ngIf="n.isVerified">Consigliato</span>
+      </div>
+
       <div class="note-card-footer">
         <span class="note-saved-dot" *ngIf="n.isSaved">🔖</span>
         <span class="note-mine-dot" *ngIf="n.canDelete">✏️</span>
@@ -208,6 +273,11 @@
         {{ selectedNote.materia }} · {{ getUploaderName(selectedNote) }}
       </p>
 
+      <div class="detail-badges" *ngIf="selectedNote.isFeatured || selectedNote.isVerified">
+        <span class="note-flag" *ngIf="selectedNote.isFeatured">In evidenza</span>
+        <span class="note-flag note-flag--verified" *ngIf="selectedNote.isVerified">Consigliato da BuddyPro</span>
+      </div>
+
       <div class="detail-actions">
         <button class="detail-btn detail-btn--primary" [disabled]="downloadingNoteId === selectedNote.id"
           (click)="downloadNote(selectedNote, $event)">
@@ -226,6 +296,57 @@
           <ion-icon name="trash-outline"></ion-icon>
           {{ deletingNoteId === selectedNote.id ? '...' : 'Elimina' }}
         </button>
+      </div>
+
+      <div class="buddypro-editor" *ngIf="isBuddyPro">
+        <strong>Editor BuddyPro</strong>
+
+        <label class="buddy-toggle">
+          <input type="checkbox" [(ngModel)]="buddyFeaturedDraft" />
+          <span>Metti in evidenza questo appunto</span>
+        </label>
+
+        <label class="buddy-toggle">
+          <input type="checkbox" [(ngModel)]="buddyVerifiedDraft" />
+          <span>Segna come consigliato</span>
+        </label>
+
+        <button class="detail-btn detail-btn--primary" [disabled]="savingBuddyMeta" (click)="saveBuddyMeta(selectedNote, $event)">
+          {{ savingBuddyMeta ? 'Salvataggio...' : 'Salva info BuddyPro' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-overlay" *ngIf="selectedCollection" (click)="closeCollection()">
+    <div class="detail-card detail-card--collection" (click)="$event.stopPropagation()">
+      <div class="detail-handle"></div>
+
+      <div class="detail-top">
+        <span class="note-badge note-doc">COLL</span>
+        <button class="detail-close" (click)="closeCollection()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+
+      <h3 class="detail-title">{{ selectedCollection.title }}</h3>
+      <p class="detail-meta">{{ selectedCollection.subject }} · {{ selectedCollection.authorName || 'BuddyPro' }}</p>
+
+      <p class="collection-description" *ngIf="selectedCollection.description">
+        {{ selectedCollection.description }}
+      </p>
+
+      <div class="collection-items">
+        <article class="collection-item" *ngFor="let item of selectedCollection.items">
+          <div class="collection-item__copy">
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.subject }} · {{ item.authorName }}</span>
+          </div>
+
+          <button class="detail-btn" (click)="openCollectionItem(item, $event)">
+            {{ hasVisibleNote(item.noteId) ? 'Apri' : 'Scarica' }}
+          </button>
+        </article>
       </div>
     </div>
   </div>

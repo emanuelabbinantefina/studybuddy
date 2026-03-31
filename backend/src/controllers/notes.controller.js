@@ -1,4 +1,5 @@
 const notesService = require('../services/notes.service');
+const buddyproService = require('../services/buddypro.service');
 
 function handleError(res, err) {
   if (err.code === 'BAD_REQUEST') {
@@ -122,4 +123,48 @@ async function removeBookmark(req, res) {
   }
 }
 
-module.exports = { list, listSaved, listSubjects, create, download, remove, addBookmark, removeBookmark };
+async function updateBuddyMeta(req, res) {
+  try {
+    const noteId = Number(req.params.id);
+    if (!Number.isFinite(noteId) || noteId <= 0) {
+      return res.status(400).json({ message: 'id appunto non valido' });
+    }
+
+    const out = await buddyproService.updateNoteMeta(req.userData, noteId, req.body);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
+async function listBuddyCollections(req, res) {
+  try {
+    const out = await buddyproService.listNoteCollections(req.query);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
+async function createBuddyCollection(req, res) {
+  try {
+    const out = await buddyproService.createNoteCollection(req.userData, req.body);
+    res.status(201).json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
+module.exports = {
+  list,
+  listSaved,
+  listSubjects,
+  create,
+  download,
+  remove,
+  addBookmark,
+  removeBookmark,
+  listBuddyCollections,
+  createBuddyCollection,
+  updateBuddyMeta,
+};

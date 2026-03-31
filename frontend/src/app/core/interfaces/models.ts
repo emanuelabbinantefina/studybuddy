@@ -3,6 +3,8 @@ export interface User {
   nome: string;
   avatar: string;
   facolta: string;
+  accountRole?: string;
+  isSpecialUser?: boolean;
 }
 
 export interface UserProfile {
@@ -22,6 +24,8 @@ export interface UserProfile {
   media: number;
   cfu: number;
   esamiTotali: number;
+  accountRole: string;
+  isSpecialUser: boolean;
 }
 
 export interface Evento {
@@ -82,6 +86,31 @@ export interface GroupBoardMessage {
   userAvatar?: string | null;
   text: string;
   createdAt: string;
+  isPinned?: boolean;
+  pinnedAt?: string | null;
+  pinnedByUserId?: number | null;
+  pinnedByName?: string | null;
+}
+
+export interface NoteCollectionItem {
+  noteId: number;
+  title: string;
+  subject: string;
+  type: 'pdf' | 'doc' | 'img';
+  authorName: string;
+  createdAt?: string | null;
+}
+
+export interface NoteCollection {
+  id: number;
+  type: 'collection';
+  title: string;
+  description: string;
+  subject: string;
+  authorName?: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  items: NoteCollectionItem[];
 }
 
 
@@ -101,6 +130,8 @@ export interface Appunto {
   tempoUpload: string;
   canDelete?: boolean;
   isSaved?: boolean;
+  isFeatured?: boolean;
+  isVerified?: boolean;
 }
 export interface AppNotification {
   id: number;

@@ -20,6 +20,7 @@ export class GroupsPage implements OnInit {
   loadingList = false;
   allGroups: Gruppo[] = [];
   query = '';
+  private lastProcessedLeaveAt = 0;
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -29,10 +30,12 @@ export class GroupsPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.applyPendingLeaveState();
     this.loadGroups();
   }
 
   ionViewWillEnter(): void {
+    this.applyPendingLeaveState();
     this.loadGroups();
   }
 
@@ -138,6 +141,7 @@ export class GroupsPage implements OnInit {
           ...group,
           colorClass: group.colorClass || this.resolveGroupColor(group.materia),
         }));
+        this.applyPendingLeaveState();
 
         this.loadingList = false;
         if (event) event.target.complete();
@@ -161,6 +165,27 @@ export class GroupsPage implements OnInit {
     if (value.includes('fisica') || value.includes('chimica')) return 'bg-orange';
     if (value.includes('sistemi') || value.includes('informatica')) return 'bg-cyan';
     return 'bg-green';
+  }
+
+  private applyPendingLeaveState(): void {
+    const state = history.state || {};
+    const leftGroupId = Number(state?.leftGroupId || 0);
+    const leftGroupAt = Number(state?.leftGroupAt || 0);
+
+    if (!leftGroupId || !leftGroupAt || leftGroupAt === this.lastProcessedLeaveAt) {
+      return;
+    }
+
+    this.lastProcessedLeaveAt = leftGroupAt;
+    this.allGroups = this.allGroups.map((group) =>
+      Number(group.id) === leftGroupId
+        ? {
+            ...group,
+            isMember: false,
+            currentRole: null,
+          }
+        : group
+    );
   }
 
   private async showToast(

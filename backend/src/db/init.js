@@ -1,10 +1,83 @@
 const { all, get, run } = require('./connection');
+const bcrypt = require('bcryptjs');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
 const { buildSubjectsForCourse, canonicalAcademicKey } = require('../utils/academic-catalog');
 const { getBachelorCatalogEntries } = require('../utils/unipa-bachelor-courses');
+const { normalizeAccountRole } = require('../utils/account-role');
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+async function ensureBuddyProAccount() {
+  const email = 'buddypro@gmail.com';
+  const passwordHash = await bcrypt.hash('buddypro', 10);
+  const now = nowIso();
+  const defaultFaculty = 'Matematica e Informatica';
+  const defaultCourse = 'Informatica';
+
+  const existing = await get(
+    `select id, name, firstName, lastName, username, nickname, facolta, corso, courseYear, bio, avatarUrl, createdAt
+     from Users
+     where lower(trim(email)) = lower(trim(?))`,
+    [email]
+  );
+
+  if (!existing) {
+    await run(
+      `insert into Users
+        (name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, accountRole, createdAt, updatedAt)
+       values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        'BuddyPro',
+        'BuddyPro',
+        '',
+        email,
+        passwordHash,
+        'buddypro',
+        defaultFaculty,
+        defaultCourse,
+        null,
+        'BuddyPro',
+        'Account BuddyPro di test',
+        null,
+        'buddypro',
+        now,
+        now,
+      ]
+    );
+    return;
+  }
+
+  await run(
+    `update Users
+     set password = ?,
+         accountRole = 'buddypro',
+         name = ?,
+         firstName = ?,
+         lastName = ?,
+         username = ?,
+         nickname = ?,
+         facolta = ?,
+         corso = ?,
+         bio = ?,
+         updatedAt = ?
+     where id = ?`,
+    [
+      passwordHash,
+      'BuddyPro',
+      'BuddyPro',
+      '',
+      'buddypro',
+      'BuddyPro',
+      defaultFaculty,
+      defaultCourse,
+      'Account BuddyPro di test',
+      now,
+      existing.id,
+    ]
+  );
 }
 
 function makeAcademicPairKey(facultyName, courseName) {
@@ -374,6 +447,7 @@ async function initDb() {
       nickname text,
       bio text,
       avatarUrl text,
+      accountRole text not null default 'standard',
       createdAt text not null,
       updatedAt text not null
     )
@@ -434,6 +508,35 @@ async function initDb() {
       throw err;
     }
   }
+
+  try {
+    await run(`alter table Users add column accountRole text not null default 'standard'`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  await run(`update Users set accountRole = 'standard' where trim(coalesce(accountRole, '')) = ''`);
+
+  const accountRoleRows = await all(
+    `select id, accountRole
+     from Users`
+  );
+
+  for (const row of accountRoleRows) {
+    const nextRole = normalizeAccountRole(row?.accountRole);
+    if (nextRole === String(row?.accountRole || '')) continue;
+
+    await run(
+      `update Users
+       set accountRole = ?
+       where id = ?`,
+      [nextRole, row.id]
+    );
+  }
+
+  await ensureBuddyProAccount();
 
   // faculties
   await run(`
@@ -599,6 +702,37 @@ async function initDb() {
     )
   `);
 
+  await run(`
+    create table if not exists NoteBuddyMeta (
+      noteId integer primary key,
+      guideNote text,
+      isFeatured integer not null default 0,
+      isVerified integer not null default 0,
+      updatedByUserId integer,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (noteId) references Notes(id) on delete cascade,
+      foreign key (updatedByUserId) references Users(id) on delete set null
+    )
+  `);
+
+  await run(`
+    create table if not exists BuddyResources (
+      id integer primary key autoincrement,
+      userId integer not null,
+      type text not null,
+      title text not null,
+      description text,
+      subject text,
+      groupId integer,
+      payloadJson text not null,
+      createdAt text not null,
+      updatedAt text not null,
+      foreign key (userId) references Users(id) on delete cascade,
+      foreign key (groupId) references Groups(id) on delete cascade
+    )
+  `);
+
   // groups
   await run(`
     create table if not exists Groups (
@@ -658,6 +792,20 @@ async function initDb() {
       role text not null default 'member',
       createdAt text not null,
       primary key (groupId, userId),
+      foreign key (groupId) references Groups(id) on delete cascade,
+      foreign key (userId) references Users(id) on delete cascade
+    )
+  `);
+
+  await run(`
+    create table if not exists GroupAnnouncements (
+      id integer primary key autoincrement,
+      groupId integer not null,
+      userId integer not null,
+      title text not null,
+      message text not null,
+      createdAt text not null,
+      updatedAt text not null,
       foreign key (groupId) references Groups(id) on delete cascade,
       foreign key (userId) references Users(id) on delete cascade
     )
@@ -732,6 +880,30 @@ async function initDb() {
       throw err;
     }
   }
+
+  try {
+    await run(`alter table GroupMessages add column isPinned integer not null default 0`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table GroupMessages add column pinnedAt text`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
+
+  try {
+    await run(`alter table GroupMessages add column pinnedByUserId integer`);
+  } catch (err) {
+    if (!/duplicate column name/i.test(String(err.message || ''))) {
+      throw err;
+    }
+  }
   // notifications
   await run(`
   create table if not exists Notifications (
@@ -789,16 +961,21 @@ async function initDb() {
   await run(`create index if not exists idx_notes_user_created on Notes(userId, createdAt desc)`);
   await run(`create index if not exists idx_notes_group_created on Notes(groupId, createdAt desc)`);
   await run(`create index if not exists idx_notes_faculty_subject on Notes(facultyName, subject)`);
+  await run(`create index if not exists idx_notebuddymeta_flags on NoteBuddyMeta(isFeatured, isVerified)`);
   await run(`create index if not exists idx_bookmarks_user_created on NoteBookmarks(userId, createdAt desc)`);
   await run(`create index if not exists idx_bookmarks_note on NoteBookmarks(noteId)`);
+  await run(`create index if not exists idx_buddyresources_type_created on BuddyResources(type, createdAt desc)`);
+  await run(`create index if not exists idx_buddyresources_group_type on BuddyResources(groupId, type)`);
   await run(`create index if not exists idx_groups_faculty_subject on Groups(faculty, subject)`);
   await run(`create index if not exists idx_groupmembers_user on GroupMembers(userId)`);
   await run(`create index if not exists idx_groupmembers_group on GroupMembers(groupId)`);
+  await run(`create index if not exists idx_groupannouncements_group_created on GroupAnnouncements(groupId, createdAt desc)`);
   await run(`create index if not exists idx_grouptopics_group_position on GroupTopics(groupId, position)`);
   await run(`create index if not exists idx_groupsessions_group_starts on GroupSessions(groupId, startsAt)`);
   await run(`create index if not exists idx_groupquestions_group_created on GroupQuestions(groupId, createdAt desc)`);
   await run(`create index if not exists idx_groupmessages_group_created on GroupMessages(groupId, createdAt)`);
   await run(`create index if not exists idx_groupmessages_parent on GroupMessages(parentMessageId)`);
+  await run(`create index if not exists idx_groupmessages_pinned on GroupMessages(groupId, isPinned, pinnedAt desc)`);
   await run(`create index if not exists idx_notifications_user_created on Notifications(userId, createdAt)`);
   await run(`create index if not exists idx_notifications_user_read on Notifications(userId, isRead)`);
 
@@ -807,6 +984,7 @@ async function initDb() {
   await repairGroupsAcademicFields();
   await seedExamSubjects();
   await repairNotesAcademicFields();
+  await ensureBuddyProAccount();
 }
 
 module.exports = { initDb, nowIso };

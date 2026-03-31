@@ -1,6 +1,7 @@
 const express = require('express');
 
 const auth = require('../middleware/auth');
+const requireSpecialUser = require('../middleware/require-special-user');
 const groupsController = require('../controllers/groups.controller');
 
 const groupsRouter = express.Router();
@@ -25,6 +26,7 @@ groupsRouter.post('/:id/questions', groupsController.addQuestion);
 
 groupsRouter.get('/:id/messages', groupsController.messages);
 groupsRouter.post('/:id/messages', groupsController.sendMessage);
+groupsRouter.patch('/:id/messages/:messageId/pin', requireSpecialUser, groupsController.pinMessage);
 groupsRouter.delete('/:id/messages/:messageId', groupsController.deleteMessage);
 groupsRouter.post('/:id/messages/:messageId/delete', groupsController.deleteMessage);
 

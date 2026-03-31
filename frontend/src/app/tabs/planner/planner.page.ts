@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 
 import { DataService, EventItem } from '../../core/services/data.service';
-import { UserService } from '../../core/services/user.service';
 import {
   getItalianExamDateValidationMessage,
   getNextAllowedItalianExamDateIso,
@@ -83,13 +82,11 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     private readonly dataService: DataService,
     private readonly toastCtrl: ToastController,
-    private readonly userService: UserService,
     private readonly router: Router,
     private readonly alertCtrl: AlertController
   ) { }
 
   ngOnInit(): void {
-    this.userService.reloadProfile();
     this.loadSubjects();
     this.loadItems();
   }
@@ -104,7 +101,6 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ionViewWillEnter(): void {
-    this.userService.reloadProfile();
     this.loadSubjects();
     this.loadItems();
   }

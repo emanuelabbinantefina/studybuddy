@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { get } = require('../db/connection');
+const { buildAccountAccess } = require('../utils/account-role');
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   try {
     const secret = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
     const authHeader = req.headers.authorization || '';
@@ -18,7 +20,22 @@ module.exports = (req, res, next) => {
       return res.status(401).json({ message: 'token non valido' });
     }
 
-    req.userData = { userId, email: decoded.email || null };
+    const user = await get(
+      `select email, accountRole
+       from Users
+       where id = ?`,
+      [userId]
+    );
+
+    if (!user) {
+      return res.status(401).json({ message: 'token non valido' });
+    }
+
+    req.userData = {
+      userId,
+      email: user.email || decoded.email || null,
+      ...buildAccountAccess(user.accountRole),
+    };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'autenticazione fallita' });

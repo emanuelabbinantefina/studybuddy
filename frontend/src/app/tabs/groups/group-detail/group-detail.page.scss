@@ -649,6 +649,43 @@ ion-content.detail-page::part(background) {
   gap: 12px;
 }
 
+.pinned-section {
+  display: grid;
+  gap: 12px;
+}
+
+.pinned-card {
+  padding: 14px 16px;
+  border-radius: $radius-lg;
+  background: rgba(255, 159, 110, 0.12);
+  border: 1px solid rgba(199, 99, 40, 0.2);
+  box-shadow: $shadow-card-soft;
+
+  p {
+    margin: 10px 0 0;
+    color: $text-primary;
+    line-height: 1.55;
+  }
+}
+
+.pinned-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  strong {
+    color: $text-primary;
+    font-size: 0.94rem;
+    font-weight: 800;
+  }
+
+  span {
+    color: $text-muted;
+    font-size: 0.8rem;
+  }
+}
+
 // MESSAGES
 .message-grid {
   display: grid;
@@ -782,6 +819,18 @@ ion-content.detail-page::part(background) {
   color: $text-muted;
   font-size: 0.82rem;
   line-height: 1.4;
+}
+
+.message-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: $radius-full;
+  background: rgba(255, 159, 110, 0.16);
+  color: #c76328;
+  font-size: 0.74rem;
+  font-weight: 800;
 }
 
 .question-text--quote {
@@ -975,4 +1024,67 @@ ion-content.detail-page::part(background) {
     height: 34px;
     font-size: 0.82rem;
   }
+}
+.announcement-section,
+.question-collections {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.announcement-card,
+.question-collection-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-card);
+}
+
+.announcement-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.announcement-card p,
+.question-collection-card p {
+  margin: 0;
+  color: var(--app-text-secondary);
+  line-height: 1.5;
+}
+
+.question-collection-card span {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--app-text-muted);
+}
+
+.question-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.question-picker-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.composer-card input,
+.composer-card textarea {
+  width: 100%;
+  border: 1px solid var(--app-line-soft);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--app-surface-soft);
+  color: var(--app-text-primary);
 }

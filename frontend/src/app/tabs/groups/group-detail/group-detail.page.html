@@ -145,14 +145,56 @@
           <p>Sii il primo a caricare del materiale per questo gruppo.</p>
         </div>
 
-        <button type="button" class="action-btn action-btn--compact">
+        <button
+          type="button"
+          class="action-btn action-btn--compact"
+          *ngIf="gruppo?.isMember"
+          [disabled]="uploadingGroupNote"
+          (click)="openGroupUploadPicker()"
+        >
           <ion-icon name="add-circle-outline"></ion-icon>
-          <span>Carica appunto</span>
+          <span>{{ uploadingGroupNote ? 'Caricamento...' : 'Carica appunto' }}</span>
         </button>
+
+        <input
+          #groupNoteInput
+          type="file"
+          [accept]="groupUploadAccept"
+          hidden
+          (change)="onGroupNoteSelected($event)"
+        />
       </div>
 
       <!-- BACHECA -->
       <div class="tab-panel" *ngIf="currentTab === 'bacheca'">
+        <section class="pinned-section" *ngIf="pinnedMessages.length > 0">
+          <div class="section-headline">
+            <strong>Messaggi pinnati</strong>
+          </div>
+
+          <article class="pinned-card" *ngFor="let message of pinnedMessages">
+            <div class="pinned-card__meta">
+              <strong>{{ displayMessageAuthor(message) }}</strong>
+              <span>{{ formatRelativeDate(message.pinnedAt || message.createdAt) }}</span>
+            </div>
+
+            <p>{{ message.text }}</p>
+
+            <div class="message-actions">
+              <span class="message-pin-badge">Pinnato</span>
+              <button
+                type="button"
+                class="reply-link"
+                *ngIf="canPinMessages"
+                [disabled]="pinningMessageId === message.id"
+                (click)="togglePinned(message, $event)"
+              >
+                {{ pinningMessageId === message.id ? '...' : 'Rimuovi pin' }}
+              </button>
+            </div>
+          </article>
+        </section>
+
         <div class="loading-card" *ngIf="loadingMessages">
           <ion-icon name="sync-outline"></ion-icon>
           <span>Carico la bacheca...</span>
@@ -200,12 +242,22 @@
                 <div class="message-meta">
                   <strong>{{ displayMessageAuthor(message) }}</strong>
                   <span>{{ formatRelativeDate(message.createdAt) }}</span>
+                  <span class="message-pin-badge" *ngIf="message.isPinned">Pinnato</span>
                 </div>
 
                 <p class="message-text">{{ message.text }}</p>
 
                 <div class="message-actions">
                   <button type="button" class="reply-link" (click)="startReply(message)">Rispondi</button>
+                  <button
+                    type="button"
+                    class="reply-link"
+                    *ngIf="canPinMessages"
+                    [disabled]="pinningMessageId === message.id"
+                    (click)="togglePinned(message, $event)"
+                  >
+                    {{ pinningMessageId === message.id ? '...' : (message.isPinned ? 'Rimuovi pin' : 'Pin') }}
+                  </button>
                   <button
                     type="button"
                     class="delete-link"
@@ -228,6 +280,7 @@
                         </div>
                         <strong>{{ displayMessageAuthor(reply) }}</strong>
                         <span>{{ formatRelativeDate(reply.createdAt) }}</span>
+                        <span class="message-pin-badge" *ngIf="reply.isPinned">Pinnato</span>
                       </div>
 
                       <p class="reply-context" *ngIf="reply.parentUserName">
@@ -238,6 +291,15 @@
 
                       <div class="message-actions message-actions--nested">
                         <button type="button" class="reply-link reply-link--nested" (click)="startReply(reply)">Rispondi</button>
+                        <button
+                          type="button"
+                          class="reply-link reply-link--nested"
+                          *ngIf="canPinMessages"
+                          [disabled]="pinningMessageId === reply.id"
+                          (click)="togglePinned(reply, $event)"
+                        >
+                          {{ pinningMessageId === reply.id ? '...' : (reply.isPinned ? 'Rimuovi pin' : 'Pin') }}
+                        </button>
                         <button
                           type="button"
                           class="delete-link"
