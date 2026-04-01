@@ -136,6 +136,14 @@ $font-body: 'Inter', -apple-system, sans-serif;
   font-weight: 700;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 8px;
+  color: $text-muted;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 .input-wrap {
   display: flex;
   align-items: center;

@@ -16,6 +16,8 @@ interface CourseOption {
   label: string;
 }
 
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.page.html',
@@ -24,6 +26,9 @@ interface CourseOption {
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class RegisterPage implements OnInit {
+  readonly passwordRulesMessage =
+    'La password deve avere almeno 8 caratteri, una maiuscola, una minuscola e un numero';
+
   name = '';
   email = '';
   courseKey = '';
@@ -56,6 +61,8 @@ export class RegisterPage implements OnInit {
   async handleRegister() {
     if (this.loading) return;
     this.error = '';
+    this.name = this.name.trim();
+    this.email = this.email.trim().toLowerCase();
     this.password = this.password.trim();
     this.confirmPassword = this.confirmPassword.trim();
 
@@ -64,8 +71,13 @@ export class RegisterPage implements OnInit {
       return;
     }
 
-    if (this.password.length < 8) {
-      this.error = 'La password deve avere almeno 8 caratteri';
+    if (!EMAIL_REGEX.test(this.email)) {
+      this.error = 'Inserisci un indirizzo email valido';
+      return;
+    }
+
+    if (!this.isPasswordValid(this.password)) {
+      this.error = this.passwordRulesMessage;
       return;
     }
 
@@ -141,5 +153,9 @@ export class RegisterPage implements OnInit {
         };
       })
       .sort((left, right) => left.label.localeCompare(right.label, 'it'));
+  }
+
+  private isPasswordValid(value: string): boolean {
+    return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value);
   }
 }

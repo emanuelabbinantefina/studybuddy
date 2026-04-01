@@ -6,11 +6,40 @@ const { nowIso } = require('../db/init');
 const { buildAccountAccess } = require('../utils/account-role');
 
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
 
 function badRequest(msg) {
   const err = new Error(msg);
   err.code = 'BAD_REQUEST';
   return err;
+}
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function validateEmail(email) {
+  if (!EMAIL_REGEX.test(email)) {
+    throw badRequest('inserisci un indirizzo email valido');
+  }
+}
+
+function validatePassword(password) {
+  if (password.length < 8) {
+    throw badRequest('la password deve contenere almeno 8 caratteri');
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    throw badRequest('la password deve contenere almeno una lettera maiuscola');
+  }
+
+  if (!/[a-z]/.test(password)) {
+    throw badRequest('la password deve contenere almeno una lettera minuscola');
+  }
+
+  if (!/\d/.test(password)) {
+    throw badRequest('la password deve contenere almeno un numero');
+  }
 }
 
 function parseCourseKey(value) {
@@ -157,20 +186,19 @@ async function facultiesWithCourses() {
 async function register(body) {
   const { name, email, password } = body;
   const cleanName = String(name || '').trim();
-  const cleanEmail = String(email || '').trim();
+  const cleanEmail = normalizeEmail(email);
   const cleanPassword = String(password || '');
 
   if (!cleanName || !cleanEmail || !cleanPassword) {
     throw badRequest('name, email e password sono obbligatori');
   }
 
-  if (cleanPassword.length < 8) {
-    throw badRequest('la password deve contenere almeno 8 caratteri');
-  }
+  validateEmail(cleanEmail);
+  validatePassword(cleanPassword);
 
   const selection = await resolveAcademicSelection(body, { required: true });
 
-  const existing = await get(`select id from Users where email = ?`, [cleanEmail]);
+  const existing = await get(`select id from Users where lower(trim(email)) = lower(trim(?))`, [cleanEmail]);
   if (existing) {
     const err = new Error('email gia esistente');
     err.code = 'EMAIL_EXISTS';
@@ -235,14 +263,14 @@ async function register(body) {
 
 async function login(body) {
   const { email, password } = body;
-  const cleanEmail = String(email || '').trim();
+  const cleanEmail = normalizeEmail(email);
 
   if (!cleanEmail || !password) throw badRequest('email e password sono obbligatori');
 
   const user = await get(
     `select id, name, firstName, lastName, email, password, username, facolta, corso, courseYear, nickname, bio, avatarUrl, accountRole
      from Users
-     where email = ?`,
+     where lower(trim(email)) = lower(trim(?))`,
     [cleanEmail]
   );
 
