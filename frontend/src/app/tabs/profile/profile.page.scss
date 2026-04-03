@@ -1,16 +1,30 @@
+// ═══════════════════════════════════════════════════════════
+//   PROFILE PAGE
+// ═══════════════════════════════════════════════════════════
+
 $bg-page: var(--app-bg-page);
 $bg-card: var(--app-surface);
 $bg-card-hover: var(--app-surface-alt);
+
 $text-primary: var(--app-text-primary);
 $text-secondary: var(--app-text-secondary);
 $text-muted: var(--app-text-muted);
 
 $primary: var(--app-primary);
 $primary-soft: var(--app-primary-soft);
+
 $accent: var(--app-accent);
 $accent-soft: var(--app-accent-soft);
+
+$blue: var(--app-blue);
+$blue-light: var(--app-blue-soft);
+
 $green: var(--app-green);
-$green-soft: var(--app-green-soft);
+$green-light: var(--app-green-soft);
+
+$orange: var(--app-orange);
+$orange-light: var(--app-orange-soft);
+
 $red: var(--app-red);
 $red-soft: var(--app-red-soft);
 
@@ -19,33 +33,52 @@ $radius-md: 18px;
 $radius-lg: 24px;
 $radius-xl: 28px;
 $radius-full: 9999px;
+
 $shadow-card: var(--app-shadow-card);
+$shadow-button: var(--app-shadow-button);
+
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
+
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ═══════════════════════════
+//   PAGE BASE
+// ═══════════════════════════
 
 .profile-content {
   --background: #{$bg-page};
+  --padding-start: 20px;
+  --padding-end: 20px;
 }
+
+// ═══════════════════════════
+//   SHELL
+// ═══════════════════════════
 
 .profile-shell {
   max-width: none;
-  margin: 0 ;
+  margin: 0;
+  padding-top: 20px;
   padding-bottom: 40px;
-  padding-inline: 20px;
 }
+
+// ═══════════════════════════
+//   HERO
+// ═══════════════════════════
 
 .profile-hero {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .hero-gradient {
   position: absolute;
-  top: -60px;
+  top: -100px;
   left: -40px;
   right: -40px;
-  height: 170px;
+  height: 200px;
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%);
   border-radius: 0 0 36px 36px;
   opacity: 0.1;
@@ -55,7 +88,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 .hero-inner {
   position: relative;
   z-index: 1;
-  padding: 14px 0 0;
+  padding: 10px 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,9 +97,9 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .avatar-wrap {
   position: relative;
-  width: 84px;
-  height: 84px;
-  margin-bottom: 12px;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 14px;
   cursor: pointer;
   transition: transform $transition;
 
@@ -88,14 +121,14 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
   bottom: 0;
   right: -2px;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   background: $bg-card;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   box-shadow: $shadow-card;
 }
 
@@ -112,7 +145,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.85rem;
   font-weight: 500;
   color: $text-muted;
-  margin: 3px 0 0;
+  margin: 4px 0 0;
 }
 
 .hero-chips {
@@ -120,7 +153,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .chip {
@@ -139,7 +172,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &--green {
-    background: $green-soft;
+    background: $green-light;
     color: $green;
   }
 
@@ -150,17 +183,17 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero-member {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: $text-muted;
-  margin: 7px 0 0;
+  margin: 8px 0 0;
 }
 
 .hero-bio {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 500;
   color: $text-secondary;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   max-width: 320px;
   line-height: 1.45;
 }
@@ -169,13 +202,13 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 12px;
-  padding: 8px 16px;
+  margin-top: 14px;
+  padding: 9px 18px;
   background: $bg-card;
   border: 1px solid var(--app-line-soft);
   border-radius: $radius-full;
   font-family: $font-body;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: $primary;
   cursor: pointer;
@@ -183,7 +216,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   transition: transform $transition;
 
   ion-icon {
-    font-size: 13px;
+    font-size: 14px;
   }
 
   &:active {
@@ -191,20 +224,24 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
+// ═══════════════════════════
+//   ACTIVITY CARD
+// ═══════════════════════════
+
 .activity-card {
   background: $bg-card;
   border-radius: $radius-lg;
-  padding: 12px 14px;
+  padding: 14px 16px;
   box-shadow: $shadow-card;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .activity-title {
   font-family: $font-display;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: $text-primary;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .activity-grid {
@@ -219,16 +256,16 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 10px 8px;
+  gap: 4px;
+  padding: 12px 8px;
   background: var(--app-surface-soft);
-  border-radius: 14px;
-  min-height: 64px;
+  border-radius: $radius-sm;
+  min-height: 68px;
 }
 
 .activity-value {
   font-family: $font-display;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 900;
   color: $primary;
   line-height: 1;
@@ -236,20 +273,24 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .activity-value-text {
   font-family: $font-body;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: $text-primary;
 }
 
 .activity-label {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 600;
   color: $text-muted;
   text-align: center;
 }
 
+// ═══════════════════════════
+//   SECTIONS
+// ═══════════════════════════
+
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .section-header {
@@ -261,8 +302,8 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .section-title {
   font-family: $font-display;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: $text-primary;
   margin: 0;
 }
@@ -273,10 +314,14 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: $text-muted;
 }
 
+// ═══════════════════════════
+//   ACHIEVEMENTS
+// ═══════════════════════════
+
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .achievement {
@@ -284,35 +329,43 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 58px;
-  padding: 8px 6px;
-  background: $bg-card;
-  border-radius: 18px;
-  box-shadow: $shadow-card;
-  transition: all $transition;
+  min-height: 64px;
+  padding: 12px 8px;
+  border-radius: $radius-md;
   text-align: center;
+  border: none;
+  background: linear-gradient(145deg, $primary-soft 0%, $blue-light 100%);
 
   &--locked {
-    opacity: 0.35;
-    filter: grayscale(1);
+    background: var(--app-surface-soft);
+    border: 1px dashed var(--app-line-soft);
+    opacity: 0.6;
+    filter: grayscale(0.8);
   }
 }
 
 .achievement-emoji {
-  font-size: 1rem;
+  font-size: 1.4rem;
+  line-height: 1;
 }
 
 .achievement-label {
+  font-family: $font-body;
   font-size: 0.64rem;
   font-weight: 700;
   color: $text-primary;
-  line-height: 1.2;
-  margin-top: 4px;
+  line-height: 1.25;
+  margin-top: 6px;
 
   .achievement--locked & {
     color: $text-muted;
+    font-weight: 600;
   }
 }
+
+// ═══════════════════════════
+//   SETTINGS
+// ═══════════════════════════
 
 .settings-card {
   background: $bg-card;
@@ -326,13 +379,17 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
+
+  & + & {
+    border-top: 1px solid var(--app-line-soft);
+  }
 }
 
 .setting-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: $text-primary;
 
@@ -355,8 +412,8 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toggle-btn {
-  width: 44px;
-  height: 26px;
+  width: 46px;
+  height: 28px;
   border-radius: $radius-full;
   border: none;
   background: var(--app-line-strong);
@@ -373,8 +430,8 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: $bg-card;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
@@ -385,13 +442,17 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
+// ═══════════════════════════
+//   ACCOUNT SECTION
+// ═══════════════════════════
+
 .account-section {
   margin-top: 24px;
-  padding: 18px 0 28px;
+  padding: 20px 0 0;
   border-top: 1px solid var(--app-line-soft);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .logout-btn {
@@ -400,15 +461,16 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   background: $bg-card;
   border: 1.5px solid rgba(239, 107, 115, 0.15);
   border-radius: $radius-lg;
   font-family: $font-body;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: $red;
   cursor: pointer;
+  box-shadow: $shadow-card;
   transition: all $transition;
 
   ion-icon {
@@ -427,12 +489,12 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 13px;
+  padding: 14px;
   background: transparent;
   border: 1.5px dashed rgba(0, 0, 0, 0.08);
   border-radius: $radius-lg;
   font-family: $font-body;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: $text-muted;
   cursor: pointer;
@@ -448,6 +510,10 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     background: $red-soft;
   }
 }
+
+// ═══════════════════════════
+//   DELETE MODAL
+// ═══════════════════════════
 
 .modal-content {
   --background: #{$bg-page};
@@ -516,7 +582,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   ion-icon {
     font-size: 18px;
-    color: $primary;
+    color: $red;
     flex-shrink: 0;
   }
 }
@@ -580,6 +646,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &--row {
     flex-direction: row;
+    gap: 12px;
   }
 }
 
@@ -590,6 +657,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: #fff;
   border: none;
   border-radius: $radius-full;
+  font-family: $font-body;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(79, 107, 255, 0.25);
@@ -606,6 +674,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: $text-secondary;
   border: 1.5px solid var(--app-line-soft);
   border-radius: $radius-full;
+  font-family: $font-body;
   font-weight: 600;
   cursor: pointer;
 }
@@ -617,6 +686,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: $red;
   border: 1.5px solid rgba(239, 107, 115, 0.2);
   border-radius: $radius-full;
+  font-family: $font-body;
   font-weight: 600;
   cursor: pointer;
 
@@ -632,6 +702,7 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   color: #fff;
   border: none;
   border-radius: $radius-full;
+  font-family: $font-body;
   font-weight: 700;
   cursor: pointer;
 
@@ -640,19 +711,74 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: not-allowed;
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(0.97);
   }
 }
 
-ion-modal.profile-editor-modal::part(content),
-ion-modal.delete-account-modal::part(content) {
-  --background: transparent;
-  box-shadow: none;
+// ═══════════════════════════
+//   EDIT PROFILE MODAL
+// ═══════════════════════════
+
+.modal-wrapper {
+  height: 100%;
+  overflow-y: auto;
+  background: $bg-page;
+}
+
+ion-modal.profile-editor-modal::part(content) {
   border-radius: $radius-xl $radius-xl 0 0;
+  --background: #{$bg-page};
+}
+
+ion-modal.delete-account-modal::part(content) {
+  border-radius: $radius-xl $radius-xl 0 0;
+  --background: #{$bg-page};
+}
+
+// ═══════════════════════════
+//   RESPONSIVE
+// ═══════════════════════════
+
+@media (max-width: 380px) {
+  .hero-name {
+    font-size: 1.3rem;
+  }
+
+  .avatar-wrap {
+    width: 80px;
+    height: 80px;
+  }
+
+  .achievements-grid {
+    gap: 8px;
+  }
+
+  .achievement {
+    min-height: 58px;
+    padding: 10px 6px;
+  }
+
+  .achievement-emoji {
+    font-size: 1.2rem;
+  }
+
+  .achievement-label {
+    font-size: 0.6rem;
+  }
 }
 
 @media (min-width: 768px) {
+  .profile-shell {
+    max-width: 1920px;
+    margin: 0 auto;
+  }
+
+  .achievements-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+  }
+
   .delete-sheet {
     max-width: 480px;
     margin: 0 auto;

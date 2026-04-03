@@ -1,3 +1,7 @@
+// ═══════════════════════════════════════════════════════════
+//   GROUPS PAGE
+// ═══════════════════════════════════════════════════════════
+
 $bg-page: var(--app-bg-page);
 $bg-card: var(--app-surface);
 $bg-card-hover: var(--app-surface-alt);
@@ -36,29 +40,27 @@ $font-body: 'Inter', -apple-system, sans-serif;
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-.groups-page {
+// ═══════════════════════════
+//   PAGE BASE
+// ═══════════════════════════
+
+.groups-content {
   --background: #{$bg-page};
+  --padding-start: 20px;
+  --padding-end: 20px;
 }
 
-// ═══ SCHERMO INTERO ═══
-.groups-shell {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: calc(72px + env(safe-area-inset-top, 0px)) 20px 110px;
-}
+// ═══════════════════════════
+//   HEADER
+// ═══════════════════════════
 
-// Header
 .groups-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  margin-bottom: 16px;
-}
-
-.header-copy {
-  min-width: 0;
+  padding: 80px 0 8px;
+  margin-bottom: 8px;
 }
 
 .page-title {
@@ -78,28 +80,31 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 500;
 }
 
-// ═══ BOTTONE CREA ═══
+// ═══════════════════════════
+//   CREATE BUTTON
+// ═══════════════════════════
+
 .create-btn {
-  border: none;
-  border-radius: $radius-full;
-  min-width: 106px;
-  min-height: 44px;
-  padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: $radius-full;
   background: $primary;
-  color: #ffffff;
-  font-size: 0.88rem;
-  font-weight: 800;
+  color: #fff;
+  font-family: $font-body;
+  font-size: 0.9rem;
+  font-weight: 700;
   box-shadow: $shadow-button;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform $transition;
+  transition: transform $spring;
 
   ion-icon {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   &:active {
@@ -107,7 +112,21 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// Search
+// ═══════════════════════════
+//   SHELL
+// ═══════════════════════════
+
+.groups-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding-bottom: 110px;
+}
+
+// ═══════════════════════════
+//   SEARCH
+// ═══════════════════════════
+
 .search-bar {
   position: relative;
   margin-bottom: 16px;
@@ -115,76 +134,83 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .search-icon {
   position: absolute;
-  left: 16px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
   color: $text-muted;
-  font-size: 18px;
+  font-size: 20px;
+  pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  height: 48px;
-  border: 1.5px solid var(--app-line-soft);
+  height: 52px;
+  border: 1px solid var(--app-line-soft);
   background: $bg-card;
   border-radius: $radius-lg;
-  padding: 0 16px 0 46px;
+  padding: 0 18px 0 52px;
   color: $text-primary;
-  font-size: 0.9rem;
+  font-family: $font-body;
+  font-size: 0.95rem;
   font-weight: 500;
   outline: none;
   box-shadow: $shadow-card;
-  transition: border-color $transition;
+  transition: border-color $transition, box-shadow $transition;
 
   &::placeholder {
     color: $text-muted;
   }
 
   &:focus {
-    border-color: rgba(79, 107, 255, 0.3);
+    border-color: $primary;
+    box-shadow: 0 0 0 3px $primary-soft;
   }
 }
 
-// ═══ RESULT BAR ═══
+// ═══════════════════════════
+//   RESULT BAR
+// ═══════════════════════════
+
 .result-bar {
-  padding: 8px 0 12px;
+  padding: 4px 0 12px;
 }
 
 .result-count {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $text-muted;
 }
 
-// Loading
-.loading-shell {
-  margin-top: 18px;
-}
+// ═══════════════════════════
+//   LOADING
+// ═══════════════════════════
 
-.loading-cards {
+.loading-shell {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 18px;
 }
 
-.loading-card {
-  border-radius: $radius-lg;
-  background: $bg-card;
-  box-shadow: $shadow-card;
-  padding: 16px;
+.skeleton-card {
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: 48px 1fr;
   gap: 14px;
+  align-items: center;
+  padding: 16px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
 }
 
-.loading-copy {
+.skeleton-copy {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .skeleton {
-  border-radius: 10px;
+  border-radius: 8px;
   background: linear-gradient(
     90deg,
     var(--app-line-soft) 25%,
@@ -195,28 +221,31 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   animation: shimmer 1.5s ease-in-out infinite;
 
   &--icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-md;
   }
 
   &--title {
-    width: 55%;
-    height: 16px;
+    width: 60%;
+    height: 14px;
   }
 
   &--meta {
-    width: 75%;
+    width: 80%;
     height: 12px;
   }
 
   &--stats {
-    width: 88%;
-    height: 14px;
+    width: 50%;
+    height: 10px;
   }
 }
 
-// Cards
+// ═══════════════════════════
+//   CARDS LIST
+// ═══════════════════════════
+
 .cards-list {
   display: flex;
   flex-direction: column;
@@ -224,52 +253,52 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .group-card {
+  display: block;
+  padding: 16px;
+  background: $bg-card;
   border: 1px solid var(--app-line-soft);
   border-radius: $radius-lg;
-  background: var(--app-surface-glass-strong);
   box-shadow: $shadow-card;
-  padding: 16px;
   cursor: pointer;
   animation: cardIn 0.35s ease-out both;
-  transition: transform $transition, background $transition;
+  transition: transform $spring, background $transition;
 
   &:active {
-    transform: scale(0.985);
+    transform: scale(0.98);
     background: $bg-card-hover;
   }
-}
 
-.group-card--member {
-  border-color: rgba(52, 211, 153, 0.3);
-  background: linear-gradient(
-    180deg,
-    var(--app-surface-glass-strong) 0%,
-    var(--app-green-soft) 100%
-  );
+  &--member {
+    background: linear-gradient(180deg, $bg-card 0%, $green-soft 120%);
+    border-color: rgba(52, 211, 153, 0.3);
+  }
 }
 
 .group-card-main {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-columns: 48px 1fr;
   gap: 14px;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .group-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-md;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 1.15rem;
+  color: #fff;
+  font-family: $font-display;
+  font-size: 1.1rem;
   font-weight: 800;
-  box-shadow: 0 8px 18px rgba(79, 107, 255, 0.14);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .group-copy {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .group-topline {
@@ -277,76 +306,49 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
 
   h3 {
     margin: 0;
+    font-family: $font-body;
+    font-size: 1rem;
+    line-height: 1.2;
+    font-weight: 700;
     color: $text-primary;
-    font-size: 1.08rem;
-    line-height: 1.15;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    min-width: 0;
-    overflow-wrap: anywhere;
-    flex: 1;
   }
 }
 
-// ═══ BADGE MEMBRO ═══
 .member-badge {
   padding: 4px 10px;
   background: $green-soft;
   color: $green;
-  font-size: 0.7rem;
+  font-family: $font-body;
+  font-size: 0.65rem;
   font-weight: 700;
   border-radius: $radius-full;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .group-meta {
-  margin: 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: $text-secondary;
-  font-size: 0.88rem;
   line-height: 1.4;
 }
 
-.exam-badge {
-  min-width: 54px;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: $accent-soft;
-  text-align: center;
-  color: $accent;
-  flex-shrink: 0;
-
-  strong {
-    display: block;
-    font-size: 1.2rem;
-    line-height: 1;
-    font-weight: 900;
-  }
-
-  span {
-    display: block;
-    margin-top: 2px;
-    font-size: 0.68rem;
-    font-weight: 700;
-  }
-}
-
 .group-stats {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--app-line-soft);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--app-line-soft);
   color: $text-secondary;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .stat {
@@ -355,49 +357,46 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 5px;
 
   ion-icon {
-    font-size: 0.96rem;
+    font-size: 1rem;
     color: $primary;
   }
 }
 
-.stat.question .question-mark {
-  color: $accent;
-  font-weight: 900;
-}
+// ═══════════════════════════
+//   EMPTY STATE
+// ═══════════════════════════
 
-.question-mark {
-  display: inline-flex;
+.empty-state {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-width: 12px;
-}
-
-// ═══ EMPTY STATE ═══
-.empty-section {
-  border: 1px dashed var(--app-line-strong);
-  border-radius: $radius-lg;
-  padding: 32px 22px;
-  background: var(--app-surface-elevated);
+  padding: 48px 24px;
   text-align: center;
+  border: 1.5px dashed var(--app-line-strong);
+  border-radius: $radius-xl;
+  background: $bg-card;
 
   h3 {
     margin: 0;
-    color: $text-primary;
-    font-size: 1.1rem;
+    font-family: $font-display;
+    font-size: 1.15rem;
     font-weight: 800;
+    color: $text-primary;
   }
 
   p {
     margin: 8px 0 0;
+    font-size: 0.9rem;
+    font-weight: 500;
     color: $text-secondary;
-    font-size: 0.88rem;
     line-height: 1.5;
+    max-width: 280px;
   }
 }
 
 .empty-emoji {
   display: block;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   margin-bottom: 12px;
 }
 
@@ -414,40 +413,42 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(79, 107, 255, 0.25);
-  transition: transform $transition;
+  box-shadow: $shadow-button;
+  transition: transform $spring;
 
   ion-icon {
     font-size: 18px;
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 }
 
-// Color classes for groups
+// ═══════════════════════════
+//   COLOR CLASSES
+// ═══════════════════════════
+
 .bg-blue {
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
 }
-
 .bg-green {
   background: linear-gradient(135deg, #34d399 0%, #23b38a 100%);
 }
-
 .bg-cyan {
   background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
 }
-
 .bg-orange {
   background: linear-gradient(135deg, #f4b740 0%, #ff9f6e 100%);
 }
-
 .bg-peach {
   background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
 }
 
-// Animations
+// ═══════════════════════════
+//   ANIMATIONS
+// ═══════════════════════════
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -468,10 +469,19 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// Responsive
-@media (max-width: 720px) {
-  .groups-shell {
-    padding: calc(76px + env(safe-area-inset-top, 0px)) 14px 100px;
+// ═══════════════════════════
+//   RESPONSIVE
+// ═══════════════════════════
+
+@media (max-width: 480px) {
+  .groups-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .create-btn {
+    align-self: flex-start;
   }
 
   .page-title {
@@ -479,45 +489,24 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .group-card-main {
-    grid-template-columns: 46px minmax(0, 1fr);
-  }
-
-  .group-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-  }
-
-  .group-topline h3 {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .groups-header {
-    gap: 10px;
-  }
-
-  .create-btn {
-    min-width: 94px;
-    min-height: 42px;
-    font-size: 0.84rem;
+    gap: 12px;
   }
 
   .group-topline {
     flex-direction: column;
+    align-items: flex-start;
     gap: 8px;
-  }
-
-  .member-badge {
-    align-self: flex-start;
-  }
-
-  .exam-badge {
-    align-self: flex-start;
   }
 
   .group-stats {
     gap: 12px;
+  }
+}
+
+@media (min-width: 768px) {
+  .cards-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 }

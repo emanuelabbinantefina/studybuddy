@@ -1,243 +1,428 @@
+// ═══════════════════════════════════════════════════════════
+//   PROFILE EDITOR
+// ═══════════════════════════════════════════════════════════
+
+$bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface);
+$bg-card-hover: var(--app-surface-alt);
+
+$text-primary: var(--app-text-primary);
+$text-secondary: var(--app-text-secondary);
+$text-muted: var(--app-text-muted);
+
+$primary: var(--app-primary);
+$primary-soft: var(--app-primary-soft);
+
+$accent: var(--app-accent);
+$accent-soft: var(--app-accent-soft);
+
+$blue: var(--app-blue);
+$blue-light: var(--app-blue-soft);
+
+$green: var(--app-green);
+$green-light: var(--app-green-soft);
+
+$orange: var(--app-orange);
+$orange-light: var(--app-orange-soft);
+
+$radius-sm: 14px;
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 28px;
+$radius-full: 9999px;
+
+$shadow-card: var(--app-shadow-card);
+$shadow-button: var(--app-shadow-button);
+
+$font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+$font-body: 'Inter', -apple-system, sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ═══════════════════════════
+//   HOST
+// ═══════════════════════════
+
 :host {
   display: block;
 }
 
+// ═══════════════════════════
+//   SHELL
+// ═══════════════════════════
+
 .editor-shell {
-  --surface: var(--app-surface);
-  --surface-soft: var(--app-surface-soft);
-  --line: var(--app-line-strong);
-  --text: var(--app-text-primary);
-  --muted: var(--app-text-secondary);
-  --primary: var(--app-primary);
-  --primary-strong: var(--app-primary-strong);
-  --shadow: var(--app-shadow-floating);
-  background:
-    radial-gradient(circle at top left, var(--app-editor-glow), transparent 42%),
-    linear-gradient(180deg, var(--app-editor-gradient-start) 0%, var(--app-editor-gradient-end) 100%);
-  color: var(--text);
-  border-radius: 28px 28px 0 0;
-  border: 1px solid var(--app-card-border);
-  box-shadow: var(--shadow);
-  padding: 14px 20px 22px;
+  background: $bg-page;
+  color: $text-primary;
+  padding: 16px 20px 60px;
+  min-height: 100%;
+
+  &--page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+  }
 }
 
-.editor-shell--page {
-  border-radius: 30px;
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 24px 24px 26px;
-}
-
-.sheet-handle {
-  width: 52px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--app-line-strong);
-  margin: 0 auto 18px;
-}
+// ═══════════════════════════
+//   HEADER
+// ═══════════════════════════
 
 .editor-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 
   h2 {
-    margin: 0;
-    font-size: 1.6rem;
-    line-height: 1.1;
+    font-family: $font-display;
+    font-size: 1.65rem;
     font-weight: 800;
-    color: var(--text);
+    color: $text-primary;
+    margin: 0;
+    letter-spacing: -0.03em;
   }
 
   p {
-    margin: 8px 0 0;
-    font-size: 0.92rem;
-    line-height: 1.4;
-    color: var(--muted);
+    font-family: $font-body;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: $text-secondary;
+    margin: 6px 0 0;
   }
 }
 
 .close-btn {
-  border: 1px solid var(--line);
-  background: var(--app-surface-glass);
-  color: var(--muted);
-  border-radius: 14px;
-  padding: 10px 14px;
-  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: $bg-card;
+  border: 1px solid var(--app-line-soft);
+  border-radius: $radius-sm;
+  font-family: $font-body;
+  font-size: 0.78rem;
   font-weight: 700;
+  color: $text-secondary;
+  cursor: pointer;
+  box-shadow: $shadow-card;
+  transition: transform $transition, background $transition;
+
+  &:active {
+    transform: scale(0.95);
+    background: $bg-card-hover;
+  }
 }
+
+// ═══════════════════════════
+//   BODY
+// ═══════════════════════════
 
 .editor-body {
-  display: grid;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.block-label,
-.field > span {
-  display: block;
+// ═══════════════════════════
+//   BLOCK LABEL
+// ═══════════════════════════
+
+.block-label {
+  font-family: $font-body;
   font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--app-text-secondary);
+  font-weight: 700;
+  color: $text-secondary;
+  margin-bottom: 12px;
+
+  em {
+    font-style: normal;
+    font-weight: 500;
+    color: $text-muted;
+  }
 }
 
-.field > span em {
-  text-transform: none;
-  letter-spacing: normal;
-  font-style: normal;
-  color: var(--app-text-muted);
-  font-weight: 700;
-}
+// ═══════════════════════════
+//   PHOTO ROW
+// ═══════════════════════════
 
 .photo-row {
-  margin-top: 12px;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 84px 1fr;
   gap: 14px;
-  align-items: stretch;
+  align-items: center;
 }
 
 .avatar-preview {
-  width: 88px;
-  height: 88px;
-  border-radius: 24px;
-  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-primary-soft) 100%);
-  border: 1px solid var(--line);
-  padding: 6px;
-  box-shadow: inset 0 1px 0 var(--app-card-border);
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(145deg, $primary-soft 0%, $blue-light 100%);
+  padding: 3px;
+  box-shadow: 0 4px 20px rgba(79, 107, 255, 0.15);
 
   img {
     width: 100%;
     height: 100%;
-    border-radius: 18px;
+    border-radius: 50%;
     object-fit: cover;
-    display: block;
+    border: 3px solid $bg-card;
   }
 }
 
 .upload-area {
-  width: 100%;
-  border: 1px dashed var(--line);
-  background: var(--app-surface-elevated);
-  border-radius: 22px;
-  padding: 18px 20px;
-  text-align: left;
-  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: $bg-card;
+  border: 1.5px dashed var(--app-line-strong);
+  border-radius: $radius-lg;
+  cursor: pointer;
+  box-shadow: $shadow-card;
+  transition: transform $spring, border-color $transition, background $transition;
 
-  strong,
-  span,
-  small {
-    display: block;
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:not(:disabled):hover {
+    border-color: $primary;
+    background: $primary-soft;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   strong {
-    color: var(--text);
-    font-size: 0.98rem;
+    font-family: $font-body;
+    font-size: 0.9rem;
     font-weight: 700;
+    color: $text-primary;
   }
 
   span {
-    margin-top: 6px;
-    font-size: 0.88rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: $text-secondary;
   }
 
   small {
-    margin-top: 8px;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: $text-muted;
+    margin-top: 2px;
   }
 }
 
+// ═══════════════════════════
+//   FORM GRID
+// ═══════════════════════════
+
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
 }
 
+// ═══════════════════════════
+//   FIELD
+// ═══════════════════════════
+
 .field {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  > span {
+    font-family: $font-body;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $text-secondary;
+
+    em {
+      font-style: normal;
+      font-weight: 500;
+      color: $text-muted;
+    }
+  }
 
   input,
   select,
   textarea {
     width: 100%;
-    border: 1px solid var(--line);
-    background: var(--app-surface-elevated);
-    border-radius: 18px;
     padding: 14px 16px;
-    margin-top: 8px;
-    color: var(--text);
-    font-size: 0.96rem;
-    font-family: inherit;
+    background: $bg-card;
+    border: 1px solid var(--app-line-soft);
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: $text-primary;
+    box-shadow: $shadow-card;
     outline: none;
-    box-shadow: inset 0 1px 0 var(--app-card-border);
+    transition: border-color $transition, box-shadow $transition;
+
+    &::placeholder {
+      color: $text-muted;
+      font-weight: 400;
+    }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px $primary-soft;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: $bg-card-hover;
+    }
   }
 
   select {
     appearance: none;
-    background-image:
-      linear-gradient(45deg, transparent 50%, var(--app-text-muted) 50%),
-      linear-gradient(135deg, var(--app-text-muted) 50%, transparent 50%);
-    background-position:
-      calc(100% - 18px) calc(50% - 2px),
-      calc(100% - 12px) calc(50% - 2px);
-    background-size: 6px 6px, 6px 6px;
+    cursor: pointer;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: calc(100% - 14px) center;
     background-repeat: no-repeat;
+    background-size: 14px;
   }
 
   textarea {
-    min-height: 118px;
+    min-height: 100px;
     resize: vertical;
+    line-height: 1.5;
+  }
+
+  &--full {
+    grid-column: 1 / -1;
   }
 }
 
-.field--full {
-  grid-column: 1 / -1;
-}
+// ═══════════════════════════
+//   COUNTER
+// ═══════════════════════════
 
 .counter {
-  display: block;
+  font-family: $font-body;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $text-muted;
   text-align: right;
-  margin-top: 8px;
-  font-size: 0.76rem;
-  color: var(--app-text-muted);
+  margin-top: 4px;
 }
 
+// ═══════════════════════════
+//   FOOTER
+// ═══════════════════════════
+
 .editor-footer {
-  margin-top: 18px;
+  margin-top: 28px;
 }
 
 .save-btn {
   width: 100%;
-  border: none;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: $primary;
+  color: #fff;
+  font-family: $font-body;
   font-size: 1rem;
   font-weight: 800;
-  padding: 16px 18px;
-  box-shadow: var(--app-shadow-button);
-}
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  box-shadow: $shadow-button;
+  transition: transform $spring, opacity $transition;
 
-.save-btn:disabled {
-  opacity: 0.58;
-  box-shadow: none;
-}
-
-@media (max-width: 720px) {
-  .editor-shell--page {
-    padding: 20px 18px 22px;
+  &:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
-  .photo-row,
-  .form-grid {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+// ═══════════════════════════
+//   RESPONSIVE
+// ═══════════════════════════
+
+@media (max-width: 480px) {
+  .editor-shell {
+    padding: 14px 16px 60px;
+
+    &--page {
+      padding: 20px 20px 60px;
+    }
+  }
+
+  .editor-header {
+    h2 {
+      font-size: 1.45rem;
+    }
+  }
+
+  .photo-row {
     grid-template-columns: 1fr;
+    gap: 14px;
+    justify-items: center;
+    text-align: center;
   }
 
   .avatar-preview {
     width: 96px;
     height: 96px;
+  }
+
+  .upload-area {
+    align-items: center;
+    text-align: center;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .editor-shell {
+    padding: 28px 32px 60px;
+
+    &--page {
+      padding: 32px 40px 60px;
+    }
+  }
+
+  .photo-row {
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
+  }
+
+  .avatar-preview {
+    width: 100px;
+    height: 100px;
+  }
+
+  .form-grid {
+    gap: 18px;
+  }
+
+  .save-btn {
+    max-width: 280px;
+    margin: 0 auto;
+    display: flex;
   }
 }

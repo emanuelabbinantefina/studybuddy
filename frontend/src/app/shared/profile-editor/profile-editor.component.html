@@ -1,15 +1,11 @@
 <section class="editor-shell" [class.editor-shell--sheet]="variant === 'sheet'" [class.editor-shell--page]="variant === 'page'">
-  <div class="sheet-handle" *ngIf="variant === 'sheet'"></div>
 
   <header class="editor-header">
     <div>
       <h2>{{ title }}</h2>
       <p *ngIf="subtitle">{{ subtitle }}</p>
     </div>
-
-    <button *ngIf="showClose" type="button" class="close-btn" (click)="close()">
-      Chiudi
-    </button>
+    <button *ngIf="showClose" type="button" class="close-btn" (click)="close()">Chiudi</button>
   </header>
 
   <div class="editor-body">
@@ -19,7 +15,6 @@
         <div class="avatar-preview">
           <img [src]="profileData.avatarUrl || fallbackAvatar" (error)="onAvatarError($event)" alt="Foto profilo">
         </div>
-
         <button type="button" class="upload-area" (click)="uploadPhoto()" [disabled]="isLimitedProfileEdit">
           <strong>Carica un'immagine</strong>
           <span>oppure clicca per scegliere</span>
@@ -41,7 +36,7 @@
 
       <label class="field field--full">
         <span>Username <em>(opzionale)</em></span>
-        <input type="text" maxlength="40" [(ngModel)]="profileData.username" placeholder="@marco.r">
+        <input type="text" maxlength="40" [(ngModel)]="profileData.username" placeholder="marco.r">
       </label>
 
       <label class="field field--full" *ngIf="isLimitedProfileEdit">
@@ -51,10 +46,7 @@
 
       <label class="field field--full" *ngIf="!isLimitedProfileEdit">
         <span>Corso di laurea triennale</span>
-        <select
-          [(ngModel)]="profileData.courseKey"
-          (ngModelChange)="onCourseChange($event)"
-          [disabled]="isLimitedProfileEdit || courseOptions.length === 0 || academicSelectionLocked">
+        <select [(ngModel)]="profileData.courseKey" (ngModelChange)="onCourseChange($event)" [disabled]="isLimitedProfileEdit || courseOptions.length === 0 || academicSelectionLocked">
           <option value="" disabled>Seleziona corso</option>
           <option *ngFor="let course of courseOptions" [value]="course.key">{{ course.label }}</option>
         </select>

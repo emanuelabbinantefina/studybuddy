@@ -1,4 +1,4 @@
-<ion-content class="groups-page" [fullscreen]="true">
+<ion-content class="groups-content" [fullscreen]="true">
 
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
     <ion-refresher-content
@@ -7,48 +7,46 @@
     ></ion-refresher-content>
   </ion-refresher>
 
-  <div class="groups-shell">
-
-    <!-- HEADER -->
-    <div class="groups-header">
-      <div class="header-copy">
-        <h1 class="page-title">Gruppi</h1>
-        <p class="page-subtitle">Trova la tua study crew</p>
-      </div>
-
-      <button class="create-btn" (click)="onCreateGroup()">
-        <ion-icon name="add-outline"></ion-icon>
-        Crea
-      </button>
+  <!-- HEADER -->
+  <div class="groups-header">
+    <div class="header-copy">
+      <h1 class="page-title">Gruppi</h1>
+      <p class="page-subtitle">Trova la tua study crew</p>
     </div>
 
+    <button class="create-btn" (click)="onCreateGroup()">
+      <ion-icon name="add-outline"></ion-icon>
+      Crea
+    </button>
+  </div>
+
+  <div class="groups-shell">
+    
     <!-- SEARCH -->
     <div class="search-bar">
       <ion-icon name="search-outline" class="search-icon"></ion-icon>
       <input
-        type="text"
+        type="search"
         class="search-input"
-        placeholder="Cerca gruppi..."
+        placeholder="Cerca gruppi per nome o materia..."
         [value]="query"
         (input)="onSearchChange($event)"
       />
     </div>
 
     <!-- RESULT COUNT -->
-    <div class="result-bar" *ngIf="!loadingList">
+    <div class="result-bar" *ngIf="!loadingList && filteredGroups.length > 0">
       <span class="result-count">{{ filteredGroups.length }} gruppi trovati</span>
     </div>
 
-    <!-- LOADING -->
+    <!-- LOADING SKELETON -->
     <div class="loading-shell" *ngIf="loadingList">
-      <div class="loading-cards">
-        <div class="loading-card" *ngFor="let s of [1,2,3]">
-          <div class="skeleton skeleton--icon"></div>
-          <div class="loading-copy">
-            <div class="skeleton skeleton--title"></div>
-            <div class="skeleton skeleton--meta"></div>
-            <div class="skeleton skeleton--stats"></div>
-          </div>
+      <div class="skeleton-card" *ngFor="let s of [1,2,3,4]">
+        <div class="skeleton skeleton--icon"></div>
+        <div class="skeleton-copy">
+          <div class="skeleton skeleton--title"></div>
+          <div class="skeleton skeleton--meta"></div>
+          <div class="skeleton skeleton--stats"></div>
         </div>
       </div>
     </div>
@@ -72,19 +70,10 @@
             <div class="group-copy">
               <div class="group-topline">
                 <h3>{{ g.nome }}</h3>
-
-                <!-- Badge "Membro" se sei già nel gruppo -->
                 <span class="member-badge" *ngIf="g.isMember">Membro</span>
-
-                <div class="exam-badge" *ngIf="g.examDate">
-                  <strong>{{ daysToExam(g.examDate) ?? 0 }}</strong>
-                  <span>gg</span>
-                </div>
               </div>
 
-              <div class="group-meta">
-                {{ groupContextLabel(g) }}
-              </div>
+              <div class="group-meta">{{ groupContextLabel(g) }}</div>
 
               <div class="group-stats">
                 <span class="stat">
@@ -95,29 +84,21 @@
                   <ion-icon name="document-text-outline"></ion-icon>
                   {{ g.notesCount || 0 }}
                 </span>
-                <span class="stat">
-                  <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
-                  {{ g.messagesCount || 0 }}
-                </span>
-                <span class="stat question">
-                  <span class="question-mark">?</span>
-                  {{ g.questionsCount || 0 }}
-                </span>
               </div>
             </div>
           </div>
         </article>
       </div>
 
-      <!-- EMPTY -->
+      <!-- EMPTY STATE -->
       <ng-template #emptyGroups>
-        <div class="empty-section">
+        <div class="empty-state">
           <span class="empty-emoji">✨</span>
           <h3>Nessun gruppo trovato</h3>
-          <p>Prova a cambiare ricerca oppure crea un nuovo gruppo.</p>
+          <p>Prova a cambiare ricerca o crea un nuovo gruppo.</p>
           <button class="empty-action" (click)="onCreateGroup()">
             <ion-icon name="add-outline"></ion-icon>
-            Crea gruppo
+            Crea il tuo gruppo
           </button>
         </div>
       </ng-template>

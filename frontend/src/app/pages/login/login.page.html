@@ -20,41 +20,24 @@
 
           <!-- Email -->
           <div class="field">
-            <label class="field-label">Email</label>
+            <label class="field-label" for="login-email">Email</label>
             <div class="input-wrap">
-              <ion-icon name="mail-outline" class="input-icon"></ion-icon>
-              <ion-input
-                type="email"
-                inputmode="email"
-                name="email"
-                placeholder="Inserisci la tua email"
-                [(ngModel)]="email"
-                autocorrect="off"
-                autocapitalize="off"
-                required
-              >
-              </ion-input>
+              <ion-icon name="mail-outline" class="input-icon" aria-hidden="true"></ion-icon>
+              <ion-input id="login-email" type="email" inputmode="email" name="email"
+                placeholder="Inserisci la tua email" [(ngModel)]="email" autocorrect="off" autocapitalize="off"
+                required></ion-input>
             </div>
           </div>
 
           <!-- Password -->
           <div class="field">
-            <label class="field-label">Password</label>
+            <label class="field-label" for="login-password">Password</label>
             <div class="input-wrap">
-              <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
-              <ion-input
-                [type]="passwordType"
-                name="password"
-                placeholder="Inserisci la password"
-                [(ngModel)]="password"
-                required
-              >
-              </ion-input>
-              <button
-                type="button"
-                class="password-toggle-btn"
-                (click)="togglePasswordMode()"
-              >
+              <ion-icon name="lock-closed-outline" class="input-icon" aria-hidden="true"></ion-icon>
+              <ion-input id="login-password" [type]="passwordType" name="password" placeholder="Inserisci la password"
+                [(ngModel)]="password" required></ion-input>
+              <button type="button" class="password-toggle-btn" (click)="togglePasswordMode()"
+                [attr.aria-label]="passwordType === 'password' ? 'Mostra password' : 'Nascondi password'">
                 <ion-icon [name]="passwordIcon"></ion-icon>
               </button>
             </div>
@@ -62,7 +45,7 @@
 
           <!-- Options -->
           <div class="form-row">
-            <div class="remember-wrapper" (click)="toggleRemember()">
+            <div class="remember-wrapper" (click)="toggleRemember()" role="checkbox" [attr.aria-checked]="rememberMe">
               <div class="custom-checkbox" [class.checked]="rememberMe">
                 <ion-icon name="checkmark"></ion-icon>
               </div>
@@ -71,18 +54,13 @@
           </div>
 
           <!-- Error -->
-          <div class="error-box" *ngIf="error">
-            <ion-icon name="alert-circle-outline"></ion-icon>
+          <div class="error-box" *ngIf="error" role="alert" aria-live="assertive">
+            <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
             <span>{{ error }}</span>
           </div>
 
           <!-- Submit -->
-          <ion-button
-            expand="block"
-            class="main-btn"
-            type="submit"
-            [disabled]="loading"
-          >
+          <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading || !email || !password">
             <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
             <span *ngIf="!loading">Accedi</span>
           </ion-button>
@@ -90,6 +68,11 @@
 
         <!-- Footer -->
         <div class="footer-links">
+          <p>
+            <button type="button" class="link-primary" (click)="goToForgotPassword()">
+              Hai dimenticato la password?
+            </button>
+          </p>
           <p>
             Non hai un account?
             <button type="button" class="link-primary" (click)="goToRegister()">

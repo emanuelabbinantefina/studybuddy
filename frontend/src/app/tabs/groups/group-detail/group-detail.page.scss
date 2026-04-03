@@ -1,3 +1,7 @@
+// ═══════════════════════════════════════════════════════════
+//   GROUP DETAIL PAGE
+// ═══════════════════════════════════════════════════════════
+
 $bg-page: var(--app-bg-page);
 $bg-card: var(--app-surface);
 $bg-card-hover: var(--app-surface-alt);
@@ -22,39 +26,37 @@ $orange-soft: var(--app-orange-soft);
 $red: var(--app-red);
 $red-soft: var(--app-red-soft);
 
-$line: var(--app-line);
-
 $radius-sm: 14px;
-$radius-md: 16px;
-$radius-lg: 20px;
-$radius-xl: 24px;
+$radius-md: 18px;
+$radius-lg: 24px;
+$radius-xl: 28px;
 $radius-full: 9999px;
 
 $shadow-card: var(--app-shadow-card);
-$shadow-card-soft: var(--app-shadow-card-soft);
-$shadow-btn: var(--app-shadow-button);
+$shadow-button: var(--app-shadow-button);
 
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
 
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ═══════════════════════════
+//   HOST & PAGE
+// ═══════════════════════════
 
 :host {
   display: block;
   height: 100%;
 }
 
-:host * {
-  box-sizing: border-box;
-}
-
 ion-content.detail-page {
   --background: #{$bg-page};
 }
 
-ion-content.detail-page::part(background) {
-  background: #{$bg-page};
-}
+// ═══════════════════════════
+//   MAIN WRAPPER
+// ═══════════════════════════
 
 .main-wrapper {
   min-height: 100%;
@@ -62,13 +64,16 @@ ion-content.detail-page::part(background) {
   max-width: none;
   margin: 0;
   padding: calc(18px + env(safe-area-inset-top, 0px)) 20px
-    calc(110px + env(safe-area-inset-bottom, 0px));
+    calc(120px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
-// TOP BAR
+// ═══════════════════════════
+//   TOP BAR
+// ═══════════════════════════
+
 .top-bar {
   display: flex;
   align-items: center;
@@ -79,11 +84,11 @@ ion-content.detail-page::part(background) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: $radius-sm;
   background: $bg-card;
-  border: none;
+  border: 1px solid var(--app-line-soft);
   box-shadow: $shadow-card;
   cursor: pointer;
   flex-shrink: 0;
@@ -102,24 +107,28 @@ ion-content.detail-page::part(background) {
 .page-title {
   flex: 1;
   text-align: center;
+  font-family: $font-display;
   color: $text-primary;
-  font-size: 0.96rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .top-bar-spacer {
-  width: 40px;
+  width: 42px;
   flex-shrink: 0;
 }
 
-// HERO
+// ═══════════════════════════
+//   HERO
+// ═══════════════════════════
+
 .group-hero {
   padding: 22px;
   border-radius: $radius-xl;
   background: $bg-card;
-  border: 1px solid $line;
-  box-shadow: $shadow-card-soft;
+  border: 1px solid var(--app-line-soft);
+  box-shadow: $shadow-card;
 }
 
 .hero-main {
@@ -129,17 +138,18 @@ ion-content.detail-page::part(background) {
 }
 
 .big-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 20px;
+  width: 68px;
+  height: 68px;
+  border-radius: $radius-lg;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 1.75rem;
+  color: #fff;
+  font-family: $font-display;
+  font-size: 1.6rem;
   font-weight: 900;
   flex-shrink: 0;
-  box-shadow: 0 10px 20px rgba(79, 107, 255, 0.14);
+  box-shadow: 0 8px 20px rgba(79, 107, 255, 0.14);
 }
 
 .hero-copy {
@@ -149,45 +159,47 @@ ion-content.detail-page::part(background) {
 
 .group-hero h2 {
   margin: 0;
+  font-family: $font-display;
   color: $text-primary;
-  font-size: clamp(1.9rem, 3vw, 2.4rem);
-  line-height: 1.05;
-  font-weight: 900;
-  letter-spacing: -0.05em;
+  font-size: 1.65rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .hero-meta {
   margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .meta-chip {
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 14px;
   border-radius: $radius-full;
   background: $primary-soft;
   color: $text-secondary;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
+  gap: 6px;
+  font-family: $font-body;
+  font-size: 0.82rem;
   font-weight: 700;
 
   ion-icon {
     font-size: 1rem;
     color: $primary;
   }
-}
 
-.meta-chip--clickable {
-  cursor: pointer;
-  transition: all $transition;
+  &--clickable {
+    cursor: pointer;
+    transition: all $transition;
 
-  &:active {
-    transform: scale(0.96);
-    background: rgba(79, 107, 255, 0.15);
+    &:active {
+      transform: scale(0.96);
+      background: rgba(79, 107, 255, 0.15);
+    }
   }
 }
 
@@ -197,13 +209,16 @@ ion-content.detail-page::part(background) {
   color: $primary;
 }
 
-// EXAM BOX
+// ═══════════════════════════
+//   EXAM BOX
+// ═══════════════════════════
+
 .exam-box {
   margin-top: 16px;
   padding: 16px 18px;
   border-radius: $radius-lg;
   background: $bg-soft;
-  border: 1px solid $line;
+  border: 1px solid var(--app-line-soft);
 }
 
 .exam-summary {
@@ -218,41 +233,48 @@ ion-content.detail-page::part(background) {
 
   strong {
     display: block;
+    font-family: $font-body;
     color: $text-primary;
-    font-size: 0.92rem;
-    font-weight: 800;
+    font-size: 0.88rem;
+    font-weight: 700;
   }
 
   p {
     margin: 6px 0 0;
+    font-family: $font-display;
     color: $text-primary;
-    font-size: 0.98rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
   }
 
   small {
     display: block;
     margin-top: 6px;
     color: $text-muted;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
+    font-weight: 500;
     line-height: 1.4;
   }
 }
 
-// LISTA MEMBRI
+// ═══════════════════════════
+//   MEMBERS
+// ═══════════════════════════
+
 .members-section {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid $line;
+  border-top: 1px solid var(--app-line-soft);
 }
 
 .members-header {
   margin-bottom: 12px;
 
   strong {
+    font-family: $font-body;
     color: $text-primary;
-    font-size: 0.92rem;
-    font-weight: 800;
+    font-size: 0.88rem;
+    font-weight: 700;
   }
 }
 
@@ -267,10 +289,9 @@ ion-content.detail-page::part(background) {
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  border-radius: $radius-md;
+  border-radius: $radius-sm;
   background: $bg-soft;
-  border: 1px solid $line;
-  transition: background $transition;
+  border: 1px solid var(--app-line-soft);
 }
 
 .member-avatar {
@@ -282,15 +303,16 @@ ion-content.detail-page::part(background) {
   justify-content: center;
   background: $primary-soft;
   color: $primary;
+  font-family: $font-display;
   font-weight: 800;
   font-size: 0.88rem;
   flex-shrink: 0;
-}
 
-.member-avatar--owner {
-  background: $accent-soft;
-  color: $accent;
-  box-shadow: 0 0 0 2px $accent;
+  &--owner {
+    background: $accent-soft;
+    color: $accent;
+    box-shadow: 0 0 0 2px $accent;
+  }
 }
 
 .member-info {
@@ -302,23 +324,27 @@ ion-content.detail-page::part(background) {
 }
 
 .member-name {
+  font-family: $font-body;
   color: $text-primary;
-  font-size: 0.92rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .member-role {
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: $radius-full;
   background: $accent-soft;
   color: $accent;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-// LEAVE BUTTON
+// ═══════════════════════════
+//   LEAVE BUTTON
+// ═══════════════════════════
+
 .leave-btn {
   display: flex;
   align-items: center;
@@ -327,11 +353,12 @@ ion-content.detail-page::part(background) {
   width: 100%;
   padding: 14px;
   margin-top: 16px;
-  border: 1.5px solid $red;
+  border: 1.5px solid rgba(239, 107, 115, 0.2);
   border-radius: $radius-md;
   background: $red-soft;
   color: $red;
-  font-size: 0.9rem;
+  font-family: $font-body;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
   transition: all $transition;
@@ -340,9 +367,8 @@ ion-content.detail-page::part(background) {
     font-size: 1.1rem;
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(0.98);
-    background: rgba(239, 68, 68, 0.15);
   }
 
   &:disabled {
@@ -351,21 +377,23 @@ ion-content.detail-page::part(background) {
   }
 }
 
-// SEGMENT
+// ═══════════════════════════
+//   SEGMENT
+// ═══════════════════════════
+
 .custom-segment {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 6px;
-  border-radius: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 5px;
+  border-radius: $radius-lg;
   background: $bg-card;
-  border: 1px solid $line;
+  border: 1px solid var(--app-line-soft);
   box-shadow: $shadow-card;
 }
 
 .seg-btn {
-  min-width: 0;
-  min-height: 48px;
+  min-height: 46px;
   padding: 0 8px;
   border: none;
   outline: none;
@@ -374,25 +402,29 @@ ion-content.detail-page::part(background) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 800;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
-  border-radius: 14px;
+  border-radius: $radius-sm;
   transition: all $transition;
 
   span {
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   &.active {
-    color: #ffffff;
+    color: #fff;
     background: $primary;
-    box-shadow: $shadow-btn;
+    box-shadow: $shadow-button;
   }
 }
+
+// ═══════════════════════════
+//   CONTENT AREA
+// ═══════════════════════════
 
 .content-area {
   display: flex;
@@ -403,33 +435,42 @@ ion-content.detail-page::part(background) {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: 220px;
+  min-height: 200px;
 }
 
-// APPUNTI LIST
+// ═══════════════════════════
+//   APPUNTI
+// ═══════════════════════════
+
 .appunti-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .appunto-item {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 18px;
+  grid-template-columns: 48px 1fr 18px;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;
   border-radius: $radius-lg;
   background: $bg-card;
-  border: 1px solid $line;
-  box-shadow: $shadow-card-soft;
+  border: 1px solid var(--app-line-soft);
+  box-shadow: $shadow-card;
   cursor: pointer;
+  transition: transform $spring, background $transition;
+
+  &:active {
+    transform: scale(0.98);
+    background: $bg-card-hover;
+  }
 }
 
 .file-icon-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-sm;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -439,21 +480,21 @@ ion-content.detail-page::part(background) {
   ion-icon {
     font-size: 1.3rem;
   }
-}
 
-.file-icon-wrap.pdf {
-  background: $red-soft;
-  color: $red;
-}
+  &.pdf {
+    background: $red-soft;
+    color: $red;
+  }
 
-.file-icon-wrap.doc {
-  background: $primary-soft;
-  color: $primary;
-}
+  &.doc {
+    background: $primary-soft;
+    color: $primary;
+  }
 
-.file-icon-wrap.img {
-  background: $green-soft;
-  color: $green;
+  &.img {
+    background: $green-soft;
+    color: $green;
+  }
 }
 
 .file-info {
@@ -461,24 +502,32 @@ ion-content.detail-page::part(background) {
 
   h4 {
     margin: 0;
+    font-family: $font-body;
     color: $text-primary;
-    font-size: 0.96rem;
-    font-weight: 800;
+    font-size: 0.92rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   p {
-    margin: 6px 0 0;
+    margin: 4px 0 0;
     color: $text-muted;
-    font-size: 0.86rem;
+    font-size: 0.78rem;
+    font-weight: 500;
   }
 }
 
 .item-arrow {
-  color: #c1c8da;
+  color: $text-muted;
   font-size: 1rem;
 }
 
-// SHARED CARDS
+// ═══════════════════════════
+//   SHARED CARDS
+// ═══════════════════════════
+
 .composer-card,
 .loading-card,
 .message-card,
@@ -486,8 +535,8 @@ ion-content.detail-page::part(background) {
   padding: 16px 18px;
   border-radius: $radius-lg;
   background: $bg-card;
-  border: 1px solid $line;
-  box-shadow: $shadow-card-soft;
+  border: 1px solid var(--app-line-soft);
+  box-shadow: $shadow-card;
 }
 
 .loading-card {
@@ -496,13 +545,18 @@ ion-content.detail-page::part(background) {
   justify-content: center;
   gap: 10px;
   color: $text-secondary;
-  font-weight: 700;
+  font-family: $font-body;
+  font-weight: 600;
 
   ion-icon {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     color: $primary;
   }
 }
+
+// ═══════════════════════════
+//   COMPOSER
+// ═══════════════════════════
 
 .composer-head {
   display: flex;
@@ -511,9 +565,10 @@ ion-content.detail-page::part(background) {
   gap: 12px;
 
   strong {
+    font-family: $font-body;
     color: $text-primary;
-    font-size: 0.96rem;
-    font-weight: 800;
+    font-size: 0.92rem;
+    font-weight: 700;
   }
 }
 
@@ -521,74 +576,97 @@ ion-content.detail-page::part(background) {
   border: none;
   background: transparent;
   color: $text-muted;
-  font-size: 0.86rem;
+  font-family: $font-body;
+  font-size: 0.82rem;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .reply-target {
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: $radius-md;
+  border-radius: $radius-sm;
   background: $bg-soft;
-  border: 1px solid $line;
+  border: 1px solid var(--app-line-soft);
 
   span {
     display: block;
     color: $primary;
-    font-size: 0.76rem;
-    font-weight: 800;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
   p {
-    margin: 7px 0 0;
+    margin: 6px 0 0;
     color: $text-secondary;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     line-height: 1.45;
   }
 }
 
-.composer-card textarea {
+.composer-card textarea,
+.composer-card input {
   width: 100%;
-  min-height: 100px;
   margin-top: 14px;
-  border: 1px solid $line;
-  border-radius: $radius-md;
+  border: 1px solid var(--app-line-soft);
+  border-radius: $radius-sm;
   background: $bg-card;
   padding: 14px 16px;
   color: $text-primary;
-  font: inherit;
+  font-family: $font-body;
+  font-size: 0.9rem;
   resize: vertical;
   outline: none;
+  transition: border-color $transition, box-shadow $transition;
 
   &:focus {
     border-color: $primary;
-    box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
+    box-shadow: 0 0 0 3px $primary-soft;
   }
+
+  &::placeholder {
+    color: $text-muted;
+  }
+}
+
+.composer-card textarea {
+  min-height: 100px;
 }
 
 .question-form-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px;
+  grid-template-columns: 1fr 120px;
   gap: 10px;
   margin-top: 12px;
 
   select,
   input {
-    min-height: 46px;
-    border: 1px solid $line;
+    min-height: 48px;
+    border: 1px solid var(--app-line-soft);
     border-radius: $radius-sm;
     background: $bg-card;
     padding: 0 14px;
     color: $text-primary;
-    font: inherit;
+    font-family: $font-body;
+    font-size: 0.88rem;
     outline: none;
+    transition: border-color $transition;
 
     &:focus {
       border-color: $primary;
-      box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.08);
+      box-shadow: 0 0 0 3px $primary-soft;
     }
+  }
+
+  select {
+    appearance: none;
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: calc(100% - 12px) center;
+    background-repeat: no-repeat;
+    background-size: 14px;
   }
 }
 
@@ -600,47 +678,101 @@ ion-content.detail-page::part(background) {
   margin-top: 14px;
 }
 
-// BUTTONS
-.ghost-action,
-.primary-action,
-.outline-action,
-.reply-link {
-  border: none;
-  background: transparent;
-  font: inherit;
-}
+// ═══════════════════════════
+//   BUTTONS
+// ═══════════════════════════
 
 .ghost-action {
+  border: none;
+  background: transparent;
   color: $text-muted;
-  font-size: 0.86rem;
+  font-family: $font-body;
+  font-size: 0.82rem;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .primary-action {
-  min-height: 42px;
-  padding: 0 18px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: none;
   border-radius: $radius-sm;
   background: $primary;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 800;
-  box-shadow: $shadow-btn;
+  color: #fff;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: $shadow-button;
+  cursor: pointer;
+  transition: transform $transition;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
 
   &:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 .outline-action {
   width: 100%;
-  min-height: 50px;
+  min-height: 52px;
   border: 1.5px dashed rgba(79, 107, 255, 0.35);
   border-radius: $radius-md;
   color: $primary;
-  font-size: 0.92rem;
-  font-weight: 800;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  font-weight: 700;
   background: $bg-card;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:active {
+    background: $primary-soft;
+    border-color: $primary;
+  }
 }
+
+.action-btn {
+  width: fit-content;
+  min-width: 200px;
+  min-height: 48px;
+  margin: 0 auto;
+  border: none;
+  border-radius: $radius-md;
+  background: $primary;
+  color: #fff;
+  font-family: $font-body;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: $shadow-button;
+  cursor: pointer;
+  transition: transform $spring;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--compact {
+    position: static;
+    bottom: auto;
+  }
+}
+
+// ═══════════════════════════
+//   MESSAGES
+// ═══════════════════════════
 
 .message-list,
 .question-list {
@@ -650,20 +782,30 @@ ion-content.detail-page::part(background) {
 }
 
 .pinned-section {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+}
+
+.section-headline {
+  strong {
+    font-family: $font-body;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $text-secondary;
+  }
 }
 
 .pinned-card {
   padding: 14px 16px;
   border-radius: $radius-lg;
-  background: rgba(255, 159, 110, 0.12);
-  border: 1px solid rgba(199, 99, 40, 0.2);
-  box-shadow: $shadow-card-soft;
+  background: $orange-soft;
+  border: 1px solid rgba(199, 99, 40, 0.15);
 
   p {
     margin: 10px 0 0;
     color: $text-primary;
+    font-size: 0.88rem;
     line-height: 1.55;
   }
 }
@@ -676,41 +818,40 @@ ion-content.detail-page::part(background) {
 
   strong {
     color: $text-primary;
-    font-size: 0.94rem;
-    font-weight: 800;
+    font-size: 0.88rem;
+    font-weight: 700;
   }
 
   span {
     color: $text-muted;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
-// MESSAGES
 .message-grid {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 40px 1fr;
   gap: 12px;
 }
 
 .message-avatar,
 .reply-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: $primary-soft;
   color: $primary;
+  font-family: $font-display;
   font-weight: 800;
-  font-size: 0.92rem;
-}
+  font-size: 0.88rem;
 
-.message-avatar.own,
-.reply-avatar.own {
-  background: #dfe6ff;
-  color: $primary;
+  &.own {
+    background: rgba(79, 107, 255, 0.15);
+    color: $primary;
+  }
 }
 
 .message-main {
@@ -721,48 +862,60 @@ ion-content.detail-page::part(background) {
 .reply-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 
   strong {
+    font-family: $font-body;
     color: $text-primary;
-    font-size: 0.94rem;
-    font-weight: 800;
+    font-size: 0.88rem;
+    font-weight: 700;
   }
 
   span {
     color: $text-muted;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
 .message-text,
 .reply-text,
 .question-text {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   color: $text-primary;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.55;
-}
-
-.reply-link {
-  margin-top: 10px;
-  padding: 0;
-  color: $primary;
-  font-size: 0.86rem;
-  font-weight: 800;
 }
 
 .message-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   margin-top: 10px;
+
+  &--nested {
+    margin-top: 8px;
+  }
 }
 
-.message-actions--nested {
-  margin-top: 8px;
+.reply-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $primary;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &--nested {
+    margin-top: 0;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
 }
 
 .delete-link {
@@ -770,171 +923,178 @@ ion-content.detail-page::part(background) {
   border: none;
   background: transparent;
   color: $red;
-  font-size: 0.86rem;
-  font-weight: 800;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
 
   &:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
   }
-}
-
-.reply-link--nested {
-  margin-top: 0;
-}
-
-.reply-thread {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-  padding-left: 10px;
-}
-
-.reply-card {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr);
-  gap: 10px;
-}
-
-.reply-line {
-  width: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    rgba(79, 107, 255, 0.22) 0%,
-    rgba(79, 107, 255, 0.06) 100%
-  );
-}
-
-.reply-bubble {
-  padding: 13px 15px;
-  border-radius: $radius-md;
-  background: $bg-soft;
-  border: 1px solid $line;
-}
-
-.reply-context,
-.question-session {
-  margin: 8px 0 0;
-  color: $text-muted;
-  font-size: 0.82rem;
-  line-height: 1.4;
 }
 
 .message-pin-badge {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  padding: 0 10px;
+  min-height: 22px;
+  padding: 0 8px;
   border-radius: $radius-full;
-  background: rgba(255, 159, 110, 0.16);
+  background: $orange-soft;
   color: #c76328;
-  font-size: 0.74rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 700;
 }
+
+// ═══════════════════════════
+//   REPLIES
+// ═══════════════════════════
+
+.reply-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  padding-left: 10px;
+}
+
+.reply-card {
+  display: grid;
+  grid-template-columns: 3px 1fr;
+  gap: 12px;
+}
+
+.reply-line {
+  width: 3px;
+  border-radius: $radius-full;
+  background: linear-gradient(
+    180deg,
+    rgba(79, 107, 255, 0.2) 0%,
+    rgba(79, 107, 255, 0.04) 100%
+  );
+}
+
+.reply-bubble {
+  padding: 14px 16px;
+  border-radius: $radius-md;
+  background: $bg-soft;
+  border: 1px solid var(--app-line-soft);
+}
+
+.reply-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .reply-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.72rem;
+  }
+}
+
+.reply-context {
+  margin: 6px 0 0;
+  color: $text-muted;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+// ═══════════════════════════
+//   QUESTIONS
+// ═══════════════════════════
 
 .question-text--quote {
   margin-top: 0;
   font-style: italic;
 }
 
-// EMPTY
-.empty-state {
-  padding: 24px 20px;
-  border-radius: $radius-xl;
-  border: 1.5px dashed #e6ebf7;
-  background: $bg-card;
-  text-align: center;
+.question-session {
+  margin: 8px 0 0;
+  color: $text-muted;
+  font-size: 0.78rem;
 }
 
-.empty-state--compact {
-  min-height: auto;
+// ═══════════════════════════
+//   EMPTY STATE
+// ═══════════════════════════
+
+.empty-state {
+  padding: 32px 24px;
+  border-radius: $radius-xl;
+  border: 1.5px dashed var(--app-line-strong);
+  background: $bg-card;
+  text-align: center;
+
+  &--compact {
+    padding: 24px 20px;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: $font-display;
+    color: $text-primary;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  p {
+    max-width: 300px;
+    margin: 8px auto 0;
+    color: $text-muted;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
 }
 
 .icon-circle {
-  width: 62px;
-  height: 62px;
+  width: 56px;
+  height: 56px;
   margin: 0 auto 14px;
-  border-radius: 999px;
-  display: inline-flex;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
   background: $primary-soft;
   color: $primary;
 
   ion-icon {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 }
 
-.empty-state h3 {
-  margin: 0;
-  color: $text-primary;
-  font-size: 1.1rem;
-  font-weight: 900;
-}
+// ═══════════════════════════
+//   COLOR CLASSES
+// ═══════════════════════════
 
-.empty-state p {
-  max-width: 420px;
-  margin: 8px auto 0;
-  color: $text-muted;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-.action-btn {
-  width: fit-content;
-  min-width: 220px;
-  min-height: 48px;
-  margin: 0 auto;
-  border: none;
-  border-radius: $radius-md;
-  background: $primary;
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 0.92rem;
-  font-weight: 800;
-  box-shadow: $shadow-btn;
-}
-
-.action-btn--compact {
-  position: static;
-  bottom: auto;
-}
-
-// GROUP COLORS
 .bg-blue {
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
 }
-
 .bg-green {
   background: linear-gradient(135deg, #34d399 0%, #23b38a 100%);
 }
-
-.bg-teal {
+.bg-cyan {
   background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
 }
-
 .bg-orange {
   background: linear-gradient(135deg, #f4b740 0%, #ff9f6e 100%);
 }
-
-.bg-pink {
+.bg-peach {
   background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
 }
 
-// RESPONSIVE
-@media (max-width: 720px) {
+// ═══════════════════════════
+//   RESPONSIVE
+// ═══════════════════════════
+
+@media (max-width: 480px) {
   .main-wrapper {
-    padding: calc(14px + env(safe-area-inset-top, 0px)) 14px
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px
       calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .group-hero {
-    padding: 20px 16px;
+    padding: 18px 16px;
   }
 
   .hero-main {
@@ -943,20 +1103,19 @@ ion-content.detail-page::part(background) {
   }
 
   .big-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    margin-bottom: 8px;
-    font-size: 1.55rem;
+    width: 56px;
+    height: 56px;
+    border-radius: $radius-md;
+    font-size: 1.4rem;
   }
 
   .group-hero h2 {
-    font-size: 1.9rem;
+    font-size: 1.45rem;
   }
 
   .seg-btn {
-    min-height: 46px;
-    font-size: 0.86rem;
+    min-height: 44px;
+    font-size: 0.82rem;
   }
 
   .question-form-row {
@@ -964,127 +1123,35 @@ ion-content.detail-page::part(background) {
   }
 
   .message-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 36px 1fr;
+    gap: 10px;
   }
 
-  .message-card,
-  .reply-bubble {
-    overflow-wrap: anywhere;
+  .message-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
   }
 
   .action-btn {
     width: 100%;
-  }
-}
-
-@media (max-width: 420px) {
-  .page-title {
-    font-size: 0.9rem;
-  }
-
-  .group-hero h2 {
-    font-size: 1.7rem;
   }
 
   .meta-chip {
     width: 100%;
     justify-content: flex-start;
   }
+}
 
-  .appunto-item {
-    grid-template-columns: 48px minmax(0, 1fr) 18px;
-    padding: 14px;
+@media (min-width: 768px) {
+  .main-wrapper {
+    max-width: 1920px;
+    margin: 0 auto;
   }
 
-  .composer-card,
-  .loading-card,
-  .message-card,
-  .question-card {
-    padding: 14px;
-    border-radius: $radius-lg;
+  .appunti-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
-
-  .seg-btn {
-    padding: 0 4px;
-    font-size: 0.82rem;
-  }
-
-  .file-icon-wrap {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-  }
-
-  .member-item {
-    padding: 8px 12px;
-  }
-
-  .member-avatar {
-    width: 34px;
-    height: 34px;
-    font-size: 0.82rem;
-  }
-}
-.announcement-section,
-.question-collections {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.section-headline {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.announcement-card,
-.question-collection-card {
-  padding: 14px;
-  border-radius: 18px;
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-card);
-}
-
-.announcement-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.announcement-card p,
-.question-collection-card p {
-  margin: 0;
-  color: var(--app-text-secondary);
-  line-height: 1.5;
-}
-
-.question-collection-card span {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 0.82rem;
-  color: var(--app-text-muted);
-}
-
-.question-picker {
-  display: grid;
-  gap: 10px;
-}
-
-.question-picker-option {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 0.9rem;
-}
-
-.composer-card input,
-.composer-card textarea {
-  width: 100%;
-  border: 1px solid var(--app-line-soft);
-  border-radius: 14px;
-  padding: 10px 12px;
-  background: var(--app-surface-soft);
-  color: var(--app-text-primary);
 }

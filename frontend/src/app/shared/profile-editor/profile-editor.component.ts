@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { Subject, filter, takeUntil } from 'rxjs';
-import { lastValueFrom } from 'rxjs';
+import { Subject, filter, takeUntil, lastValueFrom } from 'rxjs';
 import { UserProfile } from '../../core/interfaces/models';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
+import { generateAvatarUrl, AVATAR_CONFIG, PROFILE_CONFIG } from '../../core/config/constants';
 
 interface FacultyRow {
   id: number;
@@ -49,13 +49,12 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   @Output() closed = new EventEmitter<void>();
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
-  readonly fallbackAvatar = 'assets/images/logo-uni.png';
-
   saving = false;
   loadingProfile = true;
   academicSelectionLocked = false;
   faculties: FacultyRow[] = [];
   courseOptions: CourseOption[] = [];
+  
   profileData: ProfileFormState = {
     avatarUrl: '',
     firstName: '',
@@ -77,15 +76,9 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadFaculties();
-    this.userService
-      .getProfile()
-      .pipe(
-        filter((profile): profile is UserProfile => !!profile),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((profile) => {
-        this.applyProfile(profile);
-      });
+    this.userService.getProfile()
+      .pipe(filter((profile): profile is UserProfile => !!profile), takeUntil(this.destroy$))
+      .subscribe((profile) => this.applyProfile(profile));
   }
 
   ngOnDestroy(): void {
@@ -93,21 +86,16 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get bioCount(): number {
-    return (this.profileData.bio || '').length;
+  get fallbackAvatar(): string {
+    const name = `${this.profileData.firstName} ${this.profileData.lastName}`.trim() || 'User';
+    return generateAvatarUrl(name);
   }
 
-  get isLimitedProfileEdit(): boolean {
-    return this.variant === 'sheet';
-  }
+  get bioCount(): number { return (this.profileData.bio || '').length; }
+  get isLimitedProfileEdit(): boolean { return this.variant === 'sheet'; }
 
   canSave(): boolean {
-    const hasAcademicSelection = !!(
-      this.profileData.courseKey.trim() &&
-      this.profileData.facolta.trim() &&
-      this.profileData.corso.trim()
-    );
-
+    const hasAcademicSelection = !!(this.profileData.courseKey.trim() && this.profileData.facolta.trim() && this.profileData.corso.trim());
     return !!(
       !this.saving &&
       this.profileData.firstName.trim() &&
@@ -126,42 +114,35 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     const file = input?.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
+    if (input) input.value = '';
+    if (!AVATAR_CONFIG.ALLOWED_TYPES.includes(file.type)) {
       await this.presentToast('Usa un file JPG, PNG o WEBP', 'warning');
-      if (input) input.value = '';
       return;
     }
-
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > AVATAR_CONFIG.MAX_SIZE) {
       await this.presentToast("L'immagine deve essere al massimo di 5 MB", 'warning');
-      if (input) input.value = '';
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      this.profileData.avatarUrl = String(reader.result || '');
-    };
+    reader.onload = () => { this.profileData.avatarUrl = String(reader.result || ''); };
+    reader.onerror = () => { this.presentToast('Errore nella lettura del file', 'danger'); };
     reader.readAsDataURL(file);
   }
 
   onAvatarError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (!img) return;
-    img.src = this.fallbackAvatar;
+    if (!img.src.includes('ui-avatars.com')) img.src = this.fallbackAvatar;
   }
 
-  close(): void {
-    this.closed.emit();
-  }
+  close(): void { this.closed.emit(); }
 
   async saveProfile(): Promise<void> {
     if (!this.canSave()) {
       await this.presentToast('Compila nome, cognome e corso di laurea', 'warning');
       return;
     }
-
     this.saving = true;
     try {
       const avatarUrl = this.normalizedAvatarUrl();
@@ -169,46 +150,22 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
       const updated = await lastValueFrom(
         this.userService.updateProfile({
           username: this.cleanUsername(this.profileData.username),
-          bio: this.profileData.bio.trim().slice(0, 120),
-          ...(!this.isLimitedProfileEdit
-            ? {
-                firstName: this.profileData.firstName.trim(),
-                lastName: this.profileData.lastName.trim(),
-                ...(courseKey ? { courseKey } : {}),
-                ...(avatarUrl ? { avatarUrl } : {}),
-              }
-            : {}),
+          bio: this.profileData.bio.trim().slice(0, PROFILE_CONFIG.MAX_BIO_LENGTH),
+          ...(!this.isLimitedProfileEdit ? {
+            firstName: this.profileData.firstName.trim(),
+            lastName: this.profileData.lastName.trim(),
+            ...(courseKey ? { courseKey } : {}),
+            ...(avatarUrl ? { avatarUrl } : {}),
+          } : {}),
         })
       );
-
       await this.presentToast('Profilo salvato con successo', 'success');
       this.saved.emit(updated);
     } catch (err: any) {
-      await this.presentToast(err?.error?.message || 'Errore durante il salvataggio del profilo', 'danger');
+      await this.presentToast(err?.error?.message || 'Errore durante il salvataggio', 'danger');
     } finally {
       this.saving = false;
     }
-  }
-
-  private applyProfile(profile: UserProfile): void {
-    this.academicSelectionLocked = !!(
-      String(profile.facolta || '').trim() &&
-      String(profile.corso || '').trim()
-    );
-
-    this.profileData = {
-      avatarUrl: this.isCustomAvatar(profile.avatar) ? profile.avatar : '',
-      firstName: profile.firstName || '',
-      lastName: profile.lastName || '',
-      username: this.cleanUsername(profile.username || ''),
-      courseKey: '',
-      facolta: profile.facolta || '',
-      corso: profile.corso || '',
-      bio: (profile.bio || '').slice(0, 120),
-    };
-
-    this.syncCourseSelection();
-    this.loadingProfile = false;
   }
 
   onCourseChange(value: string): void {
@@ -218,87 +175,74 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     this.profileData.facolta = option?.facultyName || '';
   }
 
+  private applyProfile(profile: UserProfile): void {
+    this.academicSelectionLocked = !!(String(profile.facolta || '').trim() && String(profile.corso || '').trim());
+    this.profileData = {
+      avatarUrl: this.isCustomAvatar(profile.avatar) ? profile.avatar : '',
+      firstName: profile.firstName || '',
+      lastName: profile.lastName || '',
+      username: this.cleanUsername(profile.username || ''),
+      courseKey: '',
+      facolta: profile.facolta || '',
+      corso: profile.corso || '',
+      bio: (profile.bio || '').slice(0, PROFILE_CONFIG.MAX_BIO_LENGTH),
+    };
+    this.syncCourseSelection();
+    this.loadingProfile = false;
+  }
+
   private loadFaculties(): void {
-    this.authService
-      .getFaculties()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (rows) => {
-          this.faculties = Array.isArray(rows) ? rows : [];
-          this.courseOptions = this.buildCourseOptions(this.faculties);
-          this.syncCourseSelection();
-        },
-        error: () => {
-          this.faculties = [];
-          this.courseOptions = [];
-          this.syncCourseSelection();
-        },
-      });
+    this.authService.getFaculties().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (rows) => {
+        this.faculties = Array.isArray(rows) ? rows : [];
+        this.courseOptions = this.buildCourseOptions(this.faculties);
+        this.syncCourseSelection();
+      },
+      error: () => { this.faculties = []; this.courseOptions = []; this.syncCourseSelection(); }
+    });
   }
 
   private buildCourseOptions(rows: FacultyRow[]): CourseOption[] {
     const flatRows = (Array.isArray(rows) ? rows : []).reduce<Array<{ facultyName: string; courseName: string }>>(
-      (accumulator, faculty: FacultyRow) => {
-        const nextRows = (faculty?.Courses || []).map((course: { id: number; name: string }) => ({
-          facultyName: String(faculty?.name || '').trim(),
-          courseName: String(course?.name || '').trim(),
-        }));
-        return accumulator.concat(nextRows);
-      },
-      []
-    ).filter((entry: { facultyName: string; courseName: string }) => entry.facultyName && entry.courseName);
+      (acc, faculty) => acc.concat((faculty?.Courses || []).map(c => ({
+        facultyName: String(faculty?.name || '').trim(),
+        courseName: String(c?.name || '').trim()
+      }))), []
+    ).filter(e => e.facultyName && e.courseName);
 
-    const courseOccurrences = new Map();
-    flatRows.forEach((entry: { facultyName: string; courseName: string }) => {
-      const key = entry.courseName.toLowerCase();
-      courseOccurrences.set(key, (courseOccurrences.get(key) || 0) + 1);
-    });
+    const occurrences = new Map<string, number>();
+    flatRows.forEach(e => occurrences.set(e.courseName.toLowerCase(), (occurrences.get(e.courseName.toLowerCase()) || 0) + 1));
 
-    return flatRows
-      .map((entry: { facultyName: string; courseName: string }) => {
-        const hasDuplicateName = (courseOccurrences.get(entry.courseName.toLowerCase()) || 0) > 1;
-
-        return {
-          key: `${entry.facultyName}::${entry.courseName}`,
-          label: hasDuplicateName ? `${entry.courseName} - ${entry.facultyName}` : entry.courseName,
-          facultyName: entry.facultyName,
-          courseName: entry.courseName,
-        };
-      })
-      .sort((left: CourseOption, right: CourseOption) => left.label.localeCompare(right.label, 'it'));
+    return flatRows.map(e => ({
+      key: `${e.facultyName}::${e.courseName}`,
+      label: (occurrences.get(e.courseName.toLowerCase()) || 0) > 1 ? `${e.courseName} - ${e.facultyName}` : e.courseName,
+      facultyName: e.facultyName,
+      courseName: e.courseName
+    })).sort((a, b) => a.label.localeCompare(b.label, 'it'));
   }
 
   private syncCourseSelection(): void {
-    const currentFaculty = String(this.profileData.facolta || '').trim();
-    const currentCourse = String(this.profileData.corso || '').trim();
-
-    const exactMatch = this.courseOptions.find(
-      (option) =>
-        option.facultyName === currentFaculty &&
-        option.courseName === currentCourse
-    );
-
-    if (exactMatch) {
-      this.profileData.courseKey = exactMatch.key;
-      this.profileData.facolta = exactMatch.facultyName;
-      this.profileData.corso = exactMatch.courseName;
+    const f = String(this.profileData.facolta || '').trim();
+    const c = String(this.profileData.corso || '').trim();
+    const exact = this.courseOptions.find(o => o.facultyName === f && o.courseName === c);
+    if (exact) {
+      this.profileData.courseKey = exact.key;
+      this.profileData.facolta = exact.facultyName;
+      this.profileData.corso = exact.courseName;
       return;
     }
-
-    const matchesByCourse = this.courseOptions.filter((option) => option.courseName === currentCourse);
-    if (matchesByCourse.length === 1) {
-      const fallbackMatch = matchesByCourse[0];
-      this.profileData.courseKey = fallbackMatch.key;
-      this.profileData.facolta = fallbackMatch.facultyName;
-      this.profileData.corso = fallbackMatch.courseName;
+    const matches = this.courseOptions.filter(o => o.courseName === c);
+    if (matches.length === 1) {
+      this.profileData.courseKey = matches[0].key;
+      this.profileData.facolta = matches[0].facultyName;
+      this.profileData.corso = matches[0].courseName;
       return;
     }
-
     this.profileData.courseKey = '';
   }
 
   private cleanUsername(value: string): string {
-    return String(value || '').trim().replace(/^@+/, '');
+    return String(value || '').trim().replace(/^@+/, '').replace(/[^a-zA-Z0-9._-]/g, '').toLowerCase().slice(0, PROFILE_CONFIG.MAX_USERNAME_LENGTH);
   }
 
   private normalizedAvatarUrl(): string {
@@ -306,20 +250,12 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   }
 
   private isCustomAvatar(value: unknown): value is string {
-    const normalized = String(value || '').trim();
-    return !!normalized && normalized !== this.fallbackAvatar;
+    const n = String(value || '').trim();
+    return !!n && !n.includes('ui-avatars.com') && !n.includes('logo-uni');
   }
 
-  private async presentToast(
-    message: string,
-    color: 'success' | 'warning' | 'danger'
-  ): Promise<void> {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 2000,
-      color,
-      position: 'bottom',
-    });
+  private async presentToast(message: string, color: 'success' | 'warning' | 'danger'): Promise<void> {
+    const toast = await this.toastCtrl.create({ message, duration: 2000, color, position: 'bottom' });
     await toast.present();
   }
 }

@@ -15,7 +15,7 @@ import { SearchOverlayComponent } from './search-overlay/search-overlay.componen
   imports: [IonicModule, CommonModule, SearchOverlayComponent],
 })
 export class TabsPage implements OnInit, OnDestroy {
-  readonly fallbackAvatar = 'assets/images/logo-uni.png';
+  readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=4f6bff&color=fff&size=128&bold=true';
   profileAvatar = this.fallbackAvatar;
   isProfileRoute = false;
   isSearchOpen = false;

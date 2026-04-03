@@ -1,7 +1,7 @@
 <ion-content [fullscreen]="true" class="profile-content">
   <div class="profile-shell">
 
-    <!-- HERO -->
+    <!-- HERO (senza header "Ciao") -->
     <div class="profile-hero">
       <div class="hero-gradient"></div>
 
@@ -133,7 +133,9 @@
       </button>
     </section>
 
-    <div style="height: 140px"></div>
+    <!-- Bottom spacer -->
+    <div style="height: 100px"></div>
+
   </div>
 </ion-content>
 
@@ -223,12 +225,12 @@
 <ion-modal
   class="profile-editor-modal"
   [isOpen]="isEditModalOpen"
-  [breakpoints]="[0, 0.92]"
-  [initialBreakpoint]="0.92"
+  [breakpoints]="[0, 0.95]"
+  [initialBreakpoint]="0.95"
   (didDismiss)="closeEditProfile()"
 >
   <ng-template>
-    <ion-content class="modal-content">
+    <div class="modal-wrapper">
       <app-profile-editor
         variant="sheet"
         title="Modifica profilo"
@@ -236,6 +238,6 @@
         (saved)="onProfileSaved($event)"
         (closed)="closeEditProfile()"
       ></app-profile-editor>
-    </ion-content>
+    </div>
   </ng-template>
 </ion-modal>
