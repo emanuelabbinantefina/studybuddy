@@ -124,10 +124,11 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => { this.profileData.avatarUrl = String(reader.result || ''); };
-    reader.onerror = () => { this.presentToast('Errore nella lettura del file', 'danger'); };
-    reader.readAsDataURL(file);
+    try {
+      this.profileData.avatarUrl = await this.normalizeAvatarFile(file);
+    } catch {
+      await this.presentToast('Errore nella lettura del file', 'danger');
+    }
   }
 
   onAvatarError(event: Event): void {
@@ -247,6 +248,54 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   private normalizedAvatarUrl(): string {
     return this.isCustomAvatar(this.profileData.avatarUrl) ? String(this.profileData.avatarUrl).trim() : '';
+  }
+
+  private async normalizeAvatarFile(file: File): Promise<string> {
+    const imageUrl = URL.createObjectURL(file);
+
+    try {
+      const image = await this.loadImage(imageUrl);
+      const imageWidth = image.naturalWidth || image.width;
+      const imageHeight = image.naturalHeight || image.height;
+      const cropSize = Math.min(imageWidth, imageHeight);
+      const sourceX = Math.max(0, Math.floor((imageWidth - cropSize) / 2));
+      const sourceY = Math.max(0, Math.floor((imageHeight - cropSize) / 2));
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_CONFIG.OUTPUT_SIZE;
+      canvas.height = AVATAR_CONFIG.OUTPUT_SIZE;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        throw new Error('Canvas non disponibile');
+      }
+
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        cropSize,
+        cropSize,
+        0,
+        0,
+        AVATAR_CONFIG.OUTPUT_SIZE,
+        AVATAR_CONFIG.OUTPUT_SIZE
+      );
+
+      return canvas.toDataURL('image/jpeg', AVATAR_CONFIG.OUTPUT_QUALITY);
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+    }
+  }
+
+  private loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error('Immagine non valida'));
+      image.src = src;
+    });
   }
 
   private isCustomAvatar(value: unknown): value is string {

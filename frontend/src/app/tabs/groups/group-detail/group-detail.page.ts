@@ -305,7 +305,7 @@ export class GroupDetailPage implements OnInit {
         },
         {
           text: 'Carica',
-          handler: async (value) => {
+          handler: async (value: { title?: string } | undefined) => {
             const title = String(value?.title || '').trim();
             if (!title) {
               await this.presentToast('Titolo obbligatorio', 'warning');

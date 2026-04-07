@@ -1,5 +1,7 @@
 export const AVATAR_CONFIG = {
   MAX_SIZE: 5 * 1024 * 1024, // 5MB
+  OUTPUT_SIZE: 256,
+  OUTPUT_QUALITY: 0.86,
   ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
   FALLBACK_BG_COLOR: '4f6bff',
   FALLBACK_TEXT_COLOR: 'fff',
