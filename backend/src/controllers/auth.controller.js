@@ -53,6 +53,18 @@ async function updateMe(req, res) {
   }
 }
 
+async function changePassword(req, res) {
+  try {
+    const out = await authService.changePassword(req.userData.userId, req.body);
+    res.json({ message: 'password aggiornata', ...out });
+  } catch (e) {
+    if (e.code === 'BAD_REQUEST') return res.status(400).json({ message: e.message });
+    if (e.code === 'BAD_CREDENTIALS') return res.status(401).json({ message: e.message });
+    if (e.code === 'NOT_FOUND') return res.status(404).json({ message: e.message });
+    res.status(500).json({ message: e.message });
+  }
+}
+
 async function deleteMe(req, res) {
   try {
     const out = await authService.deleteAccount(req.userData.userId, req.body);
@@ -64,4 +76,4 @@ async function deleteMe(req, res) {
   }
 }
 
-module.exports = { faculties, register, login, me, updateMe, deleteMe };
+module.exports = { faculties, register, login, me, updateMe, changePassword, deleteMe };

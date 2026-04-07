@@ -415,6 +415,63 @@ async function updateProfile(userId, body) {
   return me(userId);
 }
 
+async function changePassword(userId, body = {}) {
+  const currentPassword = String(body?.currentPassword || '');
+  const newPassword = String(body?.newPassword || '');
+  const confirmPassword = String(body?.confirmPassword || '');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    throw badRequest('password attuale, nuova password e conferma sono obbligatorie');
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw badRequest('le nuove password non coincidono');
+  }
+
+  validatePassword(newPassword);
+
+  const user = await get(
+    `select id, password
+     from Users
+     where id = ?`,
+    [userId]
+  );
+
+  if (!user) {
+    const err = new Error('utente non trovato');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  const currentMatches = await bcrypt.compare(currentPassword, user.password);
+  if (!currentMatches) {
+    const err = new Error('password attuale non corretta');
+    err.code = 'BAD_CREDENTIALS';
+    throw err;
+  }
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+  if (isSamePassword) {
+    throw badRequest('la nuova password deve essere diversa da quella attuale');
+  }
+
+  const hashed = await bcrypt.hash(newPassword, 10);
+  const out = await run(
+    `update Users
+     set password = ?, updatedAt = ?
+     where id = ?`,
+    [hashed, nowIso(), userId]
+  );
+
+  if (!out.changes) {
+    const err = new Error('utente non trovato');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  return { ok: true };
+}
+
 async function deleteAccount(userId, body = {}) {
   const current = await me(userId);
   if (!current) {
@@ -492,4 +549,4 @@ async function deleteAccount(userId, body = {}) {
   return { ok: true };
 }
 
-module.exports = { facultiesWithCourses, register, login, me, updateProfile, deleteAccount };
+module.exports = { facultiesWithCourses, register, login, me, updateProfile, changePassword, deleteAccount };

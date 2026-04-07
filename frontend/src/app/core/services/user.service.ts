@@ -316,6 +316,22 @@ export class UserService {
     });
   }
 
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Observable<{ ok: boolean; message?: string }> {
+    return this.http.patch<{ ok: boolean; message?: string }>(
+      `${this.apiUrl}/me/password`,
+      {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      },
+      { headers: this.authHeaders() }
+    );
+  }
+
   handleSessionChange(): void {
     this.clearLegacySessionCache();
     this.userProfile.next(null);

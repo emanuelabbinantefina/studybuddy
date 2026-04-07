@@ -117,6 +117,14 @@
             </button>
           </div>
         </div>
+
+        <button class="setting-row setting-row--button" type="button" (click)="openChangePassword()">
+          <div class="setting-info">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            <span>Cambia password</span>
+          </div>
+          <ion-icon class="setting-chevron" name="chevron-forward-outline"></ion-icon>
+        </button>
       </div>
     </section>
 
@@ -217,6 +225,89 @@
 
         </ng-container>
       </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- CHANGE PASSWORD MODAL -->
+<ion-modal
+  class="password-modal"
+  [isOpen]="isPasswordModalOpen"
+  [canDismiss]="!isChangingPassword"
+  [backdropDismiss]="!isChangingPassword"
+  [breakpoints]="[0, 0.86]"
+  [initialBreakpoint]="0.86"
+  (didDismiss)="closeChangePassword()"
+>
+  <ng-template>
+    <ion-content class="modal-content">
+      <form class="delete-sheet password-sheet" (ngSubmit)="submitPasswordChange()">
+        <div class="modal-handle"></div>
+
+        <span class="password-icon">
+          <ion-icon name="shield-checkmark-outline"></ion-icon>
+        </span>
+        <h2 class="delete-title">Cambia password</h2>
+        <p class="delete-desc">
+          Inserisci la password attuale e scegline una nuova più sicura.
+        </p>
+
+        <label class="password-field">
+          <span>Password attuale</span>
+          <input
+            class="confirm-input password-input"
+            type="password"
+            name="currentPassword"
+            [(ngModel)]="currentPassword"
+            [disabled]="isChangingPassword"
+            autocomplete="current-password"
+            placeholder="Password attuale"
+          />
+        </label>
+
+        <label class="password-field">
+          <span>Nuova password</span>
+          <input
+            class="confirm-input password-input"
+            type="password"
+            name="newPassword"
+            [(ngModel)]="newPassword"
+            [disabled]="isChangingPassword"
+            autocomplete="new-password"
+            placeholder="Nuova password"
+          />
+        </label>
+
+        <div class="password-rules">
+          <span [class.rule-ok]="newPasswordHasMinLength">Almeno 8 caratteri</span>
+          <span [class.rule-ok]="newPasswordHasUppercase">Una maiuscola</span>
+          <span [class.rule-ok]="newPasswordHasLowercase">Una minuscola</span>
+          <span [class.rule-ok]="newPasswordHasNumber">Un numero</span>
+        </div>
+
+        <label class="password-field">
+          <span>Conferma nuova password</span>
+          <input
+            class="confirm-input password-input"
+            type="password"
+            name="confirmNewPassword"
+            [(ngModel)]="confirmNewPassword"
+            [disabled]="isChangingPassword"
+            autocomplete="new-password"
+            placeholder="Ripeti nuova password"
+          />
+        </label>
+
+        <p class="password-error" *ngIf="passwordMismatch">Le nuove password non coincidono.</p>
+        <p class="password-error" *ngIf="passwordSameAsCurrent">La nuova password deve essere diversa da quella attuale.</p>
+
+        <div class="password-actions">
+          <button class="modal-btn-ghost" type="button" [disabled]="isChangingPassword" (click)="closeChangePassword()">Annulla</button>
+          <button class="modal-btn-primary" type="submit" [disabled]="isChangingPassword || !canChangePassword">
+            {{ isChangingPassword ? 'Aggiornamento...' : 'Aggiorna password' }}
+          </button>
+        </div>
+      </form>
     </ion-content>
   </ng-template>
 </ion-modal>

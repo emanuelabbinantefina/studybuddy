@@ -385,6 +385,19 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
+.setting-row--button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-family: $font-body;
+  cursor: pointer;
+  text-align: left;
+
+  &:active {
+    background: var(--app-surface-soft);
+  }
+}
+
 .setting-info {
   display: flex;
   align-items: center;
@@ -409,6 +422,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: inline-flex;
   align-items: center;
   gap: 12px;
+}
+
+.setting-chevron {
+  font-size: 18px;
+  color: $text-muted;
 }
 
 .toggle-btn {
@@ -665,6 +683,12 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &:active {
     transform: scale(0.97);
   }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 }
 
 .modal-btn-ghost {
@@ -677,6 +701,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: $font-body;
   font-weight: 600;
   cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 .modal-btn-danger-ghost {
@@ -717,6 +746,96 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 // ═══════════════════════════
+//   CHANGE PASSWORD MODAL
+// ═══════════════════════════
+
+.password-sheet {
+  align-items: stretch;
+}
+
+.password-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: $primary-soft;
+  color: $primary;
+
+  ion-icon {
+    font-size: 28px;
+  }
+}
+
+.password-sheet .delete-title,
+.password-sheet .delete-desc {
+  text-align: center;
+}
+
+.password-sheet .delete-desc {
+  margin: 0 auto 20px;
+}
+
+.password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+
+  > span {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $text-secondary;
+  }
+}
+
+.password-input {
+  margin-top: 0;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.password-rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: -2px 0 16px;
+
+  span {
+    padding: 8px 10px;
+    border-radius: $radius-sm;
+    background: var(--app-surface-soft);
+    color: $text-muted;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-align: center;
+    transition: all $transition;
+
+    &.rule-ok {
+      background: $green-light;
+      color: $green;
+    }
+  }
+}
+
+.password-error {
+  margin: -4px 0 12px;
+  color: $red;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.password-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+// ═══════════════════════════
 //   EDIT PROFILE MODAL
 // ═══════════════════════════
 
@@ -732,6 +851,11 @@ ion-modal.profile-editor-modal::part(content) {
 }
 
 ion-modal.delete-account-modal::part(content) {
+  border-radius: $radius-xl $radius-xl 0 0;
+  --background: #{$bg-page};
+}
+
+ion-modal.password-modal::part(content) {
   border-radius: $radius-xl $radius-xl 0 0;
   --background: #{$bg-page};
 }
@@ -780,6 +904,11 @@ ion-modal.delete-account-modal::part(content) {
   }
 
   .delete-sheet {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .password-sheet {
     max-width: 480px;
     margin: 0 auto;
   }
