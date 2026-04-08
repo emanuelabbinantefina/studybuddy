@@ -23,6 +23,30 @@ $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
     linear-gradient(180deg, var(--app-page-gradient-start) 0%, var(--app-page-gradient-end) 100%);
 }
 
+.page-back-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  left: 16px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--app-card-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.12);
+  color: $text-primary;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
 .complete-profile-shell {
   min-height: 100dvh;
   display: flex;

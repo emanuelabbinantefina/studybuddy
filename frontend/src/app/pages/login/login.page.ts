@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, NavController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { lastValueFrom } from 'rxjs';
+import { getRememberMePreference } from '../../core/utils/session-storage';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +29,9 @@ export class LoginPage implements OnInit {
     private authService: AuthService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.rememberMe = getRememberMePreference();
+  }
 
   goToRegister() {
     this.navCtrl.navigateForward('/register');
@@ -79,7 +82,7 @@ export class LoginPage implements OnInit {
       const loginObservable = this.authService.login({
         email: this.email,
         password: this.password,
-      });
+      }, this.rememberMe);
 
       await lastValueFrom(loginObservable);
 

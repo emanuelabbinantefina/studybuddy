@@ -100,7 +100,7 @@ export class GroupsPage implements OnInit {
       }
     }
 
-    this.router.navigate(['/groups', group.id]);
+    this.router.navigate(['/tabs/groups', group.id]);
   }
 
   groupColorClass(group: Gruppo): string {

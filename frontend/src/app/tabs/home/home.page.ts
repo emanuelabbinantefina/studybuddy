@@ -8,6 +8,7 @@ import { Appunto } from '../../core/interfaces/models';
 import { ApiService } from '../../core/services/api.service';
 import { DataService, EventItem } from '../../core/services/data.service';
 import { UserService } from '../../core/services/user.service';
+import { readSessionUserData } from '../../core/utils/session-storage';
 
 interface UpcomingExam {
   id: number;
@@ -166,15 +167,8 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
   private getSessionName(): string {
-    const raw = localStorage.getItem('user_data');
-    if (!raw) return 'Studente';
-
-    try {
-      const parsed = JSON.parse(raw);
-      return parsed?.name || parsed?.nickname || 'Studente';
-    } catch {
-      return 'Studente';
-    }
+    const session = readSessionUserData<any>();
+    return session?.name || session?.nickname || 'Studente';
   }
 
   private formatTodayLabel(): string {

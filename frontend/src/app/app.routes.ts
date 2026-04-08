@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
+import { authChildGuard, authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -31,9 +31,20 @@ export const routes: Routes = [
         (m) => m.CompleteProfilePage
       ),
   },
+  {
+    path: 'groups',
+    redirectTo: 'tabs/groups',
+    pathMatch: 'full',
+  },
+  {
+    path: 'groups/:id',
+    redirectTo: 'tabs/groups/:id',
+  },
 
   {
     path: 'tabs',
+    canActivate: [authGuard],
+    canActivateChild: [authChildGuard],
     loadComponent: () =>
       import('./tabs/tabs.page').then((m) => m.TabsPage),
     children: [

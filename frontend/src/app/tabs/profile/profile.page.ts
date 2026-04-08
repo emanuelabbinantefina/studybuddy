@@ -10,6 +10,7 @@ import { ThemeService } from '../../core/services/theme.service';
 import { UserService } from '../../core/services/user.service';
 import { ProfileEditorComponent } from '../../shared/profile-editor/profile-editor.component';
 import { generateAvatarUrl, PROFILE_CONFIG } from '../../core/config/constants';
+import { readSessionUserData } from '../../core/utils/session-storage';
 
 type DeleteFlowStep = 'impact' | 'confirm' | 'success';
 interface Achievement { emoji: string; label: string; unlocked: boolean; }
@@ -400,13 +401,12 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   private buildMemberSince(): void {
-    const raw = localStorage.getItem('user_data');
-    if (!raw) {
+    const parsed = readSessionUserData<any>();
+    if (!parsed) {
       this.memberSinceLabel = 'Nuovo membro';
       return;
     }
     try {
-      const parsed = JSON.parse(raw);
       const created = parsed?.createdAt || parsed?.created_at;
       if (created) {
         const date = new Date(created);

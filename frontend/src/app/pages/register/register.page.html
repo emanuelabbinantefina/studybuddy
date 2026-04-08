@@ -1,6 +1,10 @@
 <ion-content [fullscreen]="true" class="register-content">
   <div class="register-page">
 
+    <button type="button" class="page-back-btn fade-in" (click)="goBack()" aria-label="Torna indietro">
+      <ion-icon name="arrow-back-outline"></ion-icon>
+    </button>
+
     <!-- Background blobs -->
     <div class="bg-blob bg-blob--1"></div>
     <div class="bg-blob bg-blob--2"></div>
@@ -80,23 +84,19 @@
           <!-- Corso -->
           <div class="field">
             <label class="field-label">Corso di laurea triennale</label>
-            <div class="input-wrap input-wrap--select">
+            <button
+              type="button"
+              class="input-wrap input-wrap--select input-wrap--button"
+              [class.input-wrap--placeholder]="!selectedCourseLabel"
+              [disabled]="courseOptions.length === 0"
+              (click)="openCoursePicker()"
+            >
               <ion-icon name="school-outline" class="input-icon"></ion-icon>
-              <ion-select
-                placeholder="Seleziona corso"
-                [(ngModel)]="courseKey"
-                name="courseKey"
-                [disabled]="courseOptions.length === 0"
-                interface="action-sheet"
-              >
-                <ion-select-option
-                  *ngFor="let course of courseOptions"
-                  [value]="course.key"
-                >
-                  {{ course.label }}
-                </ion-select-option>
-              </ion-select>
-            </div>
+              <span class="select-value">
+                {{ selectedCourseLabel || 'Seleziona corso' }}
+              </span>
+              <ion-icon name="chevron-down-outline" class="select-chevron"></ion-icon>
+            </button>
           </div>
 
           <!-- Password con occhio mostra/nascondi -->
@@ -180,6 +180,46 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <div class="course-picker-overlay" *ngIf="coursePickerOpen" (click)="closeCoursePicker()">
+    <div class="course-picker-card fade-in" (click)="$event.stopPropagation()">
+      <div class="course-picker-head">
+        <div>
+          <h3>Scegli il corso</h3>
+          <p>Seleziona il tuo corso di laurea triennale</p>
+        </div>
+        <button type="button" class="course-picker-close" (click)="closeCoursePicker()">
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+
+      <div class="course-picker-search">
+        <ion-icon name="search-outline"></ion-icon>
+        <input
+          type="text"
+          placeholder="Cerca corso..."
+          [(ngModel)]="courseSearchQuery"
+        />
+      </div>
+
+      <div class="course-picker-list">
+        <button
+          type="button"
+          class="course-option"
+          *ngFor="let course of filteredCourseOptions"
+          [class.course-option--active]="course.key === courseKey"
+          (click)="selectCourse(course)"
+        >
+          <span>{{ course.label }}</span>
+          <ion-icon *ngIf="course.key === courseKey" name="checkmark-outline"></ion-icon>
+        </button>
+
+        <div class="course-picker-empty" *ngIf="!filteredCourseOptions.length">
+          Nessun corso trovato
+        </div>
+      </div>
     </div>
   </div>
 </ion-content>

@@ -6,6 +6,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
 import { UserService } from '../core/services/user.service';
 import { NotificationService } from '../core/services/notification.service'; 
 import { SearchOverlayComponent } from './search-overlay/search-overlay.component';
+import { readSessionUserData } from '../core/utils/session-storage';
 import { generateAvatarUrl } from '../core/config/constants';  // ✅ Importa
 
 @Component({
@@ -115,11 +116,9 @@ export class TabsPage implements OnInit, OnDestroy {
   }
 
   private restoreAvatarFromStorage(): void {
-    const rawSession = localStorage.getItem('user_data');
-    if (!rawSession) return;
-
     try {
-      const session = JSON.parse(rawSession);
+      const session = readSessionUserData<any>();
+      if (!session) return;
       
       // ✅ Leggi anche firstName e lastName dallo storage
       this.firstName = session?.firstName || '';

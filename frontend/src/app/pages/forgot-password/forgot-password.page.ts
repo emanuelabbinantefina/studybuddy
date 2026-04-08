@@ -73,6 +73,6 @@ export class ForgotPasswordPage {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/login');
   }
 }

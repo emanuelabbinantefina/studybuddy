@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { UserService } from './user.service';
 import { NotificationService } from './notification.service';
+import {
+  getAuthToken,
+  persistAuthSession,
+  readSessionUserData,
+} from '../utils/session-storage';
 
 @Injectable({
   providedIn: 'root'
@@ -18,14 +23,10 @@ export class AuthService {
     private notificationService: NotificationService 
   ) { }
 
-  private persistSession(response: any) {
+  private persistSession(response: any, rememberMe = true) {
     if (!response?.token) return;
     this.userService.handleSessionChange();
-    localStorage.setItem('auth_token', response.token);
-    if (response.user) {
-      localStorage.setItem('user_data', JSON.stringify(response.user));
-    }
-    
+    persistAuthSession(response, rememberMe);
     this.notificationService.startPolling();
   }
 
@@ -35,19 +36,18 @@ export class AuthService {
 
   register(userData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData).pipe(
-      tap((response: any) => this.persistSession(response))
+      tap((response: any) => this.persistSession(response, true))
     );
   }
 
-  login(credentials: { email: string, password: string }): Observable<any> {
+  login(credentials: { email: string, password: string }, rememberMe = false): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response: any) => this.persistSession(response))
+      tap((response: any) => this.persistSession(response, rememberMe))
     );
   }
 
   isLoggedIn(): boolean {
-    const token = localStorage.getItem('auth_token');
-    return !!token;
+    return !!getAuthToken();
   }
 
   logout() {
@@ -60,7 +60,6 @@ export class AuthService {
   }
   
   getUserData() {
-    const data = localStorage.getItem('user_data');
-    return data ? JSON.parse(data) : null;
+    return readSessionUserData();
   }
 }

@@ -47,6 +47,8 @@ export class RegisterPage implements OnInit {
 
   faculties: FacultyRow[] = [];
   courseOptions: CourseOption[] = [];
+  coursePickerOpen = false;
+  courseSearchQuery = '';
 
   constructor(
     private navCtrl: NavController,
@@ -83,6 +85,19 @@ export class RegisterPage implements OnInit {
     }
   }
 
+  get selectedCourseLabel(): string {
+    return this.courseOptions.find((course) => course.key === this.courseKey)?.label || '';
+  }
+
+  get filteredCourseOptions(): CourseOption[] {
+    const query = this.courseSearchQuery.trim().toLowerCase();
+    if (!query) return this.courseOptions;
+
+    return this.courseOptions.filter((course) =>
+      course.label.toLowerCase().includes(query)
+    );
+  }
+
   // ✅ Toggle mostra password
   toggleShowPassword(): void {
     this.showPassword = !this.showPassword;
@@ -91,6 +106,22 @@ export class RegisterPage implements OnInit {
   // ✅ Toggle mostra conferma password
   toggleShowConfirmPassword(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  openCoursePicker(): void {
+    if (!this.courseOptions.length) return;
+    this.coursePickerOpen = true;
+    this.courseSearchQuery = '';
+  }
+
+  closeCoursePicker(): void {
+    this.coursePickerOpen = false;
+    this.courseSearchQuery = '';
+  }
+
+  selectCourse(course: CourseOption): void {
+    this.courseKey = course.key;
+    this.closeCoursePicker();
   }
 
   async handleRegister() {
@@ -162,7 +193,7 @@ export class RegisterPage implements OnInit {
   }
 
   goBack() {
-    this.navCtrl.back();
+    this.navCtrl.navigateBack('/login');
   }
 
   private buildCourseOptions(rows: FacultyRow[]): CourseOption[] {

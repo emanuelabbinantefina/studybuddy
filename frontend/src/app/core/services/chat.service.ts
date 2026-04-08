@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { getAuthToken } from '../utils/session-storage';
 
 export interface GroupMessage {
   id: number;
@@ -21,7 +22,7 @@ export class ChatService {
   constructor(private http: HttpClient) {}
 
   private authHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return new HttpHeaders();
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }

@@ -13,6 +13,7 @@ import { Subject, firstValueFrom, takeUntil } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { Appunto, NoteCollection, NoteCollectionItem } from '../../core/interfaces/models';
 import { UserService } from '../../core/services/user.service';
+import { readSessionUserData } from '../../core/utils/session-storage';
 
 type NoteTab = 'all' | 'mine' | 'saved';
 type FileFilter = '' | 'pdf' | 'doc' | 'img';
@@ -981,13 +982,12 @@ export class NotesPage implements OnInit, OnDestroy {
   }
 
   private readSessionUserName(): string {
-    const fromSession = localStorage.getItem('user_data');
-    if (fromSession) {
-      try {
-        const parsed = JSON.parse(fromSession);
-        const userId = Number(parsed?.id || 0) || null;
-        const profileKey = userId ? `user_profile_${userId}` : null;
-        if (profileKey) {
+    const parsed = readSessionUserData<any>();
+    if (parsed) {
+      const userId = Number(parsed?.id || 0) || null;
+      const profileKey = userId ? `user_profile_${userId}` : null;
+      if (profileKey) {
+        try {
           const fromProfile = localStorage.getItem(profileKey);
           if (fromProfile) {
             const savedProfile = JSON.parse(fromProfile);
@@ -996,14 +996,14 @@ export class NotesPage implements OnInit, OnDestroy {
             ).trim();
             if (savedName) return savedName;
           }
+        } catch {
+          // ignore
         }
-        const name = String(
-          parsed?.name || parsed?.nickname || ''
-        ).trim();
-        if (name) return name;
-      } catch {
-        // ignore
       }
+      const name = String(
+        parsed?.name || parsed?.nickname || ''
+      ).trim();
+      if (name) return name;
     }
     return 'Utente';
   }

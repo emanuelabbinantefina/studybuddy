@@ -3,6 +3,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, forkJoin, Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { UserProfile } from '../interfaces/models';
+import {
+  clearAuthSession,
+  getAuthToken,
+  readSessionUserData,
+  writeSessionUserData,
+} from '../utils/session-storage';
 
 interface SessionUser {
   id?: number | null;
@@ -31,17 +37,13 @@ export class UserService {
   constructor(private readonly http: HttpClient) {}
 
   private authHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return new HttpHeaders();
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
   private readSessionUser(): SessionUser | null {
-    try {
-      return JSON.parse(localStorage.getItem('user_data') || 'null');
-    } catch {
-      return null;
-    }
+    return readSessionUserData<SessionUser>();
   }
 
   private getCurrentUserId(): number | null {
@@ -213,7 +215,7 @@ export class UserService {
         accountRole: profile.accountRole || 'standard',
         isSpecialUser: !!profile.isSpecialUser,
       };
-      localStorage.setItem('user_data', JSON.stringify(nextSession));
+      writeSessionUserData(nextSession);
     } catch {
     }
   }
@@ -221,6 +223,12 @@ export class UserService {
   private fetchProfile(): Observable<UserProfile | null> {
     const headers = this.authHeaders();
     const userId = this.getCurrentUserId();
+    const token = getAuthToken();
+
+    if (!token || !userId) {
+      this.userProfile.next(null);
+      return of(null);
+    }
 
     return forkJoin({
       user: this.http.get<any>(`${this.apiUrl}/me`, { headers }),
@@ -232,7 +240,13 @@ export class UserService {
         return mapped;
       }),
       tap((profile) => this.persistProfile(profile)),
-      catchError(() => {
+      catchError((err) => {
+        const status = Number(err?.status || 0);
+        if (status === 401 || status === 403 || !getAuthToken()) {
+          this.logout();
+          return of(null);
+        }
+
         const fallback = this.readStoredProfileForUser(userId);
         this.userProfile.next(fallback);
         return of(fallback);
@@ -341,8 +355,7 @@ export class UserService {
     const profileKey = this.profileStorageKey(currentUserId);
     const avatarKey = this.avatarStorageKey(currentUserId);
 
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+    clearAuthSession();
     if (profileKey) {
       localStorage.removeItem(profileKey);
     }

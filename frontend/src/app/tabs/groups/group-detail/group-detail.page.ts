@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { UserService } from '../../../core/services/user.service';
+import { readSessionUserData } from '../../../core/utils/session-storage';
 import {
   Appunto,
   GroupBoardMessage,
@@ -746,14 +747,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   private readSessionUserId(): number {
-    try {
-      const raw = localStorage.getItem('user_data');
-      if (!raw) return 0;
-      const parsed = JSON.parse(raw);
-      return Number(parsed?.id || 0) || 0;
-    } catch {
-      return 0;
-    }
+    return Number(readSessionUserData<any>()?.id || 0) || 0;
   }
 
   private async presentToast(

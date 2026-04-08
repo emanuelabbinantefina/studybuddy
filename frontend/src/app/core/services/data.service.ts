@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { getAuthToken } from '../utils/session-storage';
 
 export interface EventItem {
   id: number;
@@ -64,13 +65,13 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   private authHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return new HttpHeaders();
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
   private hasToken(): boolean {
-    return !!localStorage.getItem('auth_token');
+    return !!getAuthToken();
   }
 
   private formatDateOnly(date: Date): string {

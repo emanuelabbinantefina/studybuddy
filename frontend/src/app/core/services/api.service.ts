@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { getAuthToken } from '../utils/session-storage';
 import {
   Gruppo,
   Appunto,
@@ -60,7 +61,7 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   private authHeaders(): HttpHeaders {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return new HttpHeaders();
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
@@ -114,7 +115,7 @@ export class ApiService {
   }
 
   getGruppi(filter: 'my' | 'all' | 'public' = 'my', query = ''): Observable<Gruppo[]> {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return of([]);
 
     const q = (query || '').trim();
@@ -141,7 +142,7 @@ export class ApiService {
   }
 
   getPublicGroups(query: string): Observable<Gruppo[]> {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return of([]);
 
     const q = (query || '').trim();
@@ -296,7 +297,7 @@ export class ApiService {
     scope: 'all' | 'faculty' = 'all',
     faculty = ''
   ): Observable<Appunto[]> {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return of([]);
 
     const q = (query || '').trim();
@@ -314,7 +315,7 @@ export class ApiService {
   }
 
   getSavedAppunti(query: string, materia = ''): Observable<Appunto[]> {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) return of([]);
 
     const q = (query || '').trim();
@@ -334,7 +335,7 @@ export class ApiService {
     source: 'browse' | 'upload' = 'browse',
     faculty = ''
   ): Observable<NoteSubjectsResponse> {
-    const token = localStorage.getItem('auth_token') || '';
+    const token = getAuthToken();
     if (!token) {
       return of({ faculty: null, course: null, selectedFaculty: null, faculties: [], subjects: [] });
     }

@@ -14,6 +14,10 @@ import { ProfileEditorComponent } from '../../shared/profile-editor/profile-edit
 export class CompleteProfilePage {
   constructor(private readonly navCtrl: NavController) {}
 
+  goBack(): void {
+    this.navCtrl.navigateBack('/register');
+  }
+
   onSaved(_profile: UserProfile): void {
     this.navCtrl.navigateRoot('/tabs/home');
   }
