@@ -111,7 +111,7 @@ export class NotesPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sessionUserName = this.readSessionUserName();
-    this.loadStats();
+    void this.reloadStats();
     this.bindProfileSync();
     this.loadNoteContext();
   }
@@ -135,7 +135,7 @@ export class NotesPage implements OnInit, OnDestroy {
   const noteId = this.route.snapshot.queryParamMap.get('noteId');
   this.pendingNoteId = noteId ? Number(noteId) : null;
 
-  this.loadStats();
+  void this.reloadStats();
   this.loadNoteContext();
 }
   onSearchChange(event: Event) {
@@ -490,7 +490,7 @@ export class NotesPage implements OnInit, OnDestroy {
         })
       );
 
-      this.incrementStat('uploaded');
+      await this.reloadStats();
       await this.showToast('Appunto caricato con successo', 'success');
       this.closeUploadModal(true);
       this.query = '';
@@ -551,6 +551,7 @@ export class NotesPage implements OnInit, OnDestroy {
     try {
       this.deletingNoteId = note.id;
       await firstValueFrom(this.apiService.deleteAppunto(note.id));
+      await this.reloadStats();
       await this.showToast('Appunto eliminato', 'success');
       if (this.selectedNote?.id === note.id) {
         this.selectedNote = null;
@@ -576,10 +577,8 @@ export class NotesPage implements OnInit, OnDestroy {
       this.savingNoteId = note.id;
       if (nextState) {
         await firstValueFrom(this.apiService.saveAppunto(note.id));
-        this.incrementStat('saved');
       } else {
         await firstValueFrom(this.apiService.unsaveAppunto(note.id));
-        this.decrementStat('saved');
       }
       note.isSaved = nextState;
       if (this.selectedNote?.id === note.id) {
@@ -589,6 +588,8 @@ export class NotesPage implements OnInit, OnDestroy {
       if (this.activeTab === 'saved') {
         this.applyNoteFilters();
       }
+
+      await this.reloadStats();
 
       await this.showToast(
         nextState
@@ -1008,22 +1009,15 @@ export class NotesPage implements OnInit, OnDestroy {
     return 'Utente';
   }
 
-  private loadStats(): void {
-    this.totalUploaded =
-      parseInt(localStorage.getItem('notes_stat_uploaded') || '0', 10) || 0;
-    this.totalSaved =
-      parseInt(localStorage.getItem('notes_stat_saved') || '0', 10) || 0;
-  }
-
-  private incrementStat(key: 'uploaded' | 'saved'): void {
-    const storageKey = `notes_stat_${key}`;
-    const current =
-      parseInt(localStorage.getItem(storageKey) || '0', 10) || 0;
-    const next = current + 1;
-    localStorage.setItem(storageKey, next.toString());
-
-    if (key === 'uploaded') this.totalUploaded = next;
-    if (key === 'saved') this.totalSaved = next;
+  private async reloadStats(): Promise<void> {
+    try {
+      const stats = await firstValueFrom(this.apiService.getNoteStats());
+      this.totalUploaded = Number(stats?.uploaded || 0);
+      this.totalSaved = Number(stats?.saved || 0);
+    } catch {
+      this.totalUploaded = 0;
+      this.totalSaved = 0;
+    }
   }
 
   private resetUploadState(): void {
@@ -1045,15 +1039,6 @@ export class NotesPage implements OnInit, OnDestroy {
   private syncBuddyMetaDraft(note: Appunto | null): void {
     this.buddyFeaturedDraft = !!note?.isFeatured;
     this.buddyVerifiedDraft = !!note?.isVerified;
-  }
-
-  private decrementStat(key: 'saved'): void {
-    const storageKey = `notes_stat_${key}`;
-    const current =
-      parseInt(localStorage.getItem(storageKey) || '0', 10) || 0;
-    const next = Math.max(0, current - 1);
-    localStorage.setItem(storageKey, next.toString());
-    this.totalSaved = next;
   }
 
   private async showToast(

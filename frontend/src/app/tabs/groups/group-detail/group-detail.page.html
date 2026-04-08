@@ -132,7 +132,7 @@
 
       <div class="tab-panel" *ngIf="currentTab === 'appunti'">
         <div class="appunti-list" *ngIf="appunti.length > 0">
-          <div class="appunto-item" *ngFor="let a of appunti" (click)="scaricaFile(a.id)">
+          <div class="appunto-item" *ngFor="let a of appunti" (click)="scaricaFile(a)">
             <div class="file-icon-wrap" [class]="a.tipoFile">
               <ion-icon [name]="a.tipoFile === 'pdf' ? 'document-text-outline' : 'image-outline'"></ion-icon>
             </div>
@@ -142,7 +142,25 @@
               <p>{{ a.autoreNome || 'Studente' }} · {{ a.tempoUpload }}</p>
             </div>
 
-            <ion-icon name="chevron-forward-outline" class="item-arrow"></ion-icon>
+            <div class="appunto-actions">
+              <button
+                type="button"
+                class="appunto-action"
+                [disabled]="downloadingGroupNoteId === a.id"
+                (click)="scaricaFile(a, $event)"
+              >
+                {{ downloadingGroupNoteId === a.id ? '...' : 'Scarica' }}
+              </button>
+              <button
+                type="button"
+                class="appunto-action appunto-action--danger"
+                *ngIf="canDeleteGroupNote(a)"
+                [disabled]="deletingGroupNoteId === a.id"
+                (click)="confirmDeleteGroupNote(a, $event)"
+              >
+                {{ deletingGroupNoteId === a.id ? '...' : 'Elimina' }}
+              </button>
+            </div>
           </div>
         </div>
 

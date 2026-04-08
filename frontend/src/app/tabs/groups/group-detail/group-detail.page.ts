@@ -62,6 +62,8 @@ export class GroupDetailPage implements OnInit {
   sendingQuestion = false;
   leavingGroup = false;
   deletingGroup = false;
+  downloadingGroupNoteId: number | null = null;
+  deletingGroupNoteId: number | null = null;
   deletingMessageId: number | null = null;
   pinningMessageId: number | null = null;
   uploadingGroupNote = false;
@@ -281,17 +283,88 @@ export class GroupDetailPage implements OnInit {
     });
   }
 
-  scaricaFile(id: number) {
-    this.apiService.downloadAppunto(id).subscribe({
-      next: (response: any) => {
-        const url = window.URL.createObjectURL(new Blob([response.body]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `documento-${id}`;
-        link.click();
-      },
-      error: (err: any) => console.error('Errore download:', err),
+  async scaricaFile(appunto: Appunto, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (this.downloadingGroupNoteId) return;
+
+    try {
+      this.downloadingGroupNoteId = appunto.id;
+      const response = await firstValueFrom(this.apiService.downloadAppunto(appunto.id));
+      const blob = response.body;
+      if (!blob) throw new Error('contenuto vuoto');
+
+      const fileName =
+        this.extractFileName(response.headers.get('content-disposition')) ||
+        appunto.fileName ||
+        this.buildGroupDownloadFileName(appunto);
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Errore download:', err);
+      await this.presentToast(
+        err?.error?.message || 'Impossibile scaricare il file',
+        'danger'
+      );
+    } finally {
+      this.downloadingGroupNoteId = null;
+    }
+  }
+
+  canDeleteGroupNote(note: Appunto): boolean {
+    return !!this.isBuddyPro || !!note?.canDelete;
+  }
+
+  async confirmDeleteGroupNote(note: Appunto, event?: Event): Promise<void> {
+    event?.stopPropagation();
+    if (!note?.id || this.deletingGroupNoteId || !this.canDeleteGroupNote(note)) return;
+
+    const alert = await this.alertCtrl.create({
+      mode: 'md',
+      header: 'Elimina appunto',
+      message: `Vuoi eliminare "${note.titolo}" dal gruppo?`,
+      cssClass: 'custom-alert',
+      buttons: [
+        {
+          text: 'Annulla',
+          role: 'cancel',
+          cssClass: 'alert-cancel-btn',
+        },
+        {
+          text: 'Elimina',
+          cssClass: 'alert-danger-btn',
+          handler: () => {
+            void this.deleteGroupNote(note);
+          },
+        },
+      ],
     });
+
+    await alert.present();
+  }
+
+  async deleteGroupNote(note: Appunto): Promise<void> {
+    const noteId = Number(note?.id || 0);
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!noteId || !groupId || this.deletingGroupNoteId || !this.canDeleteGroupNote(note)) return;
+
+    try {
+      this.deletingGroupNoteId = noteId;
+      await firstValueFrom(this.apiService.deleteAppunto(noteId));
+      this.appunti = this.appunti.filter((item) => Number(item.id) !== noteId);
+      await this.presentToast('Appunto eliminato', 'success');
+    } catch (err: any) {
+      await this.presentToast(
+        err?.error?.message || 'Impossibile eliminare l appunto',
+        'danger'
+      );
+    } finally {
+      this.deletingGroupNoteId = null;
+    }
   }
 
   openGroupUploadPicker(): void {
@@ -771,6 +844,21 @@ export class GroupDetailPage implements OnInit {
   private buildDefaultFileTitle(fileName: string): string {
     const dotIndex = fileName.lastIndexOf('.');
     return dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
+  }
+
+  private extractFileName(contentDisposition: string | null): string | null {
+    if (!contentDisposition) return null;
+    const utfMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utfMatch?.[1]) return decodeURIComponent(utfMatch[1]);
+    const plainMatch = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);
+    return plainMatch?.[1] || null;
+  }
+
+  private buildGroupDownloadFileName(note: Appunto): string {
+    const safeTitle = String(note?.titolo || 'appunto').replace(/[^\w\-]+/g, '_');
+    if (note.tipoFile === 'pdf') return `${safeTitle}.pdf`;
+    if (note.tipoFile === 'doc') return `${safeTitle}.docx`;
+    return `${safeTitle}.png`;
   }
 
   private readFileAsDataUrl(file: File): Promise<string> {

@@ -42,6 +42,11 @@ interface NoteSubjectsResponse {
   subjects: string[];
 }
 
+interface NoteStatsResponse {
+  uploaded: number;
+  saved: number;
+}
+
 interface GroupMembershipResponse {
   ok: boolean;
   changed?: boolean;
@@ -340,6 +345,15 @@ export class ApiService {
     return this.http.get<Appunto[]>(`${this.baseUrl}/appunti/saved`, {
       headers: this.authHeaders(),
       params: Object.keys(params).length ? params : undefined,
+    });
+  }
+
+  getNoteStats(): Observable<NoteStatsResponse> {
+    const token = getAuthToken();
+    if (!token) return of({ uploaded: 0, saved: 0 });
+
+    return this.http.get<NoteStatsResponse>(`${this.baseUrl}/appunti/stats`, {
+      headers: this.authHeaders(),
     });
   }
 

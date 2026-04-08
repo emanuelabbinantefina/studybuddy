@@ -415,6 +415,31 @@ async function listSaved(userId, query = {}) {
   return mapped;
 }
 
+async function getStats(userId) {
+  const [uploadedRow, savedRow] = await Promise.all([
+    get(
+      `select count(*) as total
+       from Notes
+       where userId = ?
+         and groupId is null`,
+      [userId]
+    ),
+    get(
+      `select count(*) as total
+       from NoteBookmarks
+       inner join Notes on Notes.id = NoteBookmarks.noteId
+       where NoteBookmarks.userId = ?
+         and Notes.groupId is null`,
+      [userId]
+    ),
+  ]);
+
+  return {
+    uploaded: Number(uploadedRow?.total || 0),
+    saved: Number(savedRow?.total || 0),
+  };
+}
+
 async function listSubjects(userId, query = {}) {
   const { faculty, course } = await getUserAcademicContext(userId);
   const scope = normalizeScope(query.scope, 'faculty');
@@ -638,7 +663,9 @@ async function getDownload(noteId, userId) {
   };
 }
 
-async function remove(userId, noteId) {
+async function remove(userData, noteId) {
+  const userId = Number(userData?.userId || 0);
+  const isBuddyPro = !!userData?.isSpecialUser;
   const current = await get(
     `select id, userId, groupId
      from Notes
@@ -650,7 +677,7 @@ async function remove(userId, noteId) {
   if (current.groupId) {
     await ensureGroupMember(current.groupId, userId);
   }
-  if (Number(current.userId) !== Number(userId)) {
+  if (!isBuddyPro && Number(current.userId) !== Number(userId)) {
     throw forbidden('puoi eliminare solo i tuoi appunti');
   }
 
@@ -699,6 +726,7 @@ async function removeBookmark(userId, noteId) {
 module.exports = {
   list,
   listSaved,
+  getStats,
   listSubjects,
   create,
   getDownload,

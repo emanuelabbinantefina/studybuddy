@@ -424,7 +424,7 @@ ion-content.detail-page {
 
 .appunto-item {
   display: grid;
-  grid-template-columns: 48px 1fr 18px;
+  grid-template-columns: 48px 1fr auto;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;
@@ -496,6 +496,41 @@ ion-content.detail-page {
 .item-arrow {
   color: $text-muted;
   font-size: 1rem;
+}
+
+.appunto-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appunto-action {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--app-line-soft);
+  border-radius: $radius-full;
+  background: $bg-card;
+  color: $primary;
+  font-family: $font-body;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &--danger {
+    color: $red;
+    border-color: rgba(239, 107, 115, 0.2);
+    background: $red-soft;
+  }
 }
 
 .composer-card,

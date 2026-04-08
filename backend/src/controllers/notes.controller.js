@@ -32,6 +32,15 @@ async function listSaved(req, res) {
   }
 }
 
+async function stats(req, res) {
+  try {
+    const out = await notesService.getStats(req.userData.userId);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
 async function listSubjects(req, res) {
   try {
     const out = await notesService.listSubjects(req.userData.userId, req.query);
@@ -80,7 +89,7 @@ async function remove(req, res) {
       return res.status(400).json({ message: 'id appunto non valido' });
     }
 
-    const out = await notesService.remove(req.userData.userId, noteId);
+    const out = await notesService.remove(req.userData, noteId);
     if (!out?.removed && out?.reason === 'NOT_FOUND') {
       return res.status(404).json({ message: 'appunto non trovato' });
     }
@@ -158,6 +167,7 @@ async function createBuddyCollection(req, res) {
 module.exports = {
   list,
   listSaved,
+  stats,
   listSubjects,
   create,
   download,

@@ -10,6 +10,7 @@ router.use(auth);
 
 router.get('/', notesController.list);
 router.get('/saved', notesController.listSaved);
+router.get('/stats', notesController.stats);
 router.get('/subjects', notesController.listSubjects);
 router.get('/buddy/collections', notesController.listBuddyCollections);
 router.post('/buddy/collections', requireSpecialUser, notesController.createBuddyCollection);
