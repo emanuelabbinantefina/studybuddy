@@ -18,6 +18,7 @@ groupsRouter.post('/', groupsController.create);
 groupsRouter.get('/:id', groupsController.detail);
 groupsRouter.get('/:id/members', groupsController.members); // ✅ aggiunta qui
 groupsRouter.patch('/:id', groupsController.update);
+groupsRouter.delete('/:id', requireSpecialUser, groupsController.deleteGroup);
 groupsRouter.post('/:id/join', groupsController.join);
 groupsRouter.post('/:id/leave', groupsController.leave);
 

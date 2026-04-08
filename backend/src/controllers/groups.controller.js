@@ -101,6 +101,18 @@ async function update(req, res) {
   }
 }
 
+async function deleteGroup(req, res) {
+  const groupId = parseGroupId(req, res);
+  if (!groupId) return;
+
+  try {
+    const out = await groupsService.deleteGroup(req.userData.userId, groupId);
+    res.json(out);
+  } catch (e) {
+    handleError(res, e);
+  }
+}
+
 async function questions(req, res) {
   const groupId = parseGroupId(req, res);
   if (!groupId) return;
@@ -230,6 +242,7 @@ module.exports = {
   leave,
   detail,
   update,
+  deleteGroup,
   questions,
   addQuestion,
   messages,

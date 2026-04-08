@@ -36,6 +36,10 @@ export class UserService {
 
   constructor(private readonly http: HttpClient) {}
 
+  private isBuddyProRole(value: unknown): boolean {
+    return String(value || '').trim().toLowerCase() === 'buddypro';
+  }
+
   private authHeaders(): HttpHeaders {
     const token = getAuthToken();
     if (!token) return new HttpHeaders();
@@ -99,7 +103,7 @@ export class UserService {
             accountRole,
             isSpecialUser: Boolean(
               parsed?.isSpecialUser
-              ?? (accountRole && accountRole !== 'standard')
+              ?? this.isBuddyProRole(accountRole)
             ),
           } as UserProfile;
         }
@@ -151,7 +155,7 @@ export class UserService {
     const isSpecialUser = Boolean(
       user?.isSpecialUser
       ?? sessionUser?.isSpecialUser
-      ?? (accountRole && accountRole !== 'standard')
+      ?? this.isBuddyProRole(accountRole)
     );
 
     return {

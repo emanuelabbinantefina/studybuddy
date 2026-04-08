@@ -253,6 +253,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-items: center;
   justify-content: center;
   color: #fff;
+  background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
   font-family: $font-display;
   font-size: 1.1rem;
   font-weight: 800;
@@ -391,11 +392,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 .bg-green {
   background: linear-gradient(135deg, #34d399 0%, #23b38a 100%);
 }
+.bg-teal {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+}
+.bg-pink {
+  background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
+}
 .bg-cyan {
   background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
 }
 .bg-orange {
   background: linear-gradient(135deg, #f4b740 0%, #ff9f6e 100%);
+}
+.bg-purple {
+  background: linear-gradient(135deg, #7c8fff 0%, #4f6bff 100%);
 }
 .bg-peach {
   background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);

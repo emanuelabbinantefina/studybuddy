@@ -61,6 +61,7 @@ export class GroupDetailPage implements OnInit {
   sendingMessage = false;
   sendingQuestion = false;
   leavingGroup = false;
+  deletingGroup = false;
   deletingMessageId: number | null = null;
   pinningMessageId: number | null = null;
   uploadingGroupNote = false;
@@ -153,6 +154,56 @@ export class GroupDetailPage implements OnInit {
       );
     } finally {
       this.leavingGroup = false;
+    }
+  }
+
+  get canDeleteGroupAsBuddyPro(): boolean {
+    return this.isBuddyPro && Number(this.gruppo?.id || 0) > 0;
+  }
+
+  async confirmDeleteGroup(): Promise<void> {
+    if (!this.canDeleteGroupAsBuddyPro || this.deletingGroup) return;
+
+    const alert = await this.alertCtrl.create({
+      mode: 'md',
+      header: 'Chiudi gruppo',
+      message: `Vuoi davvero chiudere "${this.gruppo?.nome}"? Il gruppo verrà eliminato definitivamente per tutti i membri.`,
+      cssClass: 'custom-alert',
+      buttons: [
+        {
+          text: 'Annulla',
+          role: 'cancel',
+          cssClass: 'alert-cancel-btn',
+        },
+        {
+          text: 'Chiudi gruppo',
+          cssClass: 'alert-danger-btn',
+          handler: () => {
+            void this.deleteGroup();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async deleteGroup(): Promise<void> {
+    const groupId = Number(this.gruppo?.id || 0);
+    if (!groupId || this.deletingGroup) return;
+
+    try {
+      this.deletingGroup = true;
+      await firstValueFrom(this.apiService.deleteGroup(groupId));
+      await this.presentToast('Gruppo eliminato', 'success');
+      await this.router.navigate(['/tabs/groups'], { replaceUrl: true });
+    } catch (err: any) {
+      await this.presentToast(
+        err?.error?.message || 'Impossibile chiudere il gruppo',
+        'danger'
+      );
+    } finally {
+      this.deletingGroup = false;
     }
   }
 

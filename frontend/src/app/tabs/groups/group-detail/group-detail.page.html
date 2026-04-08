@@ -65,16 +65,32 @@
         </div>
       </div>
 
-      <button
-        type="button"
-        class="leave-btn"
-        *ngIf="gruppo.isMember && gruppo.currentRole !== 'owner'"
-        (click)="confirmLeaveGroup()"
-        [disabled]="leavingGroup"
+      <div
+        class="hero-actions"
+        *ngIf="(gruppo.isMember && gruppo.currentRole !== 'owner') || canDeleteGroupAsBuddyPro"
       >
-        <ion-icon name="log-out-outline"></ion-icon>
-        {{ leavingGroup ? 'Uscita...' : 'Abbandona gruppo' }}
-      </button>
+        <button
+          type="button"
+          class="leave-btn"
+          *ngIf="gruppo.isMember && gruppo.currentRole !== 'owner'"
+          (click)="confirmLeaveGroup()"
+          [disabled]="leavingGroup || deletingGroup"
+        >
+          <ion-icon name="log-out-outline"></ion-icon>
+          {{ leavingGroup ? 'Uscita...' : 'Abbandona gruppo' }}
+        </button>
+
+        <button
+          type="button"
+          class="buddypro-delete-btn"
+          *ngIf="canDeleteGroupAsBuddyPro"
+          (click)="confirmDeleteGroup()"
+          [disabled]="deletingGroup || leavingGroup"
+        >
+          <ion-icon name="trash-outline"></ion-icon>
+          {{ deletingGroup ? 'Chiusura...' : 'Chiudi gruppo' }}
+        </button>
+      </div>
     </div>
 
     <div class="custom-segment" role="tablist" aria-label="Sezioni gruppo">

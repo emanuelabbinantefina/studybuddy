@@ -1,4 +1,4 @@
-const { all, get, run } = require('../db/connection');
+const { all, get, run, withTransaction } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue } = require('../utils/academic-values');
 const { getItalianExamDateValidationError } = require('../utils/exam-date');
@@ -625,6 +625,38 @@ async function updateGroup(userId, groupId, body = {}) {
   return updated;
 }
 
+async function deleteGroup(_userId, groupId) {
+  await ensureGroupExists(groupId);
+
+  return withTransaction(async (tx) => {
+    const group = await tx.get(
+      `select id, name
+       from Groups
+       where id = ?`,
+      [groupId]
+    );
+    if (!group) throw notFound('gruppo non trovato');
+
+    await tx.run(
+      `delete from Notifications
+       where actionUrl = ? or actionUrl = ?`,
+      [`/groups/${groupId}`, `/tabs/groups/${groupId}`]
+    );
+
+    await tx.run(
+      `delete from Groups
+       where id = ?`,
+      [groupId]
+    );
+
+    return {
+      ok: true,
+      deletedGroupId: groupId,
+      name: String(group.name || '').trim() || 'Gruppo',
+    };
+  });
+}
+
 async function listQuestions(_userId, groupId) {
   await ensureGroupExists(groupId);
 
@@ -972,6 +1004,7 @@ module.exports = {
   leaveGroup,
   groupDetail,
   updateGroup,
+  deleteGroup,
   listQuestions,
   createQuestion,
   listMessages,

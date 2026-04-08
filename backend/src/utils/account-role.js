@@ -1,8 +1,5 @@
 const SPECIAL_ACCOUNT_ROLES = new Set([
   'buddypro',
-  'curator',
-  'mentor',
-  'verified_contributor',
 ]);
 
 function normalizeAccountRole(value, fallback = 'standard') {

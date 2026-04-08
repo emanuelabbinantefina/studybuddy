@@ -48,6 +48,12 @@ interface GroupMembershipResponse {
   group?: Gruppo;
 }
 
+interface DeleteGroupResponse {
+  ok: boolean;
+  deletedGroupId?: number;
+  name?: string;
+}
+
 interface CreateNoteCollectionPayload {
   title: string;
   description?: string;
@@ -190,6 +196,13 @@ export class ApiService {
           group: raw?.group ? this.toGruppoDto(raw.group) : undefined,
         }))
       );
+  }
+
+  deleteGroup(groupId: number): Observable<DeleteGroupResponse> {
+    return this.http.delete<DeleteGroupResponse>(
+      `${this.baseUrl}/groups/${groupId}`,
+      { headers: this.authHeaders() }
+    );
   }
 
   getGroupMembers(groupId: number): Observable<any[]> {

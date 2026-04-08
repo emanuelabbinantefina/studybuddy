@@ -160,6 +160,16 @@
     color: #ffffff;
   }
 
+  &.bg-teal {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #ffffff;
+  }
+
+  &.bg-pink {
+    background: linear-gradient(135deg, #ffb38a, #ff9f6e);
+    color: #ffffff;
+  }
+
   &.bg-purple {
     background: linear-gradient(135deg, #c084fc, #9333ea);
     color: #ffffff;

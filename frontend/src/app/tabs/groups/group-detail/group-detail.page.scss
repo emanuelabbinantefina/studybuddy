@@ -125,6 +125,7 @@ ion-content.detail-page {
   align-items: center;
   justify-content: center;
   color: #fff;
+  background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
   font-family: $font-display;
   font-size: 1.6rem;
   font-weight: 900;
@@ -314,18 +315,23 @@ ion-content.detail-page {
   letter-spacing: 0.04em;
 }
 
-.leave-btn {
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.leave-btn,
+.buddypro-delete-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
   padding: 14px;
-  margin-top: 16px;
   border: 1.5px solid rgba(239, 107, 115, 0.2);
   border-radius: $radius-md;
-  background: $red-soft;
-  color: $red;
   font-family: $font-body;
   font-size: 0.88rem;
   font-weight: 700;
@@ -344,6 +350,17 @@ ion-content.detail-page {
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+.leave-btn {
+  background: $red-soft;
+  color: $red;
+}
+
+.buddypro-delete-btn {
+  background: rgba(244, 183, 64, 0.16);
+  border-color: rgba(244, 183, 64, 0.28);
+  color: #c07b09;
 }
 
 .custom-segment {
@@ -998,11 +1015,20 @@ ion-content.detail-page {
 .bg-green {
   background: linear-gradient(135deg, #34d399 0%, #23b38a 100%);
 }
+.bg-teal {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+}
+.bg-pink {
+  background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
+}
 .bg-cyan {
   background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
 }
 .bg-orange {
   background: linear-gradient(135deg, #f4b740 0%, #ff9f6e 100%);
+}
+.bg-purple {
+  background: linear-gradient(135deg, #7c8fff 0%, #4f6bff 100%);
 }
 .bg-peach {
   background: linear-gradient(135deg, #ffb38a 0%, #ff9f6e 100%);
