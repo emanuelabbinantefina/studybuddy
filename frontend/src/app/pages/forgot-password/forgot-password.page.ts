@@ -60,11 +60,14 @@ export class ForgotPasswordPage {
 
   async showAlertSuccess() {
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Controlla la tua posta',
       message: `Se l'indirizzo ${this.email} è associato a un account, riceverai un link per il reset.`,
+      cssClass: 'custom-alert',
       buttons: [
         {
           text: 'Torna al Login',
+          cssClass: 'alert-primary-btn',
           handler: () => this.navCtrl.navigateBack('/login'),
         },
       ],

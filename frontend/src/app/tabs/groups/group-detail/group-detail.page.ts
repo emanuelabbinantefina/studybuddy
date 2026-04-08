@@ -109,12 +109,15 @@ export class GroupDetailPage implements OnInit {
 
   async confirmLeaveGroup(): Promise<void> {
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Abbandona gruppo',
       message: `Vuoi davvero abbandonare "${this.gruppo?.nome}"? Potrai rientrare in qualsiasi momento.`,
+      cssClass: 'custom-alert',
       buttons: [
         {
           text: 'Annulla',
           role: 'cancel',
+          cssClass: 'alert-cancel-btn',
         },
         {
           text: 'Abbandona',
@@ -271,8 +274,10 @@ export class GroupDetailPage implements OnInit {
 
     const defaultTitle = this.buildDefaultFileTitle(file.name);
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Carica appunto nel gruppo',
       message: 'Scegli un titolo per il file da condividere.',
+      cssClass: 'custom-alert',
       inputs: [
         {
           name: 'title',
@@ -285,12 +290,14 @@ export class GroupDetailPage implements OnInit {
         {
           text: 'Annulla',
           role: 'cancel',
+          cssClass: 'alert-cancel-btn',
           handler: () => {
             if (input) input.value = '';
           },
         },
         {
           text: 'Carica',
+          cssClass: 'alert-primary-btn',
           handler: async (value: { title?: string } | undefined) => {
             const title = String(value?.title || '').trim();
             if (!title) {
@@ -380,15 +387,19 @@ export class GroupDetailPage implements OnInit {
     if (!groupId || !message?.id || this.deletingMessageId) return;
 
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Elimina messaggio',
       message: 'Vuoi eliminare questo messaggio?',
+      cssClass: 'custom-alert',
       buttons: [
         {
           text: 'Annulla',
           role: 'cancel',
+          cssClass: 'alert-cancel-btn',
         },
         {
           text: 'Elimina',
+          cssClass: 'alert-danger-btn',
           handler: async () => {
             try {
               this.deletingMessageId = message.id;

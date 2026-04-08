@@ -161,6 +161,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
 
   async confirmClearAll(): Promise<void> {
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Elimina tutte',
       message: 'Vuoi davvero eliminare tutte le notifiche? Questa azione non può essere annullata.',
       cssClass: 'custom-alert',
@@ -197,6 +198,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
     event.stopPropagation();
 
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Elimina notifica',
       message: `Vuoi eliminare "${notification.title}"?`,
       cssClass: 'custom-alert',

@@ -237,3 +237,85 @@ ion-modal.create-group-modal::part(content) {
   box-shadow: none;
   border-radius: 32px 32px 0 0;
 }
+
+ion-alert.custom-alert {
+  --width: min(calc(100vw - 32px), 360px);
+  --max-width: 360px;
+  --border-radius: 24px;
+  --background: var(--app-surface);
+  --backdrop-opacity: 0.38;
+  --box-shadow: var(--app-shadow-floating);
+}
+
+html.app-theme-dark ion-alert.custom-alert {
+  --background: var(--app-surface-alt);
+}
+
+ion-alert.custom-alert .alert-wrapper {
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+ion-alert.custom-alert .alert-head {
+  padding: 22px 22px 8px;
+}
+
+ion-alert.custom-alert .alert-title {
+  color: var(--app-text-primary);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+ion-alert.custom-alert .alert-message,
+ion-alert.custom-alert .alert-input-group {
+  padding: 0 22px 18px;
+  color: var(--app-text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+ion-alert.custom-alert .alert-input {
+  margin: 10px 0 0;
+  padding: 12px 2px;
+  border-bottom: 2px solid var(--app-line);
+  color: var(--app-text-primary);
+}
+
+ion-alert.custom-alert .alert-input:focus {
+  border-bottom-color: var(--app-primary);
+}
+
+ion-alert.custom-alert .alert-button-group {
+  padding: 0 14px 14px;
+  gap: 8px;
+}
+
+ion-alert.custom-alert .alert-button {
+  min-width: 112px;
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-alert.custom-alert .alert-button-inner {
+  justify-content: center;
+}
+
+ion-alert.custom-alert .alert-cancel-btn {
+  background: var(--app-surface-alt);
+  color: var(--app-text-secondary);
+}
+
+ion-alert.custom-alert .alert-primary-btn {
+  background: var(--app-primary-soft);
+  color: var(--app-primary);
+}
+
+ion-alert.custom-alert .alert-danger-btn {
+  background: var(--app-red-soft);
+  color: var(--app-red);
+}

@@ -179,11 +179,14 @@ export class RegisterPage implements OnInit {
 
   async showAlertSuccess() {
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Successo',
       message: 'Account creato!',
+      cssClass: 'custom-alert',
       buttons: [
         {
           text: 'Inizia',
+          cssClass: 'alert-primary-btn',
           handler: () => this.navCtrl.navigateForward('/complete-profile'),
         },
       ],

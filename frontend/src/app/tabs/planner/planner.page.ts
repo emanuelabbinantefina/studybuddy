@@ -168,13 +168,16 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     event?.stopPropagation();
 
     const alert = await this.alertCtrl.create({
+      mode: 'md',
       header: 'Eliminare impegno?',
       message: `Vuoi eliminare "${item.title}" dal planner?`,
+      cssClass: 'custom-alert',
       buttons: [
-        { text: 'Annulla', role: 'cancel' },
+        { text: 'Annulla', role: 'cancel', cssClass: 'alert-cancel-btn' },
         {
           text: 'Elimina',
           role: 'destructive',
+          cssClass: 'alert-danger-btn',
           handler: () => {
             void this.deleteItem(item.id);
           },
