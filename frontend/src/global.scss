@@ -35,6 +35,38 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 @import "@ionic/angular/css/palettes/dark.class.css";
 
+// ✅ FIX: Rimuovi icona occhio nativa del browser sui campi password
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important; // Edge
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button {
+  display: none !important; // Chrome/Safari
+}
+
+input::-webkit-textfield-decoration-container {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+// Fix specifico per Ionic ion-input
+ion-input {
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none !important;
+  }
+
+  input[type="password"]::-webkit-credentials-auto-fill-button,
+  input[type="password"]::-webkit-clear-button,
+  input::-webkit-textfield-decoration-container {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
 :root {
   color-scheme: light;
   --app-bg-page: #f7f8fc;

@@ -58,6 +58,13 @@ export const routes: Routes = [
           import('./tabs/groups/groups.page').then((m) => m.GroupsPage),
       },
       {
+        path: 'groups/:id',
+        loadComponent: () =>
+          import('./tabs/groups/group-detail/group-detail.page').then(
+            (m) => m.GroupDetailPage
+          ),
+      },
+      {
         path: 'notes',
         loadComponent: () =>
           import('./tabs/notes/notes.page').then((m) => m.NotesPage),
@@ -75,23 +82,10 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () =>
-          import('./tabs/notifications/notifications.page').then((m) => m.NotificationsPage),
+          import('./tabs/notifications/notifications.page').then(
+            (m) => m.NotificationsPage
+          ),
       },
     ],
-  },
-
-  {
-    path: 'groups/:id',
-    loadComponent: () =>
-      import('./tabs/groups/group-detail/group-detail.page').then(
-        (m) => m.GroupDetailPage
-      ),
-  },
-  {
-    path: 'group-detail',
-    loadComponent: () =>
-      import('./tabs/groups/group-detail/group-detail.page').then(
-        (m) => m.GroupDetailPage
-      ),
   },
 ];

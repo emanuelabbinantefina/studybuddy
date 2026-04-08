@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, ToastController, AlertController, NavController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -45,6 +45,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   constructor(
     private readonly notificationService: NotificationService,
     private readonly router: Router,
+    private readonly navCtrl: NavController, 
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController
   ) {}
@@ -133,7 +134,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/tabs/home']);
+    this.navCtrl.back();
   }
 
   markAllAsRead(): void {
@@ -147,7 +148,14 @@ export class NotificationsPage implements OnInit, OnDestroy {
     }
 
     if (notification.actionUrl) {
-      this.router.navigate([notification.actionUrl]);
+      let url = notification.actionUrl;
+      
+      if (!url.startsWith('/tabs/')) {
+        url = url.startsWith('/') ? url.substring(1) : url;
+        url = `/tabs/${url}`;
+      }
+
+      this.router.navigate([url]);
     }
   }
 

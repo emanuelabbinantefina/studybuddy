@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, ToastController, AlertController, NavController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
@@ -82,7 +82,8 @@ export class GroupDetailPage implements OnInit {
     private readonly apiService: ApiService,
     private readonly userService: UserService,
     private readonly toastCtrl: ToastController,
-    private readonly alertCtrl: AlertController
+    private readonly alertCtrl: AlertController,
+    private readonly navCtrl: NavController 
   ) {}
 
   ngOnInit() {
@@ -98,7 +99,7 @@ export class GroupDetailPage implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/tabs/groups']);
+    this.navCtrl.back();
   }
 
   toggleMembers(): void {
