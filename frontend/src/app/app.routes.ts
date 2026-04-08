@@ -32,7 +32,6 @@ export const routes: Routes = [
       ),
   },
 
-  // --- BLOCCO TABS ---
   {
     path: 'tabs',
     loadComponent: () =>
@@ -81,7 +80,6 @@ export const routes: Routes = [
     ],
   },
 
-  // --- PAGINE ESTERNE AI TAB ---
   {
     path: 'groups/:id',
     loadComponent: () =>

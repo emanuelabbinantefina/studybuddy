@@ -39,7 +39,6 @@ export class GroupsPage implements OnInit {
     this.loadGroups();
   }
 
-  // Gruppi filtrati per ricerca
   get filteredGroups(): Gruppo[] {
     const q = this.query.trim().toLowerCase();
 
@@ -84,7 +83,6 @@ export class GroupsPage implements OnInit {
   }
 
   async openGroup(group: Gruppo): Promise<void> {
-    // Se non sei membro, entra nel gruppo
     if (!group.isMember) {
       try {
         const response = await firstValueFrom(this.apiService.joinPublicGroup(group.id));

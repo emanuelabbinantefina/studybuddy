@@ -29,7 +29,7 @@ export const routes: Routes = [
       {
         path: 'search',
         loadComponent: () =>
-          import('./notes/notes.page').then((m) => m.SearchPage),
+          import('./notes/notes.page').then((m) => m.NotesPage),
       },
       {
         path: 'profile',
@@ -42,7 +42,8 @@ export const routes: Routes = [
           import('./focus/focus.page').then((m) => m.FocusPage),
       },
     ],
-  },  {
+  },
+  {
     path: 'notifications',
     loadComponent: () => import('./notifications/notifications.page').then( m => m.NotificationsPage)
   },

@@ -1,7 +1,6 @@
 <ion-content class="detail-page" [fullscreen]="true">
   <div class="main-wrapper">
 
-    <!-- TOP BAR -->
     <div class="top-bar">
       <button type="button" class="back-btn" (click)="goBack()">
         <ion-icon name="arrow-back-outline"></ion-icon>
@@ -10,7 +9,6 @@
       <div class="top-bar-spacer"></div>
     </div>
 
-    <!-- HERO -->
     <div class="group-hero" *ngIf="gruppo">
       <div class="hero-main">
         <div class="big-avatar" [class]="gruppo.colorClass || 'bg-blue'">
@@ -37,7 +35,6 @@
         </div>
       </div>
 
-      <!-- DATA ESAME -->
       <div class="exam-box" *ngIf="gruppo.examDate">
         <div class="exam-summary">
           <div class="exam-copy">
@@ -48,7 +45,6 @@
         </div>
       </div>
 
-      <!-- LISTA MEMBRI -->
       <div class="members-section" *ngIf="showMembers && members.length > 0">
         <div class="members-header">
           <strong>Membri ({{ members.length }})</strong>
@@ -69,7 +65,6 @@
         </div>
       </div>
 
-      <!-- ABBANDONA GRUPPO -->
       <button
         type="button"
         class="leave-btn"
@@ -82,7 +77,6 @@
       </button>
     </div>
 
-    <!-- SEGMENT -->
     <div class="custom-segment" role="tablist" aria-label="Sezioni gruppo">
       <button
         type="button"
@@ -120,7 +114,6 @@
 
     <div class="content-area">
 
-      <!-- APPUNTI -->
       <div class="tab-panel" *ngIf="currentTab === 'appunti'">
         <div class="appunti-list" *ngIf="appunti.length > 0">
           <div class="appunto-item" *ngFor="let a of appunti" (click)="scaricaFile(a.id)">
@@ -165,7 +158,6 @@
         />
       </div>
 
-      <!-- BACHECA -->
       <div class="tab-panel" *ngIf="currentTab === 'bacheca'">
         <section class="pinned-section" *ngIf="pinnedMessages.length > 0">
           <div class="section-headline">
@@ -336,7 +328,6 @@
         </button>
       </div>
 
-      <!-- DOMANDE -->
       <div class="tab-panel" *ngIf="currentTab === 'domande'">
         <div class="loading-card" *ngIf="loadingQuestions">
           <ion-icon name="sync-outline"></ion-icon>

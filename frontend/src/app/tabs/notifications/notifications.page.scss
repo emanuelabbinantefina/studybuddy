@@ -15,119 +15,138 @@ $accent-soft: var(--app-accent-soft);
 $green: var(--app-green);
 $green-soft: var(--app-green-soft);
 
-$orange: var(--app-orange);
-$orange-soft: var(--app-orange-soft);
-
 $red: var(--app-red);
 $red-soft: var(--app-red-soft);
 
-$line: var(--app-line);
-
 $radius-sm: 14px;
 $radius-md: 18px;
-$radius-lg: 22px;
+$radius-lg: 24px;
 $radius-xl: 28px;
 $radius-full: 9999px;
 
 $shadow-card: var(--app-shadow-card);
-
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 $font-body: 'Inter', -apple-system, sans-serif;
-
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
 
 .notifications-page {
   --background: #{$bg-page};
+  --padding-start: 20px;
+  --padding-end: 20px;
 }
 
 .notifications-shell {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 85px 20px 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding-top: 20px;
 }
 
-// Top bar
 .top-bar {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .back-btn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border: none;
   border-radius: $radius-sm;
   background: $bg-card;
-  color: $text-primary;
-  display: inline-flex;
+  box-shadow: $shadow-card;
+  display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: $shadow-card;
   cursor: pointer;
+  flex-shrink: 0;
   transition: transform $transition;
 
-  &:active {
-    transform: scale(0.95);
+  ion-icon {
+    font-size: 20px;
+    color: $text-secondary;
   }
 
-  ion-icon {
-    font-size: 1.2rem;
+  &:active {
+    transform: scale(0.92);
   }
 }
 
 .top-copy {
-  min-width: 0;
+  flex: 1;
 
   h1 {
-    margin: 0;
     font-family: $font-display;
-    color: $text-primary;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
+    color: $text-primary;
+    margin: 0;
     letter-spacing: -0.03em;
   }
 
   p {
     margin: 4px 0 0;
-    color: $text-muted;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
+    color: $text-muted;
   }
 }
 
-.mark-btn {
-  min-height: 40px;
-  padding: 0 14px;
+.top-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
   border: none;
   border-radius: $radius-full;
-  background: $primary;
-  color: #fff;
-  font: inherit;
-  font-size: 0.84rem;
+  font-family: $font-body;
+  font-size: 0.75rem;
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(79, 107, 255, 0.18);
   cursor: pointer;
   transition: all $transition;
+
+  ion-icon {
+    font-size: 16px;
+  }
+
+  span {
+    display: none;
+
+    @media (min-width: 400px) {
+      display: inline;
+    }
+  }
 
   &:active {
     transform: scale(0.95);
   }
+
+  &--clear {
+    background: $red-soft;
+    color: $red;
+  }
+
+  &--mark {
+    background: $primary-soft;
+    color: $primary;
+  }
 }
 
-// Filtri
+
 .filters-bar {
   display: flex;
   gap: 8px;
-  padding: 0 0 4px 0;
+  margin-bottom: 18px;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  
+  scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -135,72 +154,82 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
 .filter-chip {
   flex-shrink: 0;
-  min-height: 36px;
-  padding: 0 16px;
-  border: 1.5px solid $line;
-  border-radius: $radius-full;
+  padding: 8px 14px;
   background: $bg-card;
+  border: 1.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: $radius-full;
+  font-family: $font-body;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: $text-secondary;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 700;
   cursor: pointer;
   transition: all $transition;
 
+  &--active {
+    background: $primary;
+    border-color: $primary;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 107, 255, 0.2);
+  }
+
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
   }
 }
 
-.filter-chip--active {
-  border-color: $primary;
-  background: $primary;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(79, 107, 255, 0.25);
-}
 
-// Empty
 .empty-state {
-  margin-top: 20px;
-  padding: 40px 24px;
-  border-radius: $radius-xl;
-  border: 1px dashed $line;
-  background: $bg-card;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
 }
 
-.empty-icon {
-  width: 68px;
-  height: 68px;
-  margin: 0 auto 16px;
-  border-radius: 999px;
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  max-width: 320px;
+  width: 100%;
+}
+
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-md;
   background: $primary-soft;
-  color: $primary;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 18px;
 
   ion-icon {
-    font-size: 2rem;
+    font-size: 28px;
+    color: $primary;
   }
 }
 
-.empty-state h3 {
-  margin: 0;
+.empty-title {
+  font-family: $font-display;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: $text-primary;
-  font-size: 1.2rem;
-  font-weight: 900;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
 }
 
-.empty-state p {
-  max-width: 360px;
-  margin: 8px auto 0;
+.empty-desc {
+  font-size: 0.85rem;
+  font-weight: 500;
   color: $text-muted;
-  font-size: 0.92rem;
+  margin: 0;
   line-height: 1.5;
 }
 
-// List
 .notifications-list {
   display: flex;
   flex-direction: column;
@@ -208,74 +237,69 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .notification-card {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 36px;
+  display: flex;
+  align-items: flex-start;
   gap: 14px;
-  align-items: start;
   padding: 16px;
-  border-radius: $radius-lg;
   background: $bg-card;
-  border: 1px solid $line;
+  border-radius: $radius-lg;
   box-shadow: $shadow-card;
   cursor: pointer;
-  transition: transform $transition, background $transition, box-shadow $transition;
+  transition: all $transition;
+  position: relative;
 
   &:active {
     transform: scale(0.98);
     background: $bg-card-hover;
   }
-}
 
-.notification-card--unread {
-  border-color: rgba(79, 107, 255, 0.28);
-  background: linear-gradient(
-    180deg,
-    var(--app-surface-glass-strong) 0%,
-    var(--app-primary-soft) 100%
-  );
-  box-shadow: 0 4px 20px rgba(79, 107, 255, 0.12);
-}
-
-.notif-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-
-  ion-icon {
-    font-size: 1.35rem;
+  &--unread {
+    background: rgba(79, 107, 255, 0.04);
+    border-left: 4px solid $primary;
   }
 }
 
-.notif-icon--notes {
-  background: $primary-soft;
-  color: $primary;
-}
+.notif-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 
-.notif-icon--group {
-  background: $accent-soft;
-  color: $accent;
-}
+  ion-icon {
+    font-size: 20px;
+  }
 
-.notif-icon--planner {
-  background: $orange-soft;
-  color: $orange;
-}
+  &.notif-info {
+    background: $primary-soft;
+    color: $primary;
+  }
 
-.notif-icon--focus {
-  background: $green-soft;
-  color: $green;
-}
+  &.notif-success {
+    background: $green-soft;
+    color: $green;
+  }
 
-.notif-icon--system {
-  background: var(--app-surface-alt);
-  color: $text-secondary;
+  &.notif-warning {
+    background: $accent-soft;
+    color: $accent;
+  }
+
+  &.notif-error {
+    background: $red-soft;
+    color: $red;
+  }
+
+  &.notif-default {
+    background: rgba(0, 0, 0, 0.05);
+    color: $text-secondary;
+  }
 }
 
 .notif-copy {
+  flex: 1;
   min-width: 0;
 }
 
@@ -284,38 +308,47 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 6px;
 
   h3 {
-    margin: 0;
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 700;
     color: $text-primary;
-    font-size: 0.98rem;
-    font-weight: 800;
-    line-height: 1.2;
+    margin: 0;
+    line-height: 1.3;
   }
 }
 
 .notif-time {
-  color: $text-muted;
-  font-size: 0.76rem;
+  font-size: 0.7rem;
   font-weight: 600;
+  color: $text-muted;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.notif-copy p {
-  margin: 6px 0 0;
+.notif-copy > p {
+  font-size: 0.85rem;
+  font-weight: 500;
   color: $text-secondary;
-  font-size: 0.88rem;
+  margin: 0;
   line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .notif-meta {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: $text-muted;
-  font-size: 0.76rem;
-  font-weight: 700;
 }
 
 .notif-dot {
@@ -323,67 +356,56 @@ $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   height: 8px;
   border-radius: 50%;
   background: $primary;
-  animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.2);
-  }
-}
 
 .notif-remove {
-  width: 36px;
-  height: 36px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 12px;
+  border-radius: 50%;
   background: transparent;
-  color: $text-muted;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  opacity: 0.4;
   transition: all $transition;
 
   ion-icon {
-    font-size: 1rem;
+    font-size: 18px;
+    color: $text-muted;
   }
 
+  &:hover,
   &:active {
+    opacity: 1;
     background: $red-soft;
-    color: $red;
-    transform: scale(0.9);
+
+    ion-icon {
+      color: $red;
+    }
   }
 }
 
-// Responsive
-@media (max-width: 720px) {
+@media (min-width: 768px) {
   .notifications-shell {
-    padding: calc(14px + env(safe-area-inset-top, 0px)) 14px 110px;
-  }
-
-  .notification-card {
-    grid-template-columns: 46px minmax(0, 1fr) 32px;
-    gap: 12px;
-    padding: 14px;
-  }
-
-  .notif-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-
-    ion-icon {
-      font-size: 1.2rem;
-    }
+    padding-top: 28px;
   }
 
   .top-copy h1 {
-    font-size: 1.35rem;
+    font-size: 1.8rem;
+  }
+
+  .notification-card {
+    padding: 18px;
+  }
+
+  .notif-icon {
+    width: 48px;
+    height: 48px;
   }
 }

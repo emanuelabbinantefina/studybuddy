@@ -102,7 +102,6 @@ export class UserService {
           } as UserProfile;
         }
       } catch {
-        // Ignore malformed cache entries
       }
     }
 
@@ -216,7 +215,6 @@ export class UserService {
       };
       localStorage.setItem('user_data', JSON.stringify(nextSession));
     } catch {
-      // Ignore malformed local session
     }
   }
 

@@ -17,34 +17,64 @@
       <div class="register-card fade-in">
         <form (ngSubmit)="handleRegister()">
 
-          <!-- Nome -->
-          <div class="field">
-            <label class="field-label">Nome</label>
-            <div class="input-wrap">
-              <ion-icon name="person-outline" class="input-icon"></ion-icon>
-              <ion-input
-                type="text"
-                placeholder="Il tuo nome"
-                [(ngModel)]="name"
-                name="name"
-                required
-              ></ion-input>
+          <!-- Nome e Cognome in una riga -->
+          <div class="field-row">
+            <div class="field field--half">
+              <label class="field-label">Nome</label>
+              <div class="input-wrap">
+                <ion-icon name="person-outline" class="input-icon"></ion-icon>
+                <ion-input
+                  type="text"
+                  placeholder="Nome"
+                  [(ngModel)]="firstName"
+                  name="firstName"
+                  required
+                ></ion-input>
+              </div>
+            </div>
+
+            <div class="field field--half">
+              <label class="field-label">Cognome</label>
+              <div class="input-wrap">
+                <ion-input
+                  type="text"
+                  placeholder="Cognome"
+                  [(ngModel)]="lastName"
+                  name="lastName"
+                  required
+                ></ion-input>
+              </div>
             </div>
           </div>
 
-          <!-- Email -->
+          <!-- Email con validazione in tempo reale -->
           <div class="field">
             <label class="field-label">Email</label>
-            <div class="input-wrap">
+            <div class="input-wrap" [class.input-wrap--error]="emailTouched && !isEmailValid" [class.input-wrap--success]="emailTouched && isEmailValid">
               <ion-icon name="mail-outline" class="input-icon"></ion-icon>
               <ion-input
                 type="email"
                 placeholder="La tua email"
                 [(ngModel)]="email"
                 name="email"
+                (ionBlur)="onEmailBlur()"
+                (ionInput)="onEmailInput()"
                 required
               ></ion-input>
+              <ion-icon 
+                *ngIf="emailTouched && isEmailValid" 
+                name="checkmark-circle" 
+                class="input-status-icon input-status-icon--success"
+              ></ion-icon>
+              <ion-icon 
+                *ngIf="emailTouched && !isEmailValid && email.length > 0" 
+                name="close-circle" 
+                class="input-status-icon input-status-icon--error"
+              ></ion-icon>
             </div>
+            <small class="field-error" *ngIf="emailTouched && !isEmailValid && email.length > 0">
+              Inserisci un'email valida
+            </small>
           </div>
 
           <!-- Corso -->
@@ -69,37 +99,56 @@
             </div>
           </div>
 
-          <!-- Password -->
+          <!-- Password con occhio mostra/nascondi -->
           <div class="field">
             <label class="field-label">Password</label>
             <div class="input-wrap">
               <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
               <ion-input
-                type="password"
+                [type]="showPassword ? 'text' : 'password'"
                 placeholder="Crea una password"
                 [(ngModel)]="password"
                 name="password"
                 minlength="8"
                 required
               ></ion-input>
+              <button 
+                type="button" 
+                class="password-toggle-btn" 
+                (click)="toggleShowPassword()"
+                [attr.aria-label]="showPassword ? 'Nascondi password' : 'Mostra password'"
+              >
+                <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
             </div>
             <small class="field-hint">{{ passwordRulesMessage }}</small>
           </div>
 
-          <!-- Conferma -->
+          <!-- Conferma Password con occhio -->
           <div class="field">
             <label class="field-label">Conferma password</label>
-            <div class="input-wrap">
+            <div class="input-wrap" [class.input-wrap--error]="confirmPassword.length > 0 && password !== confirmPassword">
               <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
               <ion-input
-                type="password"
+                [type]="showConfirmPassword ? 'text' : 'password'"
                 placeholder="Ripeti la password"
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
                 minlength="8"
                 required
               ></ion-input>
+              <button 
+                type="button" 
+                class="password-toggle-btn" 
+                (click)="toggleShowConfirmPassword()"
+                [attr.aria-label]="showConfirmPassword ? 'Nascondi password' : 'Mostra password'"
+              >
+                <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+              </button>
             </div>
+            <small class="field-error" *ngIf="confirmPassword.length > 0 && password !== confirmPassword">
+              Le password non coincidono
+            </small>
           </div>
 
           <!-- Error -->

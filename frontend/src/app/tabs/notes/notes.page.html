@@ -4,7 +4,6 @@
     <ion-refresher-content pullingIcon="chevron-down" refreshingSpinner="crescent"></ion-refresher-content>
   </ion-refresher>
 
-  <!-- HEADER -->
   <div class="notes-header">
     <h1 class="page-title">Appunti</h1>
     <div class="header-actions">
@@ -54,7 +53,6 @@
     </button>
   </section>
 
-  <!-- MINI STATS -->
   <div class="mini-stats">
     <div class="mini-stat">
       <span class="mini-stat-emoji">📤</span>
@@ -96,7 +94,6 @@
     </div>
   </section>
 
-  <!-- SEARCH -->
   <div class="search-bar">
     <ion-icon name="search-outline" class="search-icon"></ion-icon>
     <input type="text" class="search-input" placeholder="Cerca appunti..." [(ngModel)]="query"
@@ -108,7 +105,6 @@
     </button>
   </div>
 
-  <!-- TABS -->
   <div class="tabs-row">
     <button class="tab-chip" [class.tab-chip--active]="activeTab === 'all'" (click)="setTab('all')">
       Tutti
@@ -123,10 +119,8 @@
     </button>
   </div>
 
-  <!-- FILTER PANEL (semplificato) -->
   <div class="filters-panel" *ngIf="showFilters">
 
-    <!-- Tipo file -->
     <div class="filter-section">
       <span class="filter-label">Tipo file</span>
       <div class="filter-chips">
@@ -141,7 +135,6 @@
       </div>
     </div>
 
-    <!-- Ordina per -->
     <div class="filter-section">
       <span class="filter-label">Ordina per</span>
       <div class="filter-chips">
@@ -159,12 +152,10 @@
     </button>
   </div>
 
-  <!-- RESULT COUNT -->
   <div class="result-bar" *ngIf="!loading">
     <span class="result-count">{{ resultCountLabel }}</span>
   </div>
 
-  <!-- LOADING -->
   <div [ngClass]="viewMode === 'grid' ? 'notes-grid' : 'notes-list-view'" *ngIf="loading">
     <div class="skeleton-card" [class.skeleton-card--list]="viewMode === 'list'" *ngFor="let s of [1,2,3,4]">
       <div class="skeleton skeleton--badge"></div>
@@ -173,7 +164,6 @@
     </div>
   </div>
 
-  <!-- GRID -->
   <div class="notes-grid" *ngIf="!loading && filteredNotes.length > 0 && viewMode === 'grid'">
     <div class="note-card" [ngClass]="getNoteAccent(n.tipoFile)" *ngFor="let n of filteredNotes; let i = index"
       [style.animation-delay]="i * 40 + 'ms'" (click)="openNoteDetail(n)">
@@ -203,7 +193,6 @@
     </div>
   </div>
 
-  <!-- LIST -->
   <div class="notes-list-view" *ngIf="!loading && filteredNotes.length > 0 && viewMode === 'list'">
     <div class="note-list-item" *ngFor="let n of filteredNotes; let i = index" [style.animation-delay]="i * 30 + 'ms'"
       (click)="openNoteDetail(n)">
@@ -224,7 +213,6 @@
     </div>
   </div>
 
-  <!-- EMPTY -->
   <div class="empty-state" *ngIf="!loading && filteredNotes.length === 0">
     <span class="empty-emoji" *ngIf="activeTab === 'all'">📄</span>
     <span class="empty-emoji" *ngIf="activeTab === 'mine'">🗂️</span>
@@ -253,7 +241,6 @@
     </button>
   </div>
 
-  <!-- DETAIL -->
   <div class="detail-overlay" *ngIf="selectedNote" (click)="closeNoteDetail()">
     <div class="detail-card" [ngClass]="getNoteAccent(selectedNote.tipoFile)" (click)="$event.stopPropagation()">
       <div class="detail-handle"></div>

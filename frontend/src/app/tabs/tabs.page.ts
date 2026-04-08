@@ -6,6 +6,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
 import { UserService } from '../core/services/user.service';
 import { NotificationService } from '../core/services/notification.service'; 
 import { SearchOverlayComponent } from './search-overlay/search-overlay.component';
+import { generateAvatarUrl } from '../core/config/constants';  // ✅ Importa
 
 @Component({
   selector: 'app-tabs',
@@ -15,11 +16,14 @@ import { SearchOverlayComponent } from './search-overlay/search-overlay.componen
   imports: [IonicModule, CommonModule, SearchOverlayComponent],
 })
 export class TabsPage implements OnInit, OnDestroy {
-  readonly fallbackAvatar = 'https://ui-avatars.com/api/?name=User&background=4f6bff&color=fff&size=128&bold=true';
-  profileAvatar = this.fallbackAvatar;
+  profileAvatar = '';
   isProfileRoute = false;
   isSearchOpen = false;
   notificationBadge = 0;
+
+  // ✅ Salviamo nome e cognome per il fallback
+  private firstName = '';
+  private lastName = '';
 
   private readonly destroy$ = new Subject<void>();
 
@@ -28,6 +32,11 @@ export class TabsPage implements OnInit, OnDestroy {
     private readonly userService: UserService,
     private readonly notificationService: NotificationService 
   ) {}
+
+  // ✅ Getter dinamico per fallback avatar
+  get fallbackAvatar(): string {
+    return generateAvatarUrl(this.firstName, this.lastName);
+  }
 
   ngOnInit(): void {
     this.restoreAvatarFromStorage();
@@ -46,10 +55,14 @@ export class TabsPage implements OnInit, OnDestroy {
       .getProfile()
       .pipe(takeUntil(this.destroy$))
       .subscribe((profile) => {
+        // ✅ Salva nome e cognome
+        this.firstName = profile?.firstName || '';
+        this.lastName = profile?.lastName || '';
+        
+        // ✅ Usa avatar custom o genera fallback con iniziali corrette
         this.profileAvatar = profile?.avatar || this.fallbackAvatar;
       });
 
-    //Ascolta conteggio notifiche
     this.notificationService.unreadCount$
       .pipe(takeUntil(this.destroy$))
       .subscribe((count) => {
@@ -80,7 +93,6 @@ export class TabsPage implements OnInit, OnDestroy {
     this.router.navigate(['/tabs/profile']);
   }
 
-  //metodo per aprire notifiche
   openNotifications(): void {
     this.closeSearchOverlay();
     this.router.navigate(['/tabs/notifications']);
@@ -108,12 +120,23 @@ export class TabsPage implements OnInit, OnDestroy {
 
     try {
       const session = JSON.parse(rawSession);
+      
+      // ✅ Leggi anche firstName e lastName dallo storage
+      this.firstName = session?.firstName || '';
+      this.lastName = session?.lastName || '';
+      
       const userId = Number(session?.id || 0) || null;
       const profileKey = userId ? `user_profile_${userId}` : null;
       const avatarKey = userId ? `user_avatar_${userId}` : null;
       const savedProfile = profileKey ? localStorage.getItem(profileKey) : null;
+      
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
+        
+        // ✅ Aggiorna anche da profile salvato
+        this.firstName = profile?.firstName || this.firstName;
+        this.lastName = profile?.lastName || this.lastName;
+        
         if (profile?.avatar) {
           this.profileAvatar = profile.avatar;
           return;
@@ -123,9 +146,12 @@ export class TabsPage implements OnInit, OnDestroy {
       const avatar = avatarKey ? localStorage.getItem(avatarKey) : null;
       if (avatar) {
         this.profileAvatar = avatar;
+      } else {
+        // ✅ Se non c'è avatar, usa il fallback con iniziali
+        this.profileAvatar = this.fallbackAvatar;
       }
     } catch {
-      // Ignore malformed local session
+      this.profileAvatar = this.fallbackAvatar;
     }
   }
 

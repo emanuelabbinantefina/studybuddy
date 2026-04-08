@@ -7,9 +7,9 @@ export interface EventItem {
   id: number;
   title: string;
   subject: string;
-  date: string;      // ISO string
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
+  date: string;
+  startTime: string;
+  endTime: string;
   type: 'exam' | 'group' | 'personal';
 }
 

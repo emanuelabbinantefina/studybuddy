@@ -1,7 +1,6 @@
 <ion-content [fullscreen]="true" class="notifications-page">
   <div class="notifications-shell">
 
-    <!-- Top bar -->
     <div class="top-bar">
       <button type="button" class="back-btn" (click)="goBack()" aria-label="Torna indietro">
         <ion-icon name="arrow-back-outline"></ion-icon>
@@ -13,75 +12,48 @@
         <p *ngIf="unreadCount === 0">Tutto aggiornato ✨</p>
       </div>
 
-      <!-- Pulsanti azioni -->
       <div class="top-actions" *ngIf="notifications.length > 0">
-        <button
-          type="button"
-          class="action-btn action-btn--clear"
-          (click)="confirmClearAll()"
-        >
+        <button type="button" class="action-btn action-btn--clear" (click)="confirmClearAll()">
           <ion-icon name="trash-outline"></ion-icon>
           <span>Elimina tutte</span>
         </button>
 
-        <button
-          type="button"
-          class="action-btn action-btn--mark"
-          *ngIf="unreadCount > 0"
-          (click)="markAllAsRead()"
-        >
+        <button type="button" class="action-btn action-btn--mark" *ngIf="unreadCount > 0" (click)="markAllAsRead()">
           <ion-icon name="checkmark-done-outline"></ion-icon>
           <span>Segna tutte</span>
         </button>
       </div>
     </div>
 
-    <!-- Filtri -->
     <div class="filters-bar" *ngIf="notifications.length > 0">
-      <button
-        type="button"
-        class="filter-chip"
-        [class.filter-chip--active]="currentFilter === 'all'"
-        (click)="setFilter('all')"
-      >
+      <button type="button" class="filter-chip" [class.filter-chip--active]="currentFilter === 'all'"
+        (click)="setFilter('all')">
         Tutte ({{ notifications.length }})
       </button>
-      <button
-        type="button"
-        class="filter-chip"
-        [class.filter-chip--active]="currentFilter === 'unread'"
-        (click)="setFilter('unread')"
-      >
+      <button type="button" class="filter-chip" [class.filter-chip--active]="currentFilter === 'unread'"
+        (click)="setFilter('unread')">
         Non lette ({{ unreadCount }})
       </button>
-      <button
-        type="button"
-        class="filter-chip"
-        [class.filter-chip--active]="currentFilter === 'read'"
-        (click)="setFilter('read')"
-      >
+      <button type="button" class="filter-chip" [class.filter-chip--active]="currentFilter === 'read'"
+        (click)="setFilter('read')">
         Lette ({{ readCount }})
       </button>
     </div>
 
-    <!-- Empty -->
     <div class="empty-state" *ngIf="filteredNotifications.length === 0" @fadeIn>
-      <div class="empty-icon">
-        <ion-icon name="notifications-off-outline"></ion-icon>
+      <div class="empty-card">
+        <div class="empty-icon-wrap">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </div>
+        <h3 class="empty-title">{{ emptyStateTitle }}</h3>
+        <p class="empty-desc">{{ emptyStateMessage }}</p>
       </div>
-      <h3>{{ emptyStateTitle }}</h3>
-      <p>{{ emptyStateMessage }}</p>
     </div>
 
-    <!-- List -->
     <div class="notifications-list" *ngIf="filteredNotifications.length > 0">
-      <article
-        class="notification-card"
-        [class.notification-card--unread]="!notification.read"
-        *ngFor="let notification of filteredNotifications; trackBy: trackById"
-        (click)="openNotification(notification)"
-        @listItem
-      >
+      <article class="notification-card" [class.notification-card--unread]="!notification.read"
+        *ngFor="let notification of filteredNotifications; trackBy: trackById" (click)="openNotification(notification)"
+        @listItem>
         <div class="notif-icon" [ngClass]="notificationClass(notification.type)">
           <ion-icon [name]="notificationIcon(notification.type)"></ion-icon>
         </div>
@@ -101,12 +73,8 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="notif-remove"
-          (click)="confirmRemoveNotification(notification, $event)"
-          aria-label="Rimuovi notifica"
-        >
+        <button type="button" class="notif-remove" (click)="confirmRemoveNotification(notification, $event)"
+          aria-label="Rimuovi notifica">
           <ion-icon name="close-circle-outline"></ion-icon>
         </button>
       </article>

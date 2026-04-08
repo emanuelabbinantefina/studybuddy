@@ -1,6 +1,5 @@
 <ion-content [fullscreen]="true" class="planner-content">
 
-  <!-- HEADER -->
   <div class="planner-header">
     <div class="header-left">
       <h1 class="page-title">Planner</h1>
@@ -18,7 +17,6 @@
     </button>
   </div>
 
-  <!-- LOADING -->
   <div class="skeleton-stack" *ngIf="loading">
     <div class="skeleton-big-card">
       <div class="skeleton skeleton--emoji"></div>
@@ -34,14 +32,12 @@
     </div>
   </div>
 
-  <!-- ERROR -->
   <div class="error-card" *ngIf="!loading && errorMessage">
     <span class="error-emoji">⚠️</span>
     <p>{{ errorMessage }}</p>
     <button class="retry-btn" (click)="loadItems()">Riprova</button>
   </div>
 
-  <!-- CARD STACK -->
   <ng-container *ngIf="!loading && items.length > 0">
 
     <div class="card-stack-wrapper">
@@ -93,10 +89,9 @@
         </div>
       </div>
     </div>
-    </div><!-- /card-stack-wrapper -->
+    </div>
 
 
-    <!-- Compact list -->
     <section class="compact-section">
       <div class="section-header">
         <h3 class="section-title">Tutti</h3>
@@ -120,15 +115,10 @@
 
   </ng-container>
 
-  <!-- EMPTY -->
-  <div class="empty-state" *ngIf="!loading && !errorMessage && items.length === 0">
-    <div class="empty-card-preview">
-      <div class="empty-card-fake"></div>
-      <div class="empty-card-fake empty-card-fake--2"></div>
-      <div class="empty-card-fake empty-card-fake--3">
-        <span class="empty-card-icon">📅</span>
-        <span class="empty-card-text">Nessun impegno</span>
-      </div>
+<div class="empty-state" *ngIf="!loading && !errorMessage && items.length === 0">
+  <div class="empty-card">
+    <div class="empty-icon-wrap">
+      <ion-icon name="calendar-outline"></ion-icon>
     </div>
     <h3 class="empty-title">Il tuo planner è vuoto</h3>
     <p class="empty-desc">Crea il primo impegno (esame, gruppo studio, ecc.)</p>
@@ -137,11 +127,8 @@
       Aggiungi
     </button>
   </div>
+</div>
 
-  <div style="height: 120px"></div>
-</ion-content>
-
-<!-- ADD MODAL -->
 <ion-modal [isOpen]="isAddModalOpen" (didDismiss)="closeAddModal()">
   <ng-template>
     <ion-content class="modal-content">
@@ -151,7 +138,6 @@
         <h2 class="modal-title">Nuovo impegno</h2>
         <p class="modal-subtitle">Esame, gruppo studio o altro</p>
 
-        <!-- TYPE -->
         <div class="field-group">
           <label class="field-label">Tipo</label>
           <select class="custom-select" [(ngModel)]="newType" (ngModelChange)="onTypeChange()">
@@ -161,7 +147,6 @@
           </select>
         </div>
 
-        <!-- SUBJECT for EXAM -->
         <div class="field-group" *ngIf="newType === 'exam'">
           <label class="field-label">Materia</label>
           <select class="custom-select" [(ngModel)]="newSubject" [disabled]="subjectOptions.length === 0">
@@ -173,13 +158,11 @@
           </p>
         </div>
 
-        <!-- TITLE for GROUP/PERSONAL -->
         <div class="field-group" *ngIf="newType !== 'exam'">
           <label class="field-label">Titolo</label>
           <input class="custom-input" type="text" placeholder="es. Studio in biblioteca" [(ngModel)]="newTitle" />
         </div>
 
-        <!-- DATE -->
         <div class="field-group">
           <label class="field-label">Data</label>
           <input class="custom-input" type="date" [min]="minDate" [(ngModel)]="newDate" />
@@ -188,7 +171,6 @@
           </p>
         </div>
 
-        <!-- NOTES -->
         <div class="field-group">
           <label class="field-label">Note <span class="optional">(opzionale)</span></label>
           <textarea class="custom-textarea" rows="3" placeholder="Aggiungi dettagli..." [(ngModel)]="newNotes"></textarea>

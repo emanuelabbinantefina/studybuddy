@@ -1,23 +1,38 @@
 $bg-page: var(--app-bg-page);
+$bg-card: var(--app-surface-glass);
+
 $text-primary: var(--app-text-primary);
 $text-secondary: var(--app-text-secondary);
-$text-muted: var(--app-text-muted);
-$primary: var(--app-primary);
+
+$radius-xl: 32px;
+
+$shadow-card: var(--app-shadow-floating);
 $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 
-.complete-profile-page {
+.complete-profile-content {
   --background: #{$bg-page};
 }
 
-.complete-profile-layout {
+.complete-profile-page {
   min-height: 100dvh;
   position: relative;
   overflow: hidden;
   background:
     radial-gradient(circle at 15% 20%, var(--app-blob-primary), transparent 28%),
-    radial-gradient(circle at 85% 18%, var(--app-blob-secondary), transparent 24%),
-    radial-gradient(circle at 70% 75%, var(--app-blob-accent), transparent 24%),
+    radial-gradient(circle at 85% 75%, var(--app-blob-accent), transparent 24%),
     linear-gradient(180deg, var(--app-page-gradient-start) 0%, var(--app-page-gradient-end) 100%);
+}
+
+.complete-profile-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 12px;
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .bg-blob {
@@ -25,84 +40,55 @@ $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
   border-radius: 50%;
   filter: blur(60px);
   pointer-events: none;
-  opacity: 0.45;
+  opacity: 0.4;
 
   &--1 {
-    width: 220px;
-    height: 220px;
+    width: 180px;
+    height: 180px;
     background: var(--app-blob-primary);
-    top: -40px;
-    left: -70px;
+    top: -30px;
+    left: -50px;
   }
 
   &--2 {
-    width: 180px;
-    height: 180px;
-    background: var(--app-blob-secondary);
-    top: 35%;
-    right: -60px;
-  }
-
-  &--3 {
-    width: 200px;
-    height: 200px;
+    width: 160px;
+    height: 160px;
     background: var(--app-blob-accent);
-    bottom: -40px;
-    left: 20%;
+    bottom: -30px;
+    right: -40px;
   }
 }
 
-.complete-profile-shell {
-  min-height: 100dvh;
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 34px 20px 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-}
-
-.intro-block {
+.brand-block {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
-.intro-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  background: rgba(79, 107, 255, 0.1);
-  color: $primary;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-bottom: 14px;
-}
-
-.intro-title {
+.hero-title {
   font-family: $font-display;
-  font-size: 2.15rem;
+  font-size: 1.8rem;
   font-weight: 900;
   color: $text-primary;
   margin: 0;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
-.intro-subtitle {
-  margin: 10px auto 0;
+.hero-subtitle {
+  margin: 6px 0 0;
   color: $text-secondary;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  line-height: 1.5;
-  max-width: 420px;
 }
 
-.editor-wrap {
-  position: relative;
+.complete-profile-card {
+  background: $bg-card;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--app-card-border);
+  border-radius: $radius-xl;
+  padding: 24px 22px 26px;
+  box-shadow: $shadow-card;
+  width: 100%;
 }
 
 .fade-in {
@@ -112,30 +98,31 @@ $font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(12px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@media (max-width: 720px) {
+@media (min-width: 768px) {
   .complete-profile-shell {
-    padding: 24px 14px 20px;
-    justify-content: flex-start;
+    max-width: 600px;
+    padding: 24px 20px;
   }
 
-  .intro-block {
-    margin-bottom: 16px;
+  .hero-title {
+    font-size: 2rem;
   }
 
-  .intro-title {
-    font-size: 1.9rem;
+  .complete-profile-card {
+    padding: 28px 28px 30px;
   }
+}
 
-  .intro-subtitle {
-    font-size: 0.9rem;
+@media (min-width: 1024px) {
+  .complete-profile-shell {
+    max-width: 680px;
   }
 }

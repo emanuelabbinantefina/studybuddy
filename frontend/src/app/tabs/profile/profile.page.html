@@ -1,18 +1,22 @@
 <ion-content [fullscreen]="true" class="profile-content">
   <div class="profile-shell">
 
-    <!-- HERO (senza header "Ciao") -->
+    <!-- ✅ TOP BAR con freccia indietro -->
+    <div class="top-bar">
+      <button type="button" class="back-btn" (click)="goBack()" aria-label="Torna indietro">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </button>
+
+      <div class="top-copy">
+        <h1>Profilo</h1>
+      </div>
+    </div>
+
     <div class="profile-hero">
       <div class="hero-gradient"></div>
-
       <div class="hero-inner">
-        <div class="avatar-wrap" (click)="openEditProfile()">
-          <img
-            [src]="user?.avatar || fallbackAvatar"
-            (error)="onAvatarError($event)"
-            alt="Avatar"
-          />
-          <span class="avatar-badge">✏️</span>
+        <div class="avatar-wrap">
+          <img [src]="user?.avatar || fallbackAvatar" (error)="onAvatarError($event)" alt="Avatar" />
         </div>
 
         <h1 class="hero-name">{{ displayName }}</h1>
@@ -40,7 +44,6 @@
       </div>
     </div>
 
-    <!-- ACTIVITY -->
     <div class="activity-card">
       <h3 class="activity-title">🔥 Attività</h3>
       <div class="activity-grid">
@@ -61,7 +64,6 @@
       </div>
     </div>
 
-    <!-- ACHIEVEMENTS -->
     <section class="section" *ngIf="achievements.length > 0">
       <div class="section-header">
         <h3 class="section-title">🏆 Traguardi</h3>
@@ -69,18 +71,13 @@
       </div>
 
       <div class="achievements-grid">
-        <div
-          class="achievement"
-          [class.achievement--locked]="!a.unlocked"
-          *ngFor="let a of achievements"
-        >
+        <div class="achievement" [class.achievement--locked]="!a.unlocked" *ngFor="let a of achievements">
           <span class="achievement-emoji">{{ a.emoji }}</span>
           <span class="achievement-label">{{ a.label }}</span>
         </div>
       </div>
     </section>
 
-    <!-- SETTINGS -->
     <section class="section">
       <div class="section-header">
         <h3 class="section-title">⚙️ Impostazioni</h3>
@@ -92,11 +89,7 @@
             <ion-icon name="notifications-outline"></ion-icon>
             <span>Notifiche</span>
           </div>
-          <button
-            class="toggle-btn"
-            [class.toggle-btn--on]="notificationsEnabled"
-            (click)="toggleNotifications()"
-          >
+          <button class="toggle-btn" [class.toggle-btn--on]="notificationsEnabled" (click)="toggleNotifications()">
             <span class="toggle-dot"></span>
           </button>
         </div>
@@ -108,11 +101,7 @@
           </div>
           <div class="setting-actions">
             <span class="setting-value">{{ themeLabel }}</span>
-            <button
-              class="toggle-btn"
-              [class.toggle-btn--on]="isDarkMode"
-              (click)="toggleTheme()"
-            >
+            <button class="toggle-btn" [class.toggle-btn--on]="isDarkMode" (click)="toggleTheme()">
               <span class="toggle-dot"></span>
             </button>
           </div>
@@ -128,7 +117,6 @@
       </div>
     </section>
 
-    <!-- ACCOUNT -->
     <section class="account-section">
       <button class="logout-btn" (click)="onLogout()">
         <ion-icon name="log-out-outline"></ion-icon>
@@ -140,23 +128,13 @@
         Elimina account
       </button>
     </section>
-
-    <!-- Bottom spacer -->
-    <div style="height: 100px"></div>
-
   </div>
 </ion-content>
 
-<!-- DELETE MODAL -->
-<ion-modal
-  class="delete-account-modal"
-  [isOpen]="isDeleteModalOpen"
-  [canDismiss]="!isDeletingAccount"
-  [backdropDismiss]="!isDeletingAccount"
-  [breakpoints]="[0, 0.92]"
-  [initialBreakpoint]="0.92"
-  (didDismiss)="closeDeleteAccount()"
->
+<!-- MODALS rimangono uguali... -->
+<ion-modal class="delete-account-modal" [isOpen]="isDeleteModalOpen" [canDismiss]="!isDeletingAccount"
+  [backdropDismiss]="!isDeletingAccount" [breakpoints]="[0, 0.92]" [initialBreakpoint]="0.92"
+  (didDismiss)="closeDeleteAccount()">
   <ng-template>
     <ion-content class="modal-content">
       <div class="delete-sheet">
@@ -192,23 +170,13 @@
             <h2 class="delete-title">Sei sicuro?</h2>
             <p class="delete-desc">Scrivi <strong>ELIMINA</strong> per confermare.</p>
 
-            <input
-              type="text"
-              class="confirm-input"
-              [(ngModel)]="deleteConfirmation"
-              [disabled]="isDeletingAccount"
-              autocomplete="off"
-              autocapitalize="characters"
-              placeholder="Scrivi ELIMINA"
-            />
+            <input type="text" class="confirm-input" [(ngModel)]="deleteConfirmation" [disabled]="isDeletingAccount"
+              autocomplete="off" autocapitalize="characters" placeholder="Scrivi ELIMINA" />
 
             <div class="delete-actions delete-actions--row">
               <button class="modal-btn-ghost" (click)="backToDeleteImpact()">Indietro</button>
-              <button
-                class="modal-btn-danger"
-                [disabled]="!deleteConfirmationValid || isDeletingAccount"
-                (click)="confirmDeleteAccount()"
-              >
+              <button class="modal-btn-danger" [disabled]="!deleteConfirmationValid || isDeletingAccount"
+                (click)="confirmDeleteAccount()">
                 {{ isDeletingAccount ? 'Eliminazione...' : 'Elimina' }}
               </button>
             </div>
@@ -229,16 +197,9 @@
   </ng-template>
 </ion-modal>
 
-<!-- CHANGE PASSWORD MODAL -->
-<ion-modal
-  class="password-modal"
-  [isOpen]="isPasswordModalOpen"
-  [canDismiss]="!isChangingPassword"
-  [backdropDismiss]="!isChangingPassword"
-  [breakpoints]="[0, 0.86]"
-  [initialBreakpoint]="0.86"
-  (didDismiss)="closeChangePassword()"
->
+<ion-modal class="password-modal" [isOpen]="isPasswordModalOpen" [canDismiss]="!isChangingPassword"
+  [backdropDismiss]="!isChangingPassword" [breakpoints]="[0, 0.86]" [initialBreakpoint]="0.86"
+  (didDismiss)="closeChangePassword()">
   <ng-template>
     <ion-content class="modal-content">
       <form class="delete-sheet password-sheet" (ngSubmit)="submitPasswordChange()">
@@ -254,28 +215,15 @@
 
         <label class="password-field">
           <span>Password attuale</span>
-          <input
-            class="confirm-input password-input"
-            type="password"
-            name="currentPassword"
-            [(ngModel)]="currentPassword"
-            [disabled]="isChangingPassword"
-            autocomplete="current-password"
-            placeholder="Password attuale"
-          />
+          <input class="confirm-input password-input" type="password" name="currentPassword"
+            [(ngModel)]="currentPassword" [disabled]="isChangingPassword" autocomplete="current-password"
+            placeholder="Password attuale" />
         </label>
 
         <label class="password-field">
           <span>Nuova password</span>
-          <input
-            class="confirm-input password-input"
-            type="password"
-            name="newPassword"
-            [(ngModel)]="newPassword"
-            [disabled]="isChangingPassword"
-            autocomplete="new-password"
-            placeholder="Nuova password"
-          />
+          <input class="confirm-input password-input" type="password" name="newPassword" [(ngModel)]="newPassword"
+            [disabled]="isChangingPassword" autocomplete="new-password" placeholder="Nuova password" />
         </label>
 
         <div class="password-rules">
@@ -287,22 +235,17 @@
 
         <label class="password-field">
           <span>Conferma nuova password</span>
-          <input
-            class="confirm-input password-input"
-            type="password"
-            name="confirmNewPassword"
-            [(ngModel)]="confirmNewPassword"
-            [disabled]="isChangingPassword"
-            autocomplete="new-password"
-            placeholder="Ripeti nuova password"
-          />
+          <input class="confirm-input password-input" type="password" name="confirmNewPassword"
+            [(ngModel)]="confirmNewPassword" [disabled]="isChangingPassword" autocomplete="new-password"
+            placeholder="Ripeti nuova password" />
         </label>
 
         <p class="password-error" *ngIf="passwordMismatch">Le nuove password non coincidono.</p>
         <p class="password-error" *ngIf="passwordSameAsCurrent">La nuova password deve essere diversa da quella attuale.</p>
 
         <div class="password-actions">
-          <button class="modal-btn-ghost" type="button" [disabled]="isChangingPassword" (click)="closeChangePassword()">Annulla</button>
+          <button class="modal-btn-ghost" type="button" [disabled]="isChangingPassword"
+            (click)="closeChangePassword()">Annulla</button>
           <button class="modal-btn-primary" type="submit" [disabled]="isChangingPassword || !canChangePassword">
             {{ isChangingPassword ? 'Aggiornamento...' : 'Aggiorna password' }}
           </button>
@@ -312,23 +255,12 @@
   </ng-template>
 </ion-modal>
 
-<!-- EDIT PROFILE MODAL -->
-<ion-modal
-  class="profile-editor-modal"
-  [isOpen]="isEditModalOpen"
-  [breakpoints]="[0, 0.95]"
-  [initialBreakpoint]="0.95"
-  (didDismiss)="closeEditProfile()"
->
+<ion-modal class="profile-editor-modal" [isOpen]="isEditModalOpen" [breakpoints]="[0, 0.95]" [initialBreakpoint]="0.95"
+  (didDismiss)="closeEditProfile()">
   <ng-template>
     <div class="modal-wrapper">
-      <app-profile-editor
-        variant="sheet"
-        title="Modifica profilo"
-        submitLabel="Salva"
-        (saved)="onProfileSaved($event)"
-        (closed)="closeEditProfile()"
-      ></app-profile-editor>
+      <app-profile-editor variant="sheet" title="Modifica profilo" submitLabel="Salva" (saved)="onProfileSaved($event)"
+        (closed)="closeEditProfile()"></app-profile-editor>
     </div>
   </ng-template>
 </ion-modal>

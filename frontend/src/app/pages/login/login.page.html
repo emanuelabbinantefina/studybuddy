@@ -1,24 +1,20 @@
 <ion-content [fullscreen]="true" class="login-content">
   <div class="login-page">
 
-    <!-- Background blobs -->
     <div class="bg-blob bg-blob--1"></div>
     <div class="bg-blob bg-blob--2"></div>
     <div class="bg-blob bg-blob--3"></div>
 
     <div class="login-shell">
 
-      <!-- Brand -->
       <div class="brand-block fade-in">
         <h1 class="hero-title">Bentornato</h1>
         <p class="hero-subtitle">Pronto a studiare sul serio?</p>
       </div>
 
-      <!-- Card -->
       <div class="login-card fade-in">
         <form (ngSubmit)="handleLogin()">
 
-          <!-- Email -->
           <div class="field">
             <label class="field-label" for="login-email">Email</label>
             <div class="input-wrap">
@@ -29,7 +25,6 @@
             </div>
           </div>
 
-          <!-- Password -->
           <div class="field">
             <label class="field-label" for="login-password">Password</label>
             <div class="input-wrap">
@@ -43,36 +38,31 @@
             </div>
           </div>
 
-          <!-- Options -->
-          <div class="form-row">
+          <div class="form-row form-row--between">
             <div class="remember-wrapper" (click)="toggleRemember()" role="checkbox" [attr.aria-checked]="rememberMe">
               <div class="custom-checkbox" [class.checked]="rememberMe">
                 <ion-icon name="checkmark"></ion-icon>
               </div>
               <span class="remember-text">Ricordami</span>
             </div>
+
+            <button type="button" class="link-primary" (click)="goToForgotPassword()">
+              Password dimenticata?
+            </button>
           </div>
 
-          <!-- Error -->
           <div class="error-box" *ngIf="error" role="alert" aria-live="assertive">
             <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
             <span>{{ error }}</span>
           </div>
 
-          <!-- Submit -->
           <ion-button expand="block" class="main-btn" type="submit" [disabled]="loading || !email || !password">
             <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
             <span *ngIf="!loading">Accedi</span>
           </ion-button>
         </form>
 
-        <!-- Footer -->
         <div class="footer-links">
-          <p>
-            <button type="button" class="link-primary" (click)="goToForgotPassword()">
-              Hai dimenticato la password?
-            </button>
-          </p>
           <p>
             Non hai un account?
             <button type="button" class="link-primary" (click)="goToRegister()">
@@ -81,7 +71,6 @@
           </p>
         </div>
       </div>
-
     </div>
   </div>
 </ion-content>

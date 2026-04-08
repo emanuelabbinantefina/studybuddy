@@ -1,6 +1,5 @@
 <ion-content [fullscreen]="true" class="home-content" [scrollEvents]="true">
 
-  <!-- HEADER -->
   <div class="home-header">
     <div class="header-left">
       <p class="greeting-label">Ciao 👋</p>
@@ -8,7 +7,6 @@
     </div>
   </div>
 
-  <!-- HERO CARD -->
   <div
     class="hero-card"
     [class.hero-card--empty]="!nextExam"
@@ -48,7 +46,6 @@
     </div>
   </div>
 
-  <!-- TODAY'S FOCUS -->
   <div class="today-focus">
     <div class="focus-header">
       <h3 class="section-title">Oggi</h3>
@@ -56,13 +53,11 @@
     </div>
 
     <div class="focus-grid">
-      <!-- Pomodoro -->
       <button class="focus-card focus-card--warm" (click)="openFocus()">
         <span class="focus-emoji">🍅</span>
         <span class="focus-label">Inizia a<br/>studiare</span>
       </button>
 
-      <!-- Progresso (solo display) -->
       <div class="focus-card focus-card--progress focus-card--static">
         <div class="progress-ring">
           <svg viewBox="0 0 36 36" class="circular-progress">
@@ -85,7 +80,6 @@
         <span class="focus-label">Progresso<br/>di oggi</span>
       </div>
 
-      <!-- Upload -->
       <button class="focus-card focus-card--cool" (click)="uploadNote()">
         <span class="focus-emoji">📤</span>
         <span class="focus-label">Carica<br/>appunti</span>
@@ -93,14 +87,12 @@
     </div>
   </div>
 
-  <!-- UPCOMING EXAMS -->
   <section class="section" *ngIf="loadingExams || upcomingExams.length > 0">
     <div class="section-header">
       <h3 class="section-title">Prossimi esami</h3>
       <button class="link-btn" (click)="openPlanner()">Vedi tutti</button>
     </div>
 
-    <!-- Skeleton -->
     <div class="exams-scroll" *ngIf="loadingExams">
       <div class="exam-card exam-card--skeleton" *ngFor="let s of [1, 2]">
         <div class="skeleton skeleton--sm"></div>
@@ -109,7 +101,6 @@
       </div>
     </div>
 
-    <!-- Cards -->
     <div class="exams-scroll" *ngIf="!loadingExams">
       <div
         class="exam-card"
@@ -132,14 +123,12 @@
     </div>
   </section>
 
-  <!-- RECENT NOTES -->
   <section class="section">
     <div class="section-header">
       <h3 class="section-title">Appunti recenti</h3>
       <button class="link-btn" (click)="openAppunti()">Vedi tutti</button>
     </div>
 
-    <!-- Skeleton -->
     <div class="notes-list" *ngIf="loadingNotes">
       <div class="note-card note-card--skeleton" *ngFor="let s of [1, 2, 3]">
         <div class="skeleton skeleton--icon"></div>
@@ -150,7 +139,6 @@
       </div>
     </div>
 
-    <!-- Notes -->
     <div class="notes-list" *ngIf="!loadingNotes && recentNotes.length > 0">
       <div
         class="note-card"
@@ -169,7 +157,6 @@
       </div>
     </div>
 
-    <!-- Empty -->
     <div class="empty-state" *ngIf="!loadingNotes && recentNotes.length === 0">
       <span class="empty-emoji">📄</span>
       <p class="empty-text">Nessun appunto ancora</p>
@@ -180,7 +167,6 @@
     </div>
   </section>
 
-  <!-- Bottom spacer -->
   <div style="height: 100px"></div>
 
 </ion-content>

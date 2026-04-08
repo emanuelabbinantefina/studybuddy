@@ -66,10 +66,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ═══════════════════════════
-  //   GETTERS
-  // ═══════════════════════════
-
   get unreadCount(): number {
     return this.notifications.filter((n) => !n.read).length;
   }
@@ -90,10 +86,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
     return 'Quando succede qualcosa di importante, la vedrai qui.';
   }
 
-  // ═══════════════════════════
-  //   FILTRI
-  // ═══════════════════════════
-
   setFilter(filter: 'all' | 'unread' | 'read'): void {
     this.currentFilter = filter;
     this.applyFilter();
@@ -108,10 +100,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
       this.filteredNotifications = [...this.notifications];
     }
   }
-
-  // ═══════════════════════════
-  //   SUONO + VIBRAZIONE
-  // ═══════════════════════════
 
   checkForNewNotifications(items: AppNotification[]): void {
     const currentUnreadCount = items.filter(n => !n.read).length;
@@ -141,29 +129,18 @@ export class NotificationsPage implements OnInit, OnDestroy {
         navigator.vibrate(200);
       }
     } catch (err) {
-      // Vibration not supported
     }
   }
-
-  // ═══════════════════════════
-  //   NAVIGAZIONE
-  // ═══════════════════════════
 
   goBack(): void {
     this.router.navigate(['/tabs/home']);
   }
 
-  // ═══════════════════════════
-  //   AZIONI NOTIFICHE
-  // ═══════════════════════════
-
-  // Segna tutte come lette
   markAllAsRead(): void {
     this.notificationService.markAllAsRead();
     this.presentToast('Tutte le notifiche sono state lette');
   }
 
-  // Apri notifica (mark as read automatico)
   openNotification(notification: AppNotification): void {
     if (!notification.read) {
       this.notificationService.markAsRead(notification.id);
@@ -174,11 +151,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
     }
   }
 
-  // ═══════════════════════════
-  //   ELIMINA NOTIFICHE
-  // ═══════════════════════════
-
-  // Conferma elimina tutte
   async confirmClearAll(): Promise<void> {
     const alert = await this.alertCtrl.create({
       header: 'Elimina tutte',
@@ -203,7 +175,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // Elimina tutte
   clearAllNotifications(): void {
     const notificationIds = this.notifications.map(n => n.id);
     
@@ -214,7 +185,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
     this.presentToast('Tutte le notifiche sono state eliminate');
   }
 
-  // Conferma elimina singola
   async confirmRemoveNotification(notification: AppNotification, event: Event): Promise<void> {
     event.stopPropagation();
 
@@ -241,15 +211,10 @@ export class NotificationsPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  // Elimina singola
   removeNotification(notification: AppNotification): void {
     this.notificationService.remove(notification.id);
     this.presentToast('Notifica eliminata');
   }
-
-  // ═══════════════════════════
-  //   HELPERS
-  // ═══════════════════════════
 
   trackById(index: number, item: AppNotification): string {
     return item.id.toString();

@@ -7,7 +7,6 @@
     ></ion-refresher-content>
   </ion-refresher>
 
-  <!-- HEADER -->
   <div class="groups-header">
     <div class="header-copy">
       <h1 class="page-title">Gruppi</h1>
@@ -22,7 +21,6 @@
 
   <div class="groups-shell">
     
-    <!-- SEARCH -->
     <div class="search-bar">
       <ion-icon name="search-outline" class="search-icon"></ion-icon>
       <input
@@ -34,12 +32,10 @@
       />
     </div>
 
-    <!-- RESULT COUNT -->
     <div class="result-bar" *ngIf="!loadingList && filteredGroups.length > 0">
       <span class="result-count">{{ filteredGroups.length }} gruppi trovati</span>
     </div>
 
-    <!-- LOADING SKELETON -->
     <div class="loading-shell" *ngIf="loadingList">
       <div class="skeleton-card" *ngFor="let s of [1,2,3,4]">
         <div class="skeleton skeleton--icon"></div>
@@ -53,7 +49,6 @@
 
     <ng-container *ngIf="!loadingList">
 
-      <!-- LIST -->
       <div class="cards-list" *ngIf="filteredGroups.length > 0; else emptyGroups">
         <article
           class="group-card"

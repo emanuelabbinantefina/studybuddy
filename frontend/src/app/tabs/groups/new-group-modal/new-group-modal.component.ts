@@ -78,7 +78,6 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private toastCtrl: ToastController
   ) {
-    // Registrazione manuale delle icone necessarie per questo componente
     addIcons({ closeOutline, trashOutline });
   }
 
@@ -183,7 +182,7 @@ export class NewGroupModalComponent implements OnInit, OnDestroy {
         session: session || undefined,
         year: year || undefined,
       },
-    ].slice(0, 8); // Limita a 8 domande max per la creazione iniziale
+    ].slice(0, 8);
 
     this.questionDraft = '';
     this.questionSessionDraft = '';

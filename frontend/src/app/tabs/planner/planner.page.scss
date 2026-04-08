@@ -551,35 +551,86 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 700;
 }
 
+// ═══════════════════════════
+//   EMPTY STATE
+// ═══════════════════════════
+
 .empty-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 40px 20px;
+  padding: 32px 24px;
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  max-width: 320px;
+  width: 100%;
+}
+
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: $radius-md;
+  background: $primary-soft;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+
+  ion-icon {
+    font-size: 28px;
+    color: $primary;
+  }
 }
 
 .empty-title {
   font-family: $font-display;
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 0 0 6px;
+  font-size: 1.1rem;
+  font-weight: 800;
   color: $text-primary;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
 }
 
 .empty-desc {
-  margin: 0 0 18px;
-  color: $text-muted;
+  font-size: 0.85rem;
   font-weight: 500;
+  color: $text-muted;
+  margin: 0 0 20px;
+  line-height: 1.5;
 }
 
 .empty-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 12px 24px;
   border: none;
   border-radius: $radius-full;
   background: $primary;
   color: #fff;
+  font-family: $font-body;
+  font-size: 0.88rem;
   font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(79, 107, 255, 0.25);
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .modal-content {

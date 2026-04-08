@@ -97,10 +97,6 @@ export class GroupDetailPage implements OnInit {
     }
   }
 
-  // ═══════════════════════════
-  // NAVIGAZIONE
-  // ═══════════════════════════
-
   goBack(): void {
     this.router.navigate(['/tabs/groups']);
   }
@@ -108,10 +104,6 @@ export class GroupDetailPage implements OnInit {
   toggleMembers(): void {
     this.showMembers = !this.showMembers;
   }
-
-  // ═══════════════════════════
-  // ABBANDONA GRUPPO
-  // ═══════════════════════════
 
   async confirmLeaveGroup(): Promise<void> {
     const alert = await this.alertCtrl.create({
@@ -158,10 +150,6 @@ export class GroupDetailPage implements OnInit {
       this.leavingGroup = false;
     }
   }
-
-  // ═══════════════════════════
-  // CARICAMENTO DATI
-  // ═══════════════════════════
 
   loadGroupDetails(id: number) {
     this.loading = true;
@@ -236,10 +224,6 @@ export class GroupDetailPage implements OnInit {
       },
     });
   }
-
-  // ═══════════════════════════
-  // FILE
-  // ═══════════════════════════
 
   scaricaFile(id: number) {
     this.apiService.downloadAppunto(id).subscribe({
@@ -324,19 +308,11 @@ export class GroupDetailPage implements OnInit {
     await alert.present();
   }
 
-  // ═══════════════════════════
-  // TABS
-  // ═══════════════════════════
-
   setTab(tab: 'appunti' | 'bacheca' | 'domande') {
     this.currentTab = tab;
     if (tab !== 'bacheca') this.closeMessageComposer();
     if (tab !== 'domande') this.closeQuestionComposer();
   }
-
-  // ═══════════════════════════
-  // BACHECA
-  // ═══════════════════════════
 
   openMessageComposer(): void {
     this.showMessageComposer = true;
@@ -463,10 +439,6 @@ export class GroupDetailPage implements OnInit {
     }
   }
 
-  // ═══════════════════════════
-  // DOMANDE
-  // ═══════════════════════════
-
   openQuestionComposer(): void {
     this.showQuestionComposer = true;
   }
@@ -527,10 +499,6 @@ export class GroupDetailPage implements OnInit {
       this.sendingQuestion = false;
     }
   }
-
-  // ═══════════════════════════
-  // HELPERS
-  // ═══════════════════════════
 
   displayMessageAuthor(message: GroupBoardMessage): string {
     return Number(message.userId) === this.currentUserId

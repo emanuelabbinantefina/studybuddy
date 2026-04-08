@@ -1,18 +1,14 @@
 <div class="tabs-shell" [class.search-open]="isSearchOpen">
 
-  <!-- TOP BAR (sempre visibile) -->
   <div class="global-topbar">
     <div class="global-topbar-inner">
-      <!-- Brand -->
       <button type="button" class="brand-btn" (click)="openHome()">
         <span class="brand-text">Study</span><span class="brand-accent">Buddy</span>
       </button>
 
       <div class="topbar-spacer" aria-hidden="true"></div>
 
-      <!-- Notifiche + Avatar -->
       <div class="topbar-actions">
-        <!-- Notifiche -->
         <button type="button" class="notif-btn" (click)="openNotifications()" aria-label="Notifiche">
           <ion-icon name="notifications-outline"></ion-icon>
           <ion-badge *ngIf="notificationBadge > 0" color="danger">
@@ -20,7 +16,6 @@
           </ion-badge>
         </button>
 
-        <!-- Avatar (nascosto se sei nel profilo) -->
         <button 
           *ngIf="!isProfileRoute"
           type="button" 
@@ -35,7 +30,6 @@
     </div>
   </div>
 
-  <!-- TABS -->
   <ion-tabs>
     <ion-tab-bar slot="bottom" class="custom-tab-bar">
 

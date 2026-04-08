@@ -15,7 +15,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private userService: UserService,
-    private notificationService: NotificationService // ✅ Aggiunto
+    private notificationService: NotificationService 
   ) { }
 
   private persistSession(response: any) {
@@ -26,7 +26,6 @@ export class AuthService {
       localStorage.setItem('user_data', JSON.stringify(response.user));
     }
     
-    // ✅ Avvia polling notifiche dopo login
     this.notificationService.startPolling();
   }
 
@@ -52,7 +51,6 @@ export class AuthService {
   }
 
   logout() {
-    // ✅ Ferma polling quando fai logout
     this.notificationService.stopPolling();
     this.userService.logout();
   }

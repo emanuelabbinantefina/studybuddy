@@ -37,19 +37,12 @@ $font-body: 'Inter', -apple-system, sans-serif;
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-// ═══════════════════════════
-//   PAGE BASE
-// ═══════════════════════════
-
 .home-content {
   --background: #{$bg-page};
   --padding-start: 20px;
   --padding-end: 20px;
 }
 
-// ═══════════════════════════
-//   HEADER
-// ═══════════════════════════
 
 .home-header {
   display: flex;
@@ -75,10 +68,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin: 0;
   letter-spacing: -0.03em;
 }
-
-// ═══════════════════════════
-//   HERO CARD
-// ═══════════════════════════
 
 .hero-card {
   position: relative;
@@ -233,10 +222,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   TODAY'S FOCUS (Option A)
-// ═══════════════════════════
-
 .today-focus {
   margin-bottom: 28px;
 }
@@ -314,7 +299,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   line-height: 1.3;
 }
 
-// Progress ring
 .progress-ring {
   position: relative;
   width: 48px;
@@ -353,10 +337,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-primary;
 }
 
-// ═══════════════════════════
-//   SECTIONS
-// ═══════════════════════════
-
 .section {
   margin-bottom: 28px;
 }
@@ -393,10 +373,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   EXAM CARDS (H-scroll)
-// ═══════════════════════════
-
 .exams-scroll {
   display: flex;
   gap: 12px;
@@ -408,7 +384,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   padding-left: 20px;
   padding-right: 20px;
 
-  // Nasconde scrollbar
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -489,8 +464,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-primary;
   margin: 0 0 8px;
   line-height: 1.2;
-
-  // Troncamento 2 righe
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -510,10 +483,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     font-size: 13px;
   }
 }
-
-// ═══════════════════════════
-//   NOTE CARDS
-// ═══════════════════════════
 
 .notes-list {
   display: flex;
@@ -613,10 +582,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
-// ═══════════════════════════
-//   EMPTY STATE
-// ═══════════════════════════
-
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -636,10 +601,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-muted;
   margin: 0 0 16px;
 }
-
-// ═══════════════════════════
-//   SKELETON LOADING
-// ═══════════════════════════
 
 .skeleton {
   border-radius: 8px;
@@ -672,10 +633,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   ANIMATIONS
-// ═══════════════════════════
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -706,10 +663,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     transform: translateY(0);
   }
 }
-
-// ═══════════════════════════
-//   RESPONSIVE
-// ═══════════════════════════
 
 @media (min-width: 400px) {
   .focus-card {

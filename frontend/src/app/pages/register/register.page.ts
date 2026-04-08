@@ -29,13 +29,21 @@ export class RegisterPage implements OnInit {
   readonly passwordRulesMessage =
     'La password deve avere almeno 8 caratteri, una maiuscola, una minuscola e un numero';
 
-  name = '';
+  firstName = '';
+  lastName = '';
   email = '';
   courseKey = '';
   password = '';
   confirmPassword = '';
   error = '';
   loading = false;
+
+  // ✅ Nuove proprietà per toggle password
+  showPassword = false;
+  showConfirmPassword = false;
+
+  // ✅ Nuove proprietà per validazione email
+  emailTouched = false;
 
   faculties: FacultyRow[] = [];
   courseOptions: CourseOption[] = [];
@@ -58,21 +66,51 @@ export class RegisterPage implements OnInit {
     });
   }
 
+  // ✅ Getter per validazione email in tempo reale
+  get isEmailValid(): boolean {
+    return EMAIL_REGEX.test(this.email.trim());
+  }
+
+  // ✅ Handler per blur email
+  onEmailBlur(): void {
+    this.emailTouched = true;
+  }
+
+  // ✅ Handler per input email
+  onEmailInput(): void {
+    if (this.email.length > 5) {
+      this.emailTouched = true;
+    }
+  }
+
+  // ✅ Toggle mostra password
+  toggleShowPassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  // ✅ Toggle mostra conferma password
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
   async handleRegister() {
     if (this.loading) return;
     this.error = '';
-    this.name = this.name.trim();
+
+    this.firstName = this.firstName.trim();
+    this.lastName = this.lastName.trim();
     this.email = this.email.trim().toLowerCase();
     this.password = this.password.trim();
     this.confirmPassword = this.confirmPassword.trim();
 
-    if (!this.name || !this.email || !this.courseKey || !this.password) {
+    if (!this.firstName || !this.lastName || !this.email || !this.courseKey || !this.password) {
       this.error = 'Compila tutti i campi';
       return;
     }
 
     if (!EMAIL_REGEX.test(this.email)) {
       this.error = 'Inserisci un indirizzo email valido';
+      this.emailTouched = true;
       return;
     }
 
@@ -91,7 +129,9 @@ export class RegisterPage implements OnInit {
     try {
       await lastValueFrom(
         this.authService.register({
-          name: this.name,
+          name: `${this.firstName} ${this.lastName}`.trim(),
+          firstName: this.firstName,
+          lastName: this.lastName,
           email: this.email,
           password: this.password,
           courseKey: this.courseKey,

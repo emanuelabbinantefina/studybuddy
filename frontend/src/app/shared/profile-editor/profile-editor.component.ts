@@ -54,7 +54,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   academicSelectionLocked = false;
   faculties: FacultyRow[] = [];
   courseOptions: CourseOption[] = [];
-  
+
   profileData: ProfileFormState = {
     avatarUrl: '',
     firstName: '',
@@ -72,7 +72,7 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly toastCtrl: ToastController
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadFaculties();
@@ -87,8 +87,9 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
   }
 
   get fallbackAvatar(): string {
-    const name = `${this.profileData.firstName} ${this.profileData.lastName}`.trim() || 'User';
-    return generateAvatarUrl(name);
+    const firstName = this.profileData.firstName || '';
+    const lastName = this.profileData.lastName || '';
+    return generateAvatarUrl(firstName, lastName);
   }
 
   get bioCount(): number { return (this.profileData.bio || '').length; }
@@ -178,10 +179,22 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
 
   private applyProfile(profile: UserProfile): void {
     this.academicSelectionLocked = !!(String(profile.facolta || '').trim() && String(profile.corso || '').trim());
+
+    let firstName = (profile.firstName || '').trim();
+    let lastName = (profile.lastName || '').trim();
+
+    if (firstName.includes(' ')) {
+      const parts = firstName.split(/\s+/);
+      firstName = parts[0] || '';
+      if (!lastName || firstName.toLowerCase().includes(lastName.toLowerCase()) || lastName === parts.slice(1).join(' ')) {
+        lastName = parts.slice(1).join(' ') || lastName;
+      }
+    }
+
     this.profileData = {
       avatarUrl: this.isCustomAvatar(profile.avatar) ? profile.avatar : '',
-      firstName: profile.firstName || '',
-      lastName: profile.lastName || '',
+      firstName: firstName,
+      lastName: lastName,
       username: this.cleanUsername(profile.username || ''),
       courseKey: '',
       facolta: profile.facolta || '',
@@ -191,7 +204,6 @@ export class ProfileEditorComponent implements OnInit, OnDestroy {
     this.syncCourseSelection();
     this.loadingProfile = false;
   }
-
   private loadFaculties(): void {
     this.authService.getFaculties().pipe(takeUntil(this.destroy$)).subscribe({
       next: (rows) => {

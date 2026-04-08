@@ -1,32 +1,24 @@
-<ion-content [fullscreen]="true" class="complete-profile-page">
-  <div class="complete-profile-layout">
+<ion-content [fullscreen]="true" class="complete-profile-content">
+  <div class="complete-profile-page">
 
-    <!-- Background blobs -->
     <div class="bg-blob bg-blob--1"></div>
     <div class="bg-blob bg-blob--2"></div>
-    <div class="bg-blob bg-blob--3"></div>
 
     <div class="complete-profile-shell">
 
-      <!-- Intro -->
-      <div class="intro-block fade-in">
-        <h1 class="intro-title">Completa il profilo</h1>
-        <p class="intro-subtitle">
-          Aggiungi i dati principali per iniziare. La foto profilo è facoltativa.
-        </p>
+      <div class="brand-block fade-in">
+        <h1 class="hero-title">Completa il profilo</h1>
+        <p class="hero-subtitle">Aggiungi una foto e una breve bio</p>
       </div>
 
-      <!-- Editor -->
-      <div class="editor-wrap fade-in">
+      <div class="complete-profile-card fade-in">
         <app-profile-editor
           variant="page"
-          title="I tuoi dati"
-          subtitle="Personalizza il tuo profilo StudyBuddy"
+          title=""
           submitLabel="Completa"
           [showClose]="false"
           (saved)="onSaved($event)"
-        >
-        </app-profile-editor>
+        ></app-profile-editor>
       </div>
 
     </div>

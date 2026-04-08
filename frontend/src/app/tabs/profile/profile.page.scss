@@ -1,7 +1,3 @@
-// ═══════════════════════════════════════════════════════════
-//   PROFILE PAGE
-// ═══════════════════════════════════════════════════════════
-
 $bg-page: var(--app-bg-page);
 $bg-card: var(--app-surface);
 $bg-card-hover: var(--app-surface-alt);
@@ -43,9 +39,49 @@ $font-body: 'Inter', -apple-system, sans-serif;
 $transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-// ═══════════════════════════
-//   PAGE BASE
-// ═══════════════════════════
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.back-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: $radius-sm;
+  background: $bg-card;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform $transition;
+
+  ion-icon {
+    font-size: 20px;
+    color: $text-secondary;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.top-copy {
+  flex: 1;
+
+  h1 {
+    font-family: $font-display;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: $text-primary;
+    margin: 0;
+    letter-spacing: -0.03em;
+  }
+}
 
 .profile-content {
   --background: #{$bg-page};
@@ -53,20 +89,12 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   --padding-end: 20px;
 }
 
-// ═══════════════════════════
-//   SHELL
-// ═══════════════════════════
-
 .profile-shell {
   max-width: none;
   margin: 0;
   padding-top: 20px;
-  padding-bottom: 40px;
+  padding-bottom: 20px;
 }
-
-// ═══════════════════════════
-//   HERO
-// ═══════════════════════════
 
 .profile-hero {
   position: relative;
@@ -103,12 +131,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin-bottom: 14px;
   overflow: hidden;
   border-radius: 50%;
-  cursor: pointer;
-  transition: transform $transition;
-
-  &:active {
-    transform: scale(0.94);
-  }
 
   img {
     width: 100%;
@@ -229,10 +251,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   ACTIVITY CARD
-// ═══════════════════════════
-
 .activity-card {
   background: $bg-card;
   border-radius: $radius-lg;
@@ -290,10 +308,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-align: center;
 }
 
-// ═══════════════════════════
-//   SECTIONS
-// ═══════════════════════════
-
 .section {
   margin-bottom: 22px;
 }
@@ -318,10 +332,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-weight: 600;
   color: $text-muted;
 }
-
-// ═══════════════════════════
-//   ACHIEVEMENTS
-// ═══════════════════════════
 
 .achievements-grid {
   display: grid;
@@ -368,10 +378,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   SETTINGS
-// ═══════════════════════════
-
 .settings-card {
   background: $bg-card;
   border-radius: $radius-lg;
@@ -385,7 +391,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   justify-content: space-between;
   padding: 14px 16px;
 
-  & + & {
+  &+& {
     border-top: 1px solid var(--app-line-soft);
   }
 }
@@ -465,10 +471,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   ACCOUNT SECTION
-// ═══════════════════════════
-
 .account-section {
   margin-top: 24px;
   padding: 20px 0 0;
@@ -533,10 +535,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: $red-soft;
   }
 }
-
-// ═══════════════════════════
-//   DELETE MODAL
-// ═══════════════════════════
 
 .modal-content {
   --background: #{$bg-page};
@@ -750,10 +748,6 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 
-// ═══════════════════════════
-//   CHANGE PASSWORD MODAL
-// ═══════════════════════════
-
 .password-sheet {
   align-items: stretch;
 }
@@ -789,7 +783,7 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 8px;
   margin-bottom: 14px;
 
-  > span {
+  span {
     font-size: 0.78rem;
     font-weight: 700;
     color: $text-secondary;
@@ -827,94 +821,86 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .password-error {
-  margin: -4px 0 12px;
-  color: $red;
-  font-size: 0.76rem;
-  font-weight: 700;
-  line-height: 1.35;
+margin: -4px 0 12px;
+color: $red;
+font-size: 0.76rem;
+font-weight: 700;
+line-height: 1.35;
 }
 
 .password-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 6px;
+display: flex;
+gap: 12px;
+margin-top: 6px;
 }
 
-// ═══════════════════════════
-//   EDIT PROFILE MODAL
-// ═══════════════════════════
-
 .modal-wrapper {
-  height: 100%;
-  overflow-y: auto;
-  background: $bg-page;
+height: 100%;
+overflow-y: auto;
+background: $bg-page;
 }
 
 ion-modal.profile-editor-modal::part(content) {
-  border-radius: $radius-xl $radius-xl 0 0;
-  --background: #{$bg-page};
+border-radius: $radius-xl $radius-xl 0 0;
+--background: #{$bg-page};
 }
 
 ion-modal.delete-account-modal::part(content) {
-  border-radius: $radius-xl $radius-xl 0 0;
-  --background: #{$bg-page};
+border-radius: $radius-xl $radius-xl 0 0;
+--background: #{$bg-page};
 }
 
 ion-modal.password-modal::part(content) {
-  border-radius: $radius-xl $radius-xl 0 0;
-  --background: #{$bg-page};
+border-radius: $radius-xl $radius-xl 0 0;
+--background: #{$bg-page};
 }
 
-// ═══════════════════════════
-//   RESPONSIVE
-// ═══════════════════════════
-
 @media (max-width: 380px) {
-  .hero-name {
-    font-size: 1.3rem;
-  }
+.hero-name {
+font-size: 1.3rem;
+}
 
-  .avatar-wrap {
-    width: 80px;
-    height: 80px;
-  }
+.avatar-wrap {
+width: 80px;
+height: 80px;
+}
 
-  .achievements-grid {
-    gap: 8px;
-  }
+.achievements-grid {
+gap: 8px;
+}
 
-  .achievement {
-    min-height: 58px;
-    padding: 10px 6px;
-  }
+.achievement {
+min-height: 58px;
+padding: 10px 6px;
+}
 
-  .achievement-emoji {
-    font-size: 1.2rem;
-  }
+.achievement-emoji {
+font-size: 1.2rem;
+}
 
-  .achievement-label {
-    font-size: 0.6rem;
-  }
+.achievement-label {
+font-size: 0.6rem;
+}
 }
 
 @media (min-width: 768px) {
-  .profile-shell {
-    max-width: 1920px;
-    margin: 0 auto;
-  }
+.profile-shell {
+max-width: 1920px;
+margin: 0 auto;
+}
 
-  .achievements-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 12px;
-  }
+.achievements-grid {
+grid-template-columns: repeat(6, minmax(0, 1fr));
+gap: 12px;
+}
 
-  .delete-sheet {
-    max-width: 480px;
-    margin: 0 auto;
-  }
+.delete-sheet {
+max-width: 480px;
+margin: 0 auto;
+}
 
-  .password-sheet {
-    max-width: 480px;
-    margin: 0 auto;
-  }
+.password-sheet {
+max-width: 480px;
+margin: 0 auto;
+}
 }

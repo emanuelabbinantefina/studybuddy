@@ -12,7 +12,7 @@ export class NotificationService implements OnDestroy {
   private readonly unreadCountSubject = new BehaviorSubject<number>(0);
   
   private pollingSubscription?: Subscription;
-  private pollingInterval = 30000; // 30 secondi
+  private pollingInterval = 30000; 
 
   readonly notifications$ = this.notificationsSubject.asObservable();
   readonly unreadCount$ = this.unreadCountSubject.asObservable();
@@ -23,20 +23,16 @@ export class NotificationService implements OnDestroy {
     this.stopPolling();
   }
 
-  // Avvia polling automatico
   startPolling(): void {
-    if (this.pollingSubscription) return; // già attivo
+    if (this.pollingSubscription) return;
 
-    // primo fetch subito
     this.fetchNotifications();
 
-    // poi ogni 30 secondi
     this.pollingSubscription = interval(this.pollingInterval).subscribe(() => {
       this.fetchNotifications();
     });
   }
 
-  // Ferma polling
   stopPolling(): void {
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
@@ -105,7 +101,6 @@ export class NotificationService implements OnDestroy {
     });
   }
 
-  // Metodo per ottenere il conteggio attuale (sincrono)
   get unreadCount(): number {
     return this.unreadCountSubject.value;
   }

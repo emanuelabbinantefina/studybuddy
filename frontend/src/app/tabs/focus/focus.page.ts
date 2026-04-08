@@ -41,7 +41,6 @@ type TimerState = 'idle' | 'running' | 'paused' | 'break' | 'completed';
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class FocusPage implements OnInit, OnDestroy {
-  // === TIMER ===
   timerState: TimerState = 'idle';
   pomodoroMinutes = 25;
   breakMinutes = 5;
@@ -51,23 +50,18 @@ export class FocusPage implements OnInit, OnDestroy {
   currentSessionSubject = '';
   showCompletionAnimation = false;
 
-  // === GOALS ===
+  private targetTimestamp: number | null = null;
+  private lastUpdateTimestamp: number = Date.now();
+
   goals: DailyGoal[] = [];
   showAddGoal = false;
   newGoalText = '';
   newGoalSubject = '';
-
-  // === SESSIONS ===
   todaySessions: StudySession[] = [];
   totalStudyMinutes = 0;
-
-  // === PROGRESS ===
   dailyTargetMinutes = 120;
-
-  // === DATE ===
   todayDateLabel = '';
 
-  // === AUDIO ===
   private focusCompleteAudio: HTMLAudioElement | null = null;
   private breakCompleteAudio: HTMLAudioElement | null = null;
 
@@ -94,15 +88,74 @@ export class FocusPage implements OnInit, OnDestroy {
     this.loadSessions();
     this.loadPomodoros();
     this.preloadAudio();
+
+    this.loadTimerState();
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   ngOnDestroy(): void {
     this.clearTimer();
+    this.saveTimerState();
+
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
-  // ═══════════════════════════
-  //   AUDIO
-  // ═══════════════════════════
+  private handleVisibilityChange = (): void => {
+    if (!document.hidden && this.timerState === 'running') {
+      this.syncTimerWithTarget();
+    }
+  };
+
+  private syncTimerWithTarget(): void {
+    if (this.targetTimestamp === null) return;
+
+    const now = Date.now();
+    const remaining = Math.max(0, Math.floor((this.targetTimestamp - now) / 1000));
+
+    this.timeLeft = remaining;
+
+    if (remaining === 0) {
+      this.onTimerComplete();
+    }
+  }
+
+  private saveTimerState(): void {
+    if (this.timerState === 'running' && this.targetTimestamp !== null) {
+      const state = {
+        targetTimestamp: this.targetTimestamp,
+        timerState: this.timerState,
+        totalTime: this.totalTime,
+        isBreak: this.isBreak,
+      };
+      localStorage.setItem(`focus_timer_${this.getTodayKey()}`, JSON.stringify(state));
+    } else {
+      localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
+    }
+  }
+
+  private loadTimerState(): void {
+    const raw = localStorage.getItem(`focus_timer_${this.getTodayKey()}`);
+    if (!raw) return;
+
+    try {
+      const state = JSON.parse(raw);
+      this.targetTimestamp = state.targetTimestamp;
+      this.totalTime = state.totalTime;
+
+      if (state.isBreak) {
+        this.timerState = 'break';
+      }
+
+      this.syncTimerWithTarget();
+
+      if (this.timeLeft > 0) {
+        this.startTimer();
+      }
+    } catch {
+      localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
+    }
+  }
 
   private preloadAudio(): void {
     try {
@@ -120,7 +173,6 @@ export class FocusPage implements OnInit, OnDestroy {
         this.focusCompleteAudio.volume = 0.6;
         this.breakCompleteAudio = this.focusCompleteAudio;
       } catch {
-        // ignore
       }
     }
   }
@@ -157,13 +209,8 @@ export class FocusPage implements OnInit, OnDestroy {
         navigator.vibrate(pattern);
       }
     } catch {
-      // ignore
     }
   }
-
-  // ═══════════════════════════
-  //   TIMER
-  // ═══════════════════════════
 
   get timerDisplay(): string {
     const m = Math.floor(this.timeLeft / 60);
@@ -191,19 +238,29 @@ export class FocusPage implements OnInit, OnDestroy {
   startTimer(): void {
     if (this.timerState === 'idle' || this.timerState === 'paused') {
       this.timerState = 'running';
+
+      this.targetTimestamp = Date.now() + (this.timeLeft * 1000);
+      this.lastUpdateTimestamp = Date.now();
+
+      this.saveTimerState();
+
       this.timerInterval = setInterval(() => {
-        if (this.timeLeft > 0) {
-          this.timeLeft--;
-        } else {
-          this.onTimerComplete();
+        this.syncTimerWithTarget();
+
+        const now = Date.now();
+        if (now - this.lastUpdateTimestamp > 5000) {
+          this.saveTimerState();
+          this.lastUpdateTimestamp = now;
         }
-      }, 1000);
+      }, 100);
     }
   }
 
   pauseTimer(): void {
     this.timerState = 'paused';
+    this.targetTimestamp = null;
     this.clearTimer();
+    this.saveTimerState();
   }
 
   resetTimer(): void {
@@ -212,10 +269,14 @@ export class FocusPage implements OnInit, OnDestroy {
     this.timeLeft = this.pomodoroMinutes * 60;
     this.totalTime = this.pomodoroMinutes * 60;
     this.showCompletionAnimation = false;
+    this.targetTimestamp = null;
+    localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
   }
 
   private onTimerComplete(): void {
     this.clearTimer();
+    this.targetTimestamp = null;
+    localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
 
     if (this.timerState === 'running') {
       this.completedPomodoros++;
@@ -248,10 +309,6 @@ export class FocusPage implements OnInit, OnDestroy {
       this.timerInterval = null;
     }
   }
-
-  // ═══════════════════════════
-  //   GOALS
-  // ═══════════════════════════
 
   get completedGoals(): number {
     return this.goals.filter((g) => g.completed).length;
@@ -301,10 +358,6 @@ export class FocusPage implements OnInit, OnDestroy {
     this.updateDailyProgress();
   }
 
-  // ═══════════════════════════
-  //   SESSIONS
-  // ═══════════════════════════
-
   get studyProgress(): number {
     return Math.min(
       Math.round((this.totalStudyMinutes / this.dailyTargetMinutes) * 100),
@@ -336,10 +389,6 @@ export class FocusPage implements OnInit, OnDestroy {
   goBack(): void {
     this.router.navigate(['/tabs/home']);
   }
-
-  // ═══════════════════════════
-  //   PRIVATE HELPERS
-  // ═══════════════════════════
 
   private addSession(minutes: number): void {
     this.todaySessions.push({

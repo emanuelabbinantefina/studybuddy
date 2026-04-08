@@ -126,10 +126,6 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     return getItalianExamDateValidationMessage(this.newDate, true);
   }
 
-  // ═══════════════════════════
-  //   CARD STACK NAV
-  // ═══════════════════════════
-
   private bindScroller(): void {
     const el = this.cardScroller?.nativeElement;
     if (!el) return;
@@ -163,13 +159,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     this.currentCardIndex = index;
   }
 
-  // ═══════════════════════════
-  //   ACTIONS
-  // ═══════════════════════════
-
   studyFor(item: PlannerCard, event?: Event): void {
     event?.stopPropagation();
-    // Per ora apriamo Focus. Se vuoi, possiamo passare la materia in query params.
     this.router.navigate(['/tabs/focus']);
   }
 
@@ -207,10 +198,6 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // ═══════════════════════════
-  //   ADD MODAL
-  // ═══════════════════════════
-
   openAddModal(): void {
     this.minDate = this.getTodayIso();
     this.newType = 'exam';
@@ -226,14 +213,12 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onTypeChange(): void {
-    // se passo a "esame", provo a pre-compilare subject
     if (this.newType === 'exam') {
       this.newSubject = this.newSubject || this.subjectOptions[0] || '';
       if (this.plannerExamDateValidationMessage) {
         this.newDate = getNextAllowedItalianExamDateIso(this.minDate);
       }
     } else {
-      // per altri tipi subject è opzionale, lasciamo vuoto
       this.newSubject = '';
     }
   }
@@ -246,7 +231,6 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
       return !!this.newSubject && !this.plannerExamDateValidationMessage;
     }
 
-    // group/personal: titolo obbligatorio
     return !!this.newTitle.trim();
   }
 
@@ -296,10 +280,6 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // ═══════════════════════════
-  //   DATA
-  // ═══════════════════════════
-
   private loadSubjects(): void {
     this.dataService
       .getMyExamSubjects()
@@ -323,7 +303,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     this.errorMessage = '';
 
     this.dataService
-      .getAllEvents() // <-- importante: ora prendiamo TUTTI gli impegni
+      .getAllEvents() 
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (events) => {
@@ -386,11 +366,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
       .filter((x): x is PlannerCard => !!x)
       .sort((a, b) => a.daysLeft - b.daysLeft);
   }
-
-  // ═══════════════════════════
-  //   DATE HELPERS
-  // ═══════════════════════════
-
+  
   private parseDate(raw: string): Date | null {
     if (!raw) return null;
     const source = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00` : raw;

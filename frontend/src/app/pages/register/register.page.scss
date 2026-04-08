@@ -144,6 +144,34 @@ $font-body: 'Inter', -apple-system, sans-serif;
   line-height: 1.4;
 }
 
+// ═══════════════════════════
+//   FIELD ROW (Nome + Cognome)
+// ═══════════════════════════
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.field--half {
+  flex: 1;
+  margin-bottom: 0;
+
+  .input-wrap {
+    padding: 0 12px;
+  }
+
+  // Nascondi icona nel campo Cognome per simmetria
+  &:last-child .input-icon {
+    display: none;
+  }
+}
+
+// ═══════════════════════════
+//   INPUT
+// ═══════════════════════════
+
 .input-wrap {
   display: flex;
   align-items: center;
@@ -246,6 +274,22 @@ $font-body: 'Inter', -apple-system, sans-serif;
   }
 }
 
+// ═══════════════════════════
+//   RESPONSIVE
+// ═══════════════════════════
+
+@media (max-width: 360px) {
+  // Su schermi molto piccoli, metti Nome e Cognome in colonna
+  .field-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .field--half:last-child .input-icon {
+    display: block;  // Mostra icona anche nel cognome
+  }
+}
+
 @media (min-width: 768px) {
   .register-shell {
     max-width: 500px;
@@ -258,4 +302,104 @@ $font-body: 'Inter', -apple-system, sans-serif;
   .register-card {
     padding: 24px 22px 22px;
   }
+}
+
+// ═══════════════════════════
+//   NASCONDI OCCHIO NATIVO BROWSER
+// ═══════════════════════════
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-clear-button {
+  display: none !important;
+}
+
+ion-input {
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none !important;
+  }
+
+  input::-webkit-credentials-auto-fill-button,
+  input::-webkit-clear-button {
+    display: none !important;
+  }
+}
+
+// ═══════════════════════════
+//   PASSWORD TOGGLE BUTTON
+// ═══════════════════════════
+
+.password-toggle-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 18px;
+    color: $text-muted;
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+// ═══════════════════════════
+//   INPUT VALIDATION STATES
+// ═══════════════════════════
+
+.input-wrap--error {
+  border-color: rgba(239, 107, 115, 0.5) !important;
+
+  &:focus-within {
+    border-color: $red !important;
+    box-shadow: 0 0 0 4px rgba(239, 107, 115, 0.1) !important;
+  }
+}
+
+.input-wrap--success {
+  border-color: rgba(76, 175, 80, 0.5) !important;
+
+  &:focus-within {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1) !important;
+  }
+}
+
+.input-status-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+
+  &--success {
+    color: #4caf50;
+  }
+
+  &--error {
+    color: $red;
+  }
+}
+
+// ═══════════════════════════
+//   FIELD ERROR MESSAGE
+// ═══════════════════════════
+
+.field-error {
+  display: block;
+  margin-top: 6px;
+  color: $red;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.3;
 }

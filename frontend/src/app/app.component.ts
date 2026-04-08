@@ -20,7 +20,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // ✅ Avvia polling solo se già loggato
     if (this.authService.isLoggedIn()) {
       this.notificationService.startPolling();
     }

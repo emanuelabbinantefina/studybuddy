@@ -63,7 +63,6 @@ export class ThemeService {
       try {
         localStorage.setItem(this.storageKey, mode);
       } catch {
-        // Ignore storage failures in private browsing / sandboxed contexts.
       }
     }
 
