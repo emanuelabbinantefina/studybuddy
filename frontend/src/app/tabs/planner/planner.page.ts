@@ -189,15 +189,17 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async deleteItem(id: number): Promise<void> {
+    this.items = this.items.filter(x => x.id !== id);
+
     try {
       await firstValueFrom(this.dataService.deleteEvent(id));
       await this.showToast('Impegno eliminato');
-      this.loadItems();
     } catch (err: any) {
       await this.showToast(
         err?.error?.message || 'Impossibile eliminare',
         'danger'
       );
+      this.loadItems();
     }
   }
 
