@@ -260,11 +260,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .activity-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-family: $font-display;
   font-size: 1rem;
   font-weight: 700;
   color: $text-primary;
   margin: 0 0 14px;
+
+  ion-icon {
+    font-size: 1rem;
+    color: $primary;
+    flex-shrink: 0;
+  }
 }
 
 .activity-grid {
@@ -320,11 +329,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-family: $font-display;
   font-size: 1.1rem;
   font-weight: 800;
   color: $text-primary;
   margin: 0;
+
+  ion-icon {
+    font-size: 1.05rem;
+    color: $primary;
+    flex-shrink: 0;
+  }
 }
 
 .section-subtle {
@@ -354,14 +372,15 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   &--locked {
     background: var(--app-surface-soft);
     border: 1px dashed var(--app-line-soft);
-    opacity: 0.6;
-    filter: grayscale(0.8);
+    opacity: 0.5;
+    filter: grayscale(0.4);
   }
 }
 
-.achievement-emoji {
+.achievement-icon {
   font-size: 1.4rem;
   line-height: 1;
+  color: $primary;
 }
 
 .achievement-label {
@@ -874,7 +893,7 @@ min-height: 58px;
 padding: 10px 6px;
 }
 
-.achievement-emoji {
+.achievement-icon {
 font-size: 1.2rem;
 }
 

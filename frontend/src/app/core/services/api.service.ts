@@ -148,10 +148,6 @@ export class ApiService {
       );
   }
 
-  getGruppoById(id: string | number): Observable<Gruppo> {
-    return this.http.get<Gruppo>(`${this.baseUrl}/gruppi/${id}`);
-  }
-
   getPublicGroups(query: string): Observable<Gruppo[]> {
     const token = getAuthToken();
     if (!token) return of([]);

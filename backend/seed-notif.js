@@ -6,7 +6,7 @@ async function seedTestNotification() {
   const user = await get('SELECT id FROM Users LIMIT 1');
   
   if (!user) {
-    console.log('❌ Nessun utente nel database');
+    console.log('Nessun utente nel database');
     return;
   }
 
@@ -18,7 +18,7 @@ async function seedTestNotification() {
     [user.id, '🔔 Notifica di test', 'Questa è una notifica di prova per verificare che funzioni tutto!', 'system', now, now]
   );
 
-  console.log(`✅ Notifica di test creata per utente ${user.id}`);
+  console.log(`Notifica di test creata per utente ${user.id}`);
   
   // Verifica
   const notifs = await get('SELECT * FROM Notifications WHERE userId = ?', [user.id]);

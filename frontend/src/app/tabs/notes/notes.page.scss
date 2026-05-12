@@ -129,8 +129,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   gap: 1px;
 }
 
-.mini-stat-emoji {
+.mini-stat-icon {
   font-size: 1.1rem;
+  color: $primary;
 }
 
 .mini-stat-value {
@@ -251,6 +252,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .tab-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 7px 16px;
   background: $bg-card;
   border: 1.5px solid rgba(0, 0, 0, 0.06);
@@ -261,6 +265,10 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-secondary;
   cursor: pointer;
   transition: all $transition;
+
+  ion-icon {
+    font-size: 0.85rem;
+  }
 
   &--active {
     background: $primary;
@@ -318,6 +326,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 
 .f-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 14px;
   background: $bg-page;
   border: 1.5px solid transparent;
@@ -328,6 +339,10 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: $text-secondary;
   cursor: pointer;
   transition: all $transition;
+
+  ion-icon {
+    font-size: 0.8rem;
+  }
 
   &--active {
     background: $primary-soft;
@@ -910,9 +925,24 @@ select.field-input {
 
 .note-card-footer {
   display: flex;
+  align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
+}
+
+.note-saved-dot {
+  color: $primary;
+}
+
+.note-mine-dot {
+  color: $text-muted;
+}
+
+.note-saved-inline {
+  font-size: 0.75rem;
+  color: $primary;
+  vertical-align: middle;
 }
 
 .notes-list-view {
@@ -1015,8 +1045,9 @@ select.field-input {
   text-align: center;
 }
 
-.empty-emoji {
+.empty-icon {
   font-size: 2.5rem;
+  color: $text-muted;
   margin-bottom: 12px;
 }
 

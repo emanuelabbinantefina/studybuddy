@@ -1,12 +1,3 @@
-export interface User {
-  id: number;
-  nome: string;
-  avatar: string;
-  facolta: string;
-  accountRole?: string;
-  isSpecialUser?: boolean;
-}
-
 export interface UserProfile {
   id: number | null;
   nome: string;

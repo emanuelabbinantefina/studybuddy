@@ -2,7 +2,7 @@
 
   <div class="home-header">
     <div class="header-left">
-      <p class="greeting-label">Ciao 👋</p>
+      <p class="greeting-label">Ciao</p>
       <h1 class="greeting-name">{{ displayName }}</h1>
     </div>
   </div>
@@ -17,7 +17,7 @@
 
     <div class="hero-content">
       <ng-container *ngIf="nextExam; else noExam">
-        <span class="hero-chip">📚 Prossimo esame</span>
+        <span class="hero-chip">Prossimo esame</span>
         <h2 class="hero-title">{{ nextExam.title }}</h2>
         <p class="hero-subtitle">{{ nextExam.longDateLabel }}</p>
         <div class="hero-countdown">
@@ -35,7 +35,7 @@
       </ng-container>
 
       <ng-template #noExam>
-        <span class="hero-chip">🎯 Inizia ora</span>
+        <span class="hero-chip">Inizia ora</span>
         <h2 class="hero-title">Nessun esame in vista</h2>
         <p class="hero-subtitle">{{ getHeroSubtitle() }}</p>
         <button class="hero-btn hero-btn--outline" style="margin-top: 16px">
@@ -48,7 +48,10 @@
 
   <div class="today-focus">
     <div class="focus-header">
-      <h3 class="section-title">Oggi</h3>
+      <h3 class="section-title">
+        <ion-icon name="today-outline"></ion-icon>
+        Oggi
+      </h3>
       <span class="today-date">{{ todayLabel }}</span>
     </div>
 
@@ -81,7 +84,7 @@
       </div>
 
       <button class="focus-card focus-card--cool" (click)="uploadNote()">
-        <span class="focus-emoji">📤</span>
+        <ion-icon name="cloud-upload-outline" class="focus-icon"></ion-icon>
         <span class="focus-label">Carica<br/>appunti</span>
       </button>
     </div>
@@ -89,7 +92,10 @@
 
   <section class="section" *ngIf="loadingExams || upcomingExams.length > 0">
     <div class="section-header">
-      <h3 class="section-title">Prossimi esami</h3>
+      <h3 class="section-title">
+        <ion-icon name="calendar-outline"></ion-icon>
+        Prossimi esami
+      </h3>
       <button class="link-btn" (click)="openPlanner()">Vedi tutti</button>
     </div>
 
@@ -125,7 +131,10 @@
 
   <section class="section">
     <div class="section-header">
-      <h3 class="section-title">Appunti recenti</h3>
+      <h3 class="section-title">
+        <ion-icon name="document-text-outline"></ion-icon>
+        Appunti recenti
+      </h3>
       <button class="link-btn" (click)="openAppunti()">Vedi tutti</button>
     </div>
 
@@ -158,7 +167,7 @@
     </div>
 
     <div class="empty-state" *ngIf="!loadingNotes && recentNotes.length === 0">
-      <span class="empty-emoji">📄</span>
+      <ion-icon name="document-outline" class="empty-icon"></ion-icon>
       <p class="empty-text">Nessun appunto ancora</p>
       <button class="hero-btn hero-btn--small" (click)="openAppunti()">
         Esplora

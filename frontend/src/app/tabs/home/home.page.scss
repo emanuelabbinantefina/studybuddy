@@ -290,6 +290,11 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-size: 1.8rem;
 }
 
+.focus-icon {
+  font-size: 1.8rem;
+  color: $primary;
+}
+
 .focus-label {
   font-family: $font-body;
   font-size: 0.72rem;
@@ -349,12 +354,21 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-family: $font-display;
   font-size: 1.12rem;
   font-weight: 800;
   color: $text-primary;
   margin: 0;
   letter-spacing: -0.02em;
+
+  ion-icon {
+    font-size: 1.1rem;
+    color: $primary;
+    flex-shrink: 0;
+  }
 }
 
 .link-btn {
@@ -590,8 +604,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-align: center;
 }
 
-.empty-emoji {
+.empty-icon {
   font-size: 2.2rem;
+  color: $text-muted;
   margin-bottom: 10px;
 }
 
@@ -670,7 +685,8 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     padding: 22px 14px;
   }
 
-  .focus-emoji {
+  .focus-emoji,
+  .focus-icon {
     font-size: 2rem;
   }
 

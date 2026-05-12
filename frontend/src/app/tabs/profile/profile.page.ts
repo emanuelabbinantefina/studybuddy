@@ -13,7 +13,7 @@ import { generateAvatarUrl, PROFILE_CONFIG } from '../../core/config/constants';
 import { readSessionUserData } from '../../core/utils/session-storage';
 
 type DeleteFlowStep = 'impact' | 'confirm' | 'success';
-interface Achievement { emoji: string; label: string; unlocked: boolean; }
+interface Achievement { icon: string; label: string; unlocked: boolean; }
 interface StreakCache { value: number; calculatedAt: Date; }
 
 @Component({
@@ -391,12 +391,12 @@ export class ProfilePage implements OnInit, OnDestroy {
 
   private buildAchievements(): void {
     this.achievements = [
-      { emoji: '📤', label: 'Primo upload', unlocked: this.myNotes.length >= 1 },
-      { emoji: '📚', label: '5 appunti', unlocked: this.myNotes.length >= 5 },
-      { emoji: '🔖', label: '10 salvati', unlocked: this.savedNotes.length >= 10 },
-      { emoji: '👥', label: 'Primo gruppo', unlocked: this.myGroups.length >= 1 },
-      { emoji: '🔥', label: '3gg streak', unlocked: this.studyStreak >= 3 },
-      { emoji: '🏆', label: '7gg streak', unlocked: this.studyStreak >= 7 },
+      { icon: 'cloud-upload-outline', label: 'Primo upload', unlocked: this.myNotes.length >= 1 },
+      { icon: 'library-outline', label: '5 appunti', unlocked: this.myNotes.length >= 5 },
+      { icon: 'bookmarks-outline', label: '10 salvati', unlocked: this.savedNotes.length >= 10 },
+      { icon: 'people-outline', label: 'Primo gruppo', unlocked: this.myGroups.length >= 1 },
+      { icon: 'flame-outline', label: '3gg streak', unlocked: this.studyStreak >= 3 },
+      { icon: 'trophy-outline', label: '7gg streak', unlocked: this.studyStreak >= 7 },
     ];
   }
 

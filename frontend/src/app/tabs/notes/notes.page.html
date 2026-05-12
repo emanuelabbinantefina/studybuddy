@@ -55,7 +55,7 @@
 
   <div class="mini-stats">
     <div class="mini-stat">
-      <span class="mini-stat-emoji">📤</span>
+      <ion-icon name="cloud-upload-outline" class="mini-stat-icon"></ion-icon>
       <span class="mini-stat-value">{{ totalUploaded }}</span>
       <span class="mini-stat-label">Caricati</span>
     </div>
@@ -63,7 +63,7 @@
     <div class="mini-stat-divider"></div>
 
     <div class="mini-stat">
-      <span class="mini-stat-emoji">🔖</span>
+      <ion-icon name="bookmark-outline" class="mini-stat-icon"></ion-icon>
       <span class="mini-stat-value">{{ totalSaved }}</span>
       <span class="mini-stat-label">Salvati</span>
     </div>
@@ -111,11 +111,11 @@
     </button>
 
     <button class="tab-chip" [class.tab-chip--active]="activeTab === 'mine'" (click)="setTab('mine')">
-      🗂️ I miei
+      <ion-icon name="folder-outline"></ion-icon> I miei
     </button>
 
     <button class="tab-chip" [class.tab-chip--active]="activeTab === 'saved'" (click)="setTab('saved')">
-      🔖 Salvati
+      <ion-icon name="bookmark-outline"></ion-icon> Salvati
     </button>
   </div>
 
@@ -139,10 +139,10 @@
       <span class="filter-label">Ordina per</span>
       <div class="filter-chips">
         <button class="f-chip" [class.f-chip--active]="sortMode === 'newest'" (click)="setSortMode('newest')">
-          ⬇️ Più recenti
+          <ion-icon name="arrow-down-outline"></ion-icon> Più recenti
         </button>
         <button class="f-chip" [class.f-chip--active]="sortMode === 'oldest'" (click)="setSortMode('oldest')">
-          ⬆️ Più vecchi
+          <ion-icon name="arrow-up-outline"></ion-icon> Più vecchi
         </button>
       </div>
     </div>
@@ -187,8 +187,8 @@
       </div>
 
       <div class="note-card-footer">
-        <span class="note-saved-dot" *ngIf="n.isSaved">🔖</span>
-        <span class="note-mine-dot" *ngIf="n.canDelete">✏️</span>
+        <ion-icon name="bookmark" class="note-saved-dot" *ngIf="n.isSaved"></ion-icon>
+        <ion-icon name="pencil-outline" class="note-mine-dot" *ngIf="n.canDelete"></ion-icon>
       </div>
     </div>
   </div>
@@ -204,7 +204,7 @@
         <span class="note-list-title">{{ n.titolo }}</span>
         <span class="note-list-meta">
           {{ n.materia }} · {{ getUploaderName(n) }}
-          <span *ngIf="n.isSaved"> · 🔖</span>
+          <ion-icon name="bookmark" class="note-saved-inline" *ngIf="n.isSaved"></ion-icon>
         </span>
       </div>
 
@@ -214,9 +214,9 @@
   </div>
 
   <div class="empty-state" *ngIf="!loading && filteredNotes.length === 0">
-    <span class="empty-emoji" *ngIf="activeTab === 'all'">📄</span>
-    <span class="empty-emoji" *ngIf="activeTab === 'mine'">🗂️</span>
-    <span class="empty-emoji" *ngIf="activeTab === 'saved'">🔖</span>
+    <ion-icon name="document-text-outline" class="empty-icon" *ngIf="activeTab === 'all'"></ion-icon>
+    <ion-icon name="folder-open-outline" class="empty-icon" *ngIf="activeTab === 'mine'"></ion-icon>
+    <ion-icon name="bookmarks-outline" class="empty-icon" *ngIf="activeTab === 'saved'"></ion-icon>
 
     <p class="empty-text" *ngIf="activeTab === 'all'">Nessun appunto trovato</p>
     <p class="empty-text" *ngIf="activeTab === 'mine'">Non hai ancora caricato appunti</p>
@@ -232,7 +232,7 @@
       Tocca "Crea" per condividere i tuoi appunti
     </span>
     <span class="empty-hint" *ngIf="activeTab === 'saved'">
-      Salva gli appunti che ti interessano con il 🔖
+      Salva gli appunti che ti interessano con il segnalibro
     </span>
 
     <button class="empty-action" *ngIf="activeTab === 'mine'" (click)="openUploadModal()">

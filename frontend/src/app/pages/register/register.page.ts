@@ -38,11 +38,8 @@ export class RegisterPage implements OnInit {
   error = '';
   loading = false;
 
-  // ✅ Nuove proprietà per toggle password
   showPassword = false;
   showConfirmPassword = false;
-
-  // ✅ Nuove proprietà per validazione email
   emailTouched = false;
 
   faculties: FacultyRow[] = [];
@@ -68,17 +65,14 @@ export class RegisterPage implements OnInit {
     });
   }
 
-  // ✅ Getter per validazione email in tempo reale
   get isEmailValid(): boolean {
     return EMAIL_REGEX.test(this.email.trim());
   }
 
-  // ✅ Handler per blur email
   onEmailBlur(): void {
     this.emailTouched = true;
   }
 
-  // ✅ Handler per input email
   onEmailInput(): void {
     if (this.email.length > 5) {
       this.emailTouched = true;
@@ -98,12 +92,10 @@ export class RegisterPage implements OnInit {
     );
   }
 
-  // ✅ Toggle mostra password
   toggleShowPassword(): void {
     this.showPassword = !this.showPassword;
   }
 
-  // ✅ Toggle mostra conferma password
   toggleShowConfirmPassword(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
   }

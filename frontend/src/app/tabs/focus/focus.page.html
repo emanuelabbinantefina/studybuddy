@@ -18,7 +18,7 @@
     >
 
       <div class="completion-overlay" *ngIf="showCompletionAnimation">
-        <div class="completion-icon">🎉</div>
+        <div class="completion-icon"><ion-icon name="trophy-outline"></ion-icon></div>
         <div class="completion-text">Ottimo lavoro!</div>
         <div class="completion-subtext">+1 Pomodoro completato</div>
       </div>
@@ -93,7 +93,7 @@
 
   <div class="stats-strip">
     <div class="stat-pill">
-      <span class="stat-pill-icon">⏱️</span>
+      <ion-icon name="time-outline" class="stat-pill-icon"></ion-icon>
       <div class="stat-pill-info">
         <span class="stat-pill-value">{{ studyProgressLabel }}</span>
         <span class="stat-pill-label">su {{ targetLabel }}</span>
@@ -107,7 +107,7 @@
     </div>
 
     <div class="stat-pill">
-      <span class="stat-pill-icon">✅</span>
+      <ion-icon name="checkmark-circle-outline" class="stat-pill-icon"></ion-icon>
       <div class="stat-pill-info">
         <span class="stat-pill-value">{{ completedGoals }}/{{ goals.length }}</span>
         <span class="stat-pill-label">obiettivi</span>
@@ -123,7 +123,10 @@
 
   <section class="section">
     <div class="section-header">
-      <h3 class="section-title">🎯 Obiettivi di oggi</h3>
+      <h3 class="section-title">
+        <ion-icon name="flag-outline"></ion-icon>
+        Obiettivi di oggi
+      </h3>
       <button class="add-btn" (click)="openAddGoal()">
         <ion-icon name="add-outline"></ion-icon>
         Aggiungi
@@ -183,13 +186,16 @@
 
     <div class="empty-goals" *ngIf="goals.length === 0 && !showAddGoal">
       <p>Nessun obiettivo per oggi</p>
-      <span class="empty-hint">Tocca "Aggiungi" per iniziare 💪</span>
+      <span class="empty-hint">Tocca "Aggiungi" per iniziare</span>
     </div>
   </section>
 
   <section class="section" *ngIf="todaySessions.length > 0">
     <div class="section-header">
-      <h3 class="section-title">📖 Sessioni di oggi</h3>
+      <h3 class="section-title">
+        <ion-icon name="timer-outline"></ion-icon>
+        Sessioni di oggi
+      </h3>
     </div>
 
     <div class="sessions-list">

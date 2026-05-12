@@ -82,7 +82,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   }
 
   get emptyStateMessage(): string {
-    if (this.currentFilter === 'unread') return 'Sei aggiornato! 🎉';
+    if (this.currentFilter === 'unread') return 'Sei aggiornato!';
     if (this.currentFilter === 'read') return 'Non hai ancora letto nessuna notifica.';
     return 'Quando succede qualcosa di importante, la vedrai qui.';
   }

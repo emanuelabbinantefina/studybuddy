@@ -7,7 +7,7 @@ import { UserService } from '../core/services/user.service';
 import { NotificationService } from '../core/services/notification.service'; 
 import { SearchOverlayComponent } from './search-overlay/search-overlay.component';
 import { readSessionUserData } from '../core/utils/session-storage';
-import { generateAvatarUrl } from '../core/config/constants';  // ✅ Importa
+import { generateAvatarUrl } from '../core/config/constants';
 
 @Component({
   selector: 'app-tabs',
@@ -22,7 +22,7 @@ export class TabsPage implements OnInit, OnDestroy {
   isSearchOpen = false;
   notificationBadge = 0;
 
-  // ✅ Salviamo nome e cognome per il fallback
+  // salviamo nome e cognome per il fallback
   private firstName = '';
   private lastName = '';
 
@@ -34,7 +34,7 @@ export class TabsPage implements OnInit, OnDestroy {
     private readonly notificationService: NotificationService 
   ) {}
 
-  // ✅ Getter dinamico per fallback avatar
+  // getter dinamico per fallback avatar
   get fallbackAvatar(): string {
     return generateAvatarUrl(this.firstName, this.lastName);
   }
@@ -56,11 +56,11 @@ export class TabsPage implements OnInit, OnDestroy {
       .getProfile()
       .pipe(takeUntil(this.destroy$))
       .subscribe((profile) => {
-        // ✅ Salva nome e cognome
+        // salva nome e cognome
         this.firstName = profile?.firstName || '';
         this.lastName = profile?.lastName || '';
         
-        // ✅ Usa avatar custom o genera fallback con iniziali corrette
+        // usa avatar custom o genera fallback con iniziali corrette
         this.profileAvatar = profile?.avatar || this.fallbackAvatar;
       });
 
@@ -120,7 +120,7 @@ export class TabsPage implements OnInit, OnDestroy {
       const session = readSessionUserData<any>();
       if (!session) return;
       
-      // ✅ Leggi anche firstName e lastName dallo storage
+      // leggi anche firstName e lastName dallo storage
       this.firstName = session?.firstName || '';
       this.lastName = session?.lastName || '';
       
@@ -132,7 +132,7 @@ export class TabsPage implements OnInit, OnDestroy {
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
         
-        // ✅ Aggiorna anche da profile salvato
+        // aggiorna anche da profile salvato
         this.firstName = profile?.firstName || this.firstName;
         this.lastName = profile?.lastName || this.lastName;
         
@@ -146,7 +146,7 @@ export class TabsPage implements OnInit, OnDestroy {
       if (avatar) {
         this.profileAvatar = avatar;
       } else {
-        // ✅ Se non c'è avatar, usa il fallback con iniziali
+        // se non c'è avatar usa il fallback con iniziali
         this.profileAvatar = this.fallbackAvatar;
       }
     } catch {

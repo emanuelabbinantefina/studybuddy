@@ -29,34 +29,12 @@ export interface CreateExamPayload {
   notes?: string;
 }
 
-export interface GroupItem {
-  id: number;
-  name: string;
-  color: string;
-  lastActivity: string;
-  members: string[];
-  description: string;
-}
-
 export interface CreateEventPayload {
   type: 'exam' | 'group' | 'personal';
   title: string;
   subject: string;
   date: string;       // YYYY-MM-DD
   notes?: string;
-}
-
-export interface UserProfile {
-  id: number;
-  name: string;
-  avatarUrl?: string;
-  degree?: string;
-  university?: string;
-  stats?: {
-    eventsThisWeek: number;
-    groups: number;
-    studyHours: number;
-  };
 }
 
 @Injectable({
@@ -173,17 +151,6 @@ export class DataService {
         headers: this.authHeaders()
       }
     );
-  }
-
-  getGroups(): Observable<GroupItem[]> {
-    return this.http.get<GroupItem[]>('/assets/data/gruppi.json');
-  }
-
-  getUserProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>('/assets/data/user.json');
-  }
-  getNotes(): Observable<any[]> {
-    return this.http.get<any[]>('/assets/data/appunti.json');
   }
 
   deleteEvent(eventId: number): Observable<any> {

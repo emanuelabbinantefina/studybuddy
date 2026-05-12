@@ -199,8 +199,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   margin-bottom: 18px;
 }
 
-.hero-emoji {
+.hero-icon {
   font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-urgency {
@@ -401,8 +402,9 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-width: 0;
 }
 
-.compact-emoji {
+.compact-icon {
   font-size: 1.2rem;
+  color: $primary;
 }
 
 .compact-info {
@@ -854,3 +856,20 @@ $spring: 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   background: linear-gradient(135deg, #4f6bff 0%, #7c8fff 100%);
   color: #fff;
 }
+
+// colori per le card del planner (assegnati in rotazione per indice)
+.card-color-0 { background: #4f6bff; }
+.card-color-1 { background: #3B82F6; }
+.card-color-2 { background: #23b38a; }
+.card-color-3 { background: #e0923a; }
+
+// pallino colorato per indicare l'urgenza
+.urgency-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+.hero-urgency--critical .urgency-dot { background: #ff5252; }
+.hero-urgency--soon .urgency-dot { background: #ffd740; }

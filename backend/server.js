@@ -9,17 +9,17 @@ const PORT = process.env.PORT || 3000;
 (async () => {
   try {
     await initDb();
-    console.log('✅ Database inizializzato');
+    console.log('Database inizializzato');
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✅ Server attivo su http://localhost:${PORT}`);
+      console.log(`Server attivo su http://localhost:${PORT}`);
     });
 
     // ========== JOB PERIODICI ==========
 
     // Controllo reminder ogni 5 minuti
     setInterval(() => {
-      console.log('⏰ Controllo reminder planner...');
+      console.log('Controllo reminder planner...');
       plannerReminders.checkAndSendReminders();
     }, 5 * 60 * 1000); // 5 minuti
 
@@ -29,11 +29,11 @@ const PORT = process.env.PORT || 3000;
     }, 60 * 60 * 1000); // 1 ora
 
     // Esegui subito un controllo all'avvio
-    console.log('⏰ Primo controllo reminder...');
+    console.log('Primo controllo reminder...');
     plannerReminders.checkAndSendReminders();
 
   } catch (err) {
-    console.error('❌ Errore avvio server:', err);
+    console.error('Errore avvio server:', err);
     process.exit(1);
   }
 })();

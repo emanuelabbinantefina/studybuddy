@@ -10,13 +10,13 @@ async function check() {
     // Controlla se Notifications esiste
     const hasNotifications = tables.some(t => t.name === 'Notifications');
     if (hasNotifications) {
-      console.log('\n✅ Tabella Notifications ESISTE!');
+      console.log('\nTabella Notifications ESISTE!');
       
       // Conta le notifiche
       const count = await all('SELECT COUNT(*) as count FROM Notifications');
       console.log(`📊 Notifiche nel DB: ${count[0].count}`);
     } else {
-      console.log('\n❌ Tabella Notifications NON ESISTE!');
+      console.log('\nTabella Notifications NON ESISTE!');
     }
   } catch (err) {
     console.error('Errore:', err);

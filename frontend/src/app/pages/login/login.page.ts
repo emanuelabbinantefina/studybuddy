@@ -37,7 +37,6 @@ export class LoginPage implements OnInit {
     this.navCtrl.navigateForward('/register');
   }
 
-  // ✅ Added
   goToForgotPassword() {
     this.navCtrl.navigateForward('/forgot-password');
   }

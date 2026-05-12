@@ -45,7 +45,7 @@
       <div
         class="hero-card"
         *ngFor="let item of items; let i = index"
-        [style.background]="item.gradient"
+        [ngClass]="item.colorClass"
       >
         <div class="hero-blob hero-blob--1"></div>
         <div class="hero-blob hero-blob--2"></div>
@@ -54,16 +54,14 @@
         <div class="hero-inner">
 
           <div class="hero-top">
-            <span class="hero-emoji">{{ item.emoji }}</span>
+            <ion-icon [name]="item.iconName" class="hero-icon"></ion-icon>
 
             <span
               class="hero-urgency"
               [class.hero-urgency--critical]="item.urgency === 'critical'"
               [class.hero-urgency--soon]="item.urgency === 'soon'"
             >
-              <span *ngIf="item.urgency === 'critical'">🔴</span>
-              <span *ngIf="item.urgency === 'soon'">🟡</span>
-              <span *ngIf="item.urgency === 'normal'">🟢</span>
+              <span class="urgency-dot"></span>
               {{ item.daysLabel }}
             </span>
 
@@ -100,7 +98,7 @@
 
       <div class="compact-item" *ngFor="let item of items; let i = index" (click)="scrollToCard(i)">
         <div class="compact-left">
-          <span class="compact-emoji">{{ item.emoji }}</span>
+          <ion-icon [name]="item.iconName" class="compact-icon"></ion-icon>
           <div class="compact-info">
             <span class="compact-title">{{ item.title }}</span>
             <span class="compact-meta">{{ item.daysLabel }}</span>

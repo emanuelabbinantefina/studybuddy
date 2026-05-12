@@ -34,8 +34,8 @@ interface PlannerCard {
   daysLeft: number;
   daysLabel: string;
   urgency: 'critical' | 'soon' | 'normal'; // <= 3gg critico, <= 7gg soon, altrimenti normal
-  gradient: string;
-  emoji: string;
+  colorClass: string;
+  iconName: string;
 }
 
 @Component({
@@ -74,12 +74,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
 
   private readonly destroy$ = new Subject<void>();
 
-  private readonly gradients = [
-    'linear-gradient(135deg, #4f6bff 0%, #7c8fff 55%, #ff9f6e 100%)',
-    'linear-gradient(135deg, #3B82F6 0%, #60A5FA 50%, #4F6BFF 100%)',
-    'linear-gradient(135deg, #23b38a 0%, #4FD1B2 55%, #6ea8ff 100%)',
-    'linear-gradient(135deg, #f4b740 0%, #ff9f6e 55%, #ef6b73 100%)',
-  ];
+  private readonly cardColorClasses = ['card-color-0', 'card-color-1', 'card-color-2', 'card-color-3'];
 
   constructor(
     private readonly dataService: DataService,
@@ -355,10 +350,10 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
 
         const type = (event.type || 'exam') as PlannerType;
 
-        const emoji =
-          type === 'exam' ? '🎓' :
-            type === 'group' ? '👥' :
-              '📌';
+        const iconName =
+          type === 'exam' ? 'school-outline' :
+            type === 'group' ? 'people-outline' :
+              'bookmark-outline';
 
         const title =
           type === 'exam'
@@ -377,8 +372,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
           daysLeft,
           daysLabel: this.formatDaysLabel(daysLeft),
           urgency,
-          gradient: this.gradients[index % this.gradients.length],
-          emoji,
+          colorClass: this.cardColorClasses[index % this.cardColorClasses.length],
+          iconName,
         } satisfies PlannerCard;
       })
       .filter((x): x is PlannerCard => !!x)

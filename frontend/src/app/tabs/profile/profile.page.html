@@ -45,7 +45,10 @@
     </div>
 
     <div class="activity-card">
-      <h3 class="activity-title">🔥 Attività</h3>
+      <h3 class="activity-title">
+        <ion-icon name="pulse-outline"></ion-icon>
+        Attività
+      </h3>
       <div class="activity-grid">
         <div class="activity-item">
           <span class="activity-value">{{ studyStreak }}</span>
@@ -66,13 +69,16 @@
 
     <section class="section" *ngIf="achievements.length > 0">
       <div class="section-header">
-        <h3 class="section-title">🏆 Traguardi</h3>
+        <h3 class="section-title">
+          <ion-icon name="trophy-outline"></ion-icon>
+          Traguardi
+        </h3>
         <span class="section-subtle">{{ unlockedAchievements.length }} sbloccati</span>
       </div>
 
       <div class="achievements-grid">
         <div class="achievement" [class.achievement--locked]="!a.unlocked" *ngFor="let a of achievements">
-          <span class="achievement-emoji">{{ a.emoji }}</span>
+          <ion-icon [name]="a.icon" class="achievement-icon"></ion-icon>
           <span class="achievement-label">{{ a.label }}</span>
         </div>
       </div>
@@ -80,7 +86,10 @@
 
     <section class="section">
       <div class="section-header">
-        <h3 class="section-title">⚙️ Impostazioni</h3>
+        <h3 class="section-title">
+          <ion-icon name="settings-outline"></ion-icon>
+          Impostazioni
+        </h3>
       </div>
 
       <div class="settings-card">
@@ -183,7 +192,7 @@
           </ng-container>
 
           <ng-container *ngSwitchCase="'success'">
-            <span class="delete-icon">✅</span>
+            <ion-icon name="checkmark-circle-outline" class="delete-icon"></ion-icon>
             <h2 class="delete-title">Account eliminato</h2>
             <p class="delete-desc">Ci dispiace vederti andare.</p>
             <div class="delete-actions">
