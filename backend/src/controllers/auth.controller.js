@@ -1,8 +1,11 @@
+// controller per le rotte di autenticazione: fa da ponte tra le route HTTP e il service.
+// la logica vera è tutta in auth.service.js, qui gestiamo solo la request/response e gli errori
+
 const authService = require('../services/auth.service');
 
+// ritorna facoltà + corsi per popolare il dropdown nella schermata di registrazione
 async function faculties(req, res) {
   try {
-    // qui ritorno facoltà + corsi per popolare la registrazione
     const out = await authService.facultiesWithCourses();
     res.json(out);
   } catch (e) {
@@ -10,6 +13,7 @@ async function faculties(req, res) {
   }
 }
 
+// registra un nuovo utente; 409 se l'email è già in uso, 400 per dati non validi
 async function register(req, res) {
   try {
     const out = await authService.register(req.body);
@@ -21,6 +25,7 @@ async function register(req, res) {
   }
 }
 
+// login: 401 se le credenziali sono sbagliate, 400 se mancano dei campi
 async function login(req, res) {
   try {
     const out = await authService.login(req.body);
@@ -32,6 +37,7 @@ async function login(req, res) {
   }
 }
 
+// restituisce il profilo dell'utente loggato (userId arriva da req.userData, messo dal middleware auth)
 async function me(req, res) {
   try {
     const user = await authService.me(req.userData.userId);
@@ -42,6 +48,7 @@ async function me(req, res) {
   }
 }
 
+// aggiorna nome, cognome, bio ecc. del profilo; facoltà e corso non si possono cambiare dopo la prima selezione
 async function updateMe(req, res) {
   try {
     const user = await authService.updateProfile(req.userData.userId, req.body);
@@ -53,6 +60,7 @@ async function updateMe(req, res) {
   }
 }
 
+// cambio password: richiede la password attuale per conferma
 async function changePassword(req, res) {
   try {
     const out = await authService.changePassword(req.userData.userId, req.body);
@@ -65,6 +73,7 @@ async function changePassword(req, res) {
   }
 }
 
+// elimina l'account: richiede di scrivere "ELIMINA" come conferma (doppia sicurezza)
 async function deleteMe(req, res) {
   try {
     const out = await authService.deleteAccount(req.userData.userId, req.body);

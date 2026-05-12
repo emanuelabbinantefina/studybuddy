@@ -1,3 +1,6 @@
+// logica di business per autenticazione: register, login, gestione profilo e account.
+// usa bcrypt per hashare le password e jwt per generare i token di sessione
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -8,6 +11,7 @@ const { buildAccountAccess } = require('../utils/account-role');
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
 
+// helper per creare errori con codice, così il controller può distinguere il tipo di errore
 function badRequest(msg) {
   const err = new Error(msg);
   err.code = 'BAD_REQUEST';
@@ -24,6 +28,7 @@ function validateEmail(email) {
   }
 }
 
+// controlla che la password rispetti i requisiti minimi di sicurezza
 function validatePassword(password) {
   if (password.length < 8) {
     throw badRequest('la password deve contenere almeno 8 caratteri');
@@ -42,6 +47,8 @@ function validatePassword(password) {
   }
 }
 
+// il courseKey ha il formato "NomeFacoltà::NomeCorso" (separatore ::)
+// es: "Ingegneria::Informatica"
 function parseCourseKey(value) {
   const raw = String(value || '').trim();
   if (!raw) return { faculty: '', course: '' };
@@ -57,6 +64,8 @@ function parseCourseKey(value) {
   };
 }
 
+// per gli utenti vecchi che avevano solo il campo "name" (nome + cognome insieme),
+// prova a separarlo in firstName e lastName
 function splitLegacyName(name) {
   const clean = String(name || '').trim();
   if (!clean) {
@@ -70,6 +79,8 @@ function splitLegacyName(name) {
   };
 }
 
+// normalizza una riga utente dal db: gestisce i vecchi record con solo "name"
+// e aggiunge le informazioni sull'account role
 function normalizeUserRow(row) {
   if (!row) return null;
 
@@ -90,6 +101,7 @@ function normalizeUserRow(row) {
   };
 }
 
+// rimuove i campi sensibili (es. password hashata) prima di mandare i dati al client
 function toPublicUser(user) {
   if (!user) return null;
 
@@ -198,6 +210,7 @@ async function register(body) {
 
   const selection = await resolveAcademicSelection(body, { required: true });
 
+  // controlla che l'email non sia già registrata (case-insensitive)
   const existing = await get(`select id from Users where lower(trim(email)) = lower(trim(?))`, [cleanEmail]);
   if (existing) {
     const err = new Error('email gia esistente');
@@ -205,6 +218,7 @@ async function register(body) {
     throw err;
   }
 
+  // hash con bcrypt a 10 rounds: abbastanza sicuro senza essere troppo lento
   const hashed = await bcrypt.hash(cleanPassword, 10);
   const now = nowIso();
 
@@ -248,6 +262,7 @@ async function register(body) {
     accountRole: 'standard',
   });
 
+  // generiamo il token subito dopo la registrazione, così l'utente è già loggato
   const token = jwt.sign(
     { id: out.lastID, userId: out.lastID, email: cleanEmail },
     SECRET_KEY,
@@ -480,13 +495,18 @@ async function deleteAccount(userId, body = {}) {
     throw err;
   }
 
+  // doppia conferma: l'utente deve scrivere "ELIMINA" in maiuscolo
   const confirmation = String(body?.confirmation || '').trim().toUpperCase();
   if (confirmation !== 'ELIMINA') {
     throw badRequest('scrivi ELIMINA per confermare');
   }
 
+  // tutto in una transazione: se qualcosa va storto, non lasciamo il db in uno stato inconsistente
   await withTransaction(async ({ get: txGet, all: txAll, run: txRun }) => {
     const now = nowIso();
+
+    // per ogni gruppo di cui l'utente è owner, proviamo a passare la ownership
+    // al membro più anziano; se non ci sono altri membri, eliminiamo il gruppo
     const ownedGroups = await txAll(
       `select id
        from Groups
@@ -527,6 +547,8 @@ async function deleteAccount(userId, body = {}) {
       }
     }
 
+    // scolleghiamo le risposte ai messaggi dell'utente prima di eliminarlo,
+    // altrimenti rompiamo il riferimento parentMessageId (foreign key)
     await txRun(
       `update GroupMessages
        set parentMessageId = null

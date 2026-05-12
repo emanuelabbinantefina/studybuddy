@@ -20,18 +20,20 @@ import {
 
 type PlannerType = 'exam' | 'group' | 'personal';
 
+// struttura dati di una card del planner già pronta per la visualizzazione
+// (contiene sia i dati grezzi che quelli già formattati per il template)
 interface PlannerCard {
   id: number;
   type: PlannerType;
   title: string;
   subject: string;
-  dateIso: string;
+  dateIso: string;    // data originale in formato ISO, usata per ordinare
   dayNumber: number;
   monthShort: string;
   fullDateLabel: string;
   daysLeft: number;
   daysLabel: string;
-  urgency: 'critical' | 'soon' | 'normal';
+  urgency: 'critical' | 'soon' | 'normal'; // <= 3gg critico, <= 7gg soon, altrimenti normal
   gradient: string;
   emoji: string;
 }
@@ -92,14 +94,18 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    // piccolo delay per aspettare che il DOM sia renderizzato prima di agganciare lo scroll
     setTimeout(() => this.bindScroller(), 200);
   }
 
   ngOnDestroy(): void {
+    // emette su destroy$ per cancellare automaticamente tutte le subscription attive
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  // ionViewWillEnter si attiva ogni volta che si torna su questa pagina (anche dalla navigazione)
+  // così i dati sono sempre aggiornati senza dover fare refresh manuale
   ionViewWillEnter(): void {
     this.loadSubjects();
     this.loadItems();
@@ -126,6 +132,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
     return getItalianExamDateValidationMessage(this.newDate, true);
   }
 
+  // aggancia l'evento scroll allo scroller orizzontale delle card.
+  // calcola quale card è visibile in base alla posizione di scroll e aggiorna il dot indicator
   private bindScroller(): void {
     const el = this.cardScroller?.nativeElement;
     if (!el) return;
@@ -189,6 +197,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async deleteItem(id: number): Promise<void> {
+    // aggiornamento ottimistico: rimuovo subito dalla lista senza aspettare il server,
+    // così l'utente vede la card sparire immediatamente. Se la chiamata fallisce, ricarico tutto.
     this.items = this.items.filter(x => x.id !== id);
 
     try {
@@ -199,7 +209,7 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
         err?.error?.message || 'Impossibile eliminare',
         'danger'
       );
-      this.loadItems();
+      this.loadItems(); // ripristino la lista se la delete è fallita
     }
   }
 
@@ -325,6 +335,8 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  // converte la lista di EventItem (formato del backend) in PlannerCard (formato per la UI).
+  // filtra gli eventi passati e calcola quanti giorni mancano per ognuno
   private toCards(events: EventItem[]): PlannerCard[] {
     const today = this.startOfDay(new Date());
 
@@ -333,8 +345,9 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
         const d = this.parseDate(event.date);
         if (!d) return null;
 
+        // 86400000 = millisecondi in un giorno
         const daysLeft = Math.floor((d.getTime() - today.getTime()) / 86400000);
-        if (daysLeft < 0) return null;
+        if (daysLeft < 0) return null; // ignora eventi già passati
 
         let urgency: PlannerCard['urgency'] = 'normal';
         if (daysLeft <= 3) urgency = 'critical';
@@ -372,6 +385,9 @@ export class PlannerPage implements OnInit, OnDestroy, AfterViewInit {
       .sort((a, b) => a.daysLeft - b.daysLeft);
   }
   
+  // se la data è solo YYYY-MM-DD (senza orario), aggiunge T00:00:00 per evitare
+  // problemi di timezone: senza orario alcuni browser interpretano la data come UTC
+  // e la scalano di un giorno
   private parseDate(raw: string): Date | null {
     if (!raw) return null;
     const source = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? `${raw}T00:00:00` : raw;

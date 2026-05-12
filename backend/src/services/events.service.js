@@ -1,3 +1,6 @@
+// service per la gestione degli eventi (esami, impegni di gruppo, impegni personali)
+// si occupa di creare, leggere, aggiornare e cancellare eventi per un utente
+
 const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { isMeaningfulSubjectValue, normalizeAcademicValue } = require('../utils/academic-values');
@@ -10,6 +13,8 @@ function badRequest(msg) {
   return err;
 }
 
+// gli esami devono rispettare il calendario accademico italiano (no domeniche, no festivi, ecc.)
+// per gli altri tipi di evento non ci sono restrizioni sulla data
 function validateExamDate(type, startAt) {
   if (String(type || '').trim().toLowerCase() !== 'exam') return;
   const validationError = getItalianExamDateValidationError(startAt, { disallowPast: true });
@@ -73,6 +78,7 @@ async function upcoming(userId, limit = 10) {
   );
 }
 
+// lista eventi con filtri opzionali: intervallo date, tipo, ricerca testo e paginazione
 async function list(userId, query) {
   const { from, to, type, q, limit, offset } = query;
 
@@ -116,6 +122,8 @@ async function list(userId, query) {
   );
 }
 
+// carica le materie disponibili per l'utente in base a facoltà e corso di laurea.
+// viene usato nel planner per popolare il dropdown "materia" quando aggiungi un esame
 async function listMyExamSubjects(userId) {
   const user = await get(
     `select facolta, corso
@@ -129,7 +137,8 @@ async function listMyExamSubjects(userId) {
   const faculty = String(user.facolta || '').trim();
   const course = String(user.corso || '').trim();
   const subjects = [];
-  const seen = new Set();
+  const seen = new Set(); // set per evitare duplicati case-insensitive
+
   const pushSubjectRows = (rows = []) => {
     rows.forEach((row) => {
       const subject = normalizeAcademicValue(row?.subjectName);
@@ -215,6 +224,7 @@ async function update(userId, eventId, patch) {
     ]
   );
 
+  // se la data è cambiata, resettiamo i flag dei reminder così vengono rimandati
   if (patch.startAt !== undefined && patch.startAt !== current.startAt) {
     await plannerReminders.resetReminderFlags(eventId);
   }

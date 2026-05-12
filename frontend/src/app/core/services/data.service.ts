@@ -4,12 +4,15 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { getAuthToken } from '../utils/session-storage';
 
+// servizio principale per eventi (esami, impegni) e dati correlati al piano di studi
+// il backend usa startAt/endAt come datetime ISO, noi li mappiamo in date e orari separati
+
 export interface EventItem {
   id: number;
   title: string;
   subject: string;
-  date: string;
-  startTime: string;
+  date: string;       // formato YYYY-MM-DD, estratto da startAt
+  startTime: string;  // formato HH:MM
   endTime: string;
   type: 'exam' | 'group' | 'personal';
 }
@@ -64,6 +67,7 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
+  // costruisce l'header Authorization con il JWT token
   private authHeaders(): HttpHeaders {
     const token = getAuthToken();
     if (!token) return new HttpHeaders();
@@ -87,6 +91,8 @@ export class DataService {
     return `${hours}:${minutes}`;
   }
 
+  // converte il formato grezzo del backend (startAt ISO string) nel nostro EventItem.
+  // il backend salva tutto come datetime ISO, noi lo spezziamo in data e ora separati
   private mapBackendEvent(raw: any): EventItem {
     const startAt = typeof raw?.startAt === 'string' ? raw.startAt : '';
     const endAt = typeof raw?.endAt === 'string' ? raw.endAt : '';
@@ -96,6 +102,7 @@ export class DataService {
     const startIsValid = !Number.isNaN(parsedStart.getTime());
     const endIsValid = !!parsedEnd && !Number.isNaN(parsedEnd.getTime());
 
+    // fallback per estrarre la data anche se il parsing fallisce
     const dateFromRaw = startAt.includes('T') ? startAt.split('T')[0] : startAt.slice(0, 10);
     const safeDate = startIsValid ? this.formatDateOnly(parsedStart) : (dateFromRaw || this.formatDateOnly(new Date()));
 
@@ -110,6 +117,7 @@ export class DataService {
     };
   }
 
+  // carica solo gli esami (filtro type=exam), usato nella home per il riepilogo
   getEvents(): Observable<EventItem[]> {
     if (!this.hasToken()) return of([]);
 

@@ -1,5 +1,10 @@
+// service per le notifiche: gestisce creazione, lettura e cancellazione delle notifiche
+// le notifiche vengono generate da altri service (planner-reminders, groups, ecc.)
+// e qui solo le gestiamo per mostrarle all'utente
+
 const { all, get, run } = require('../db/connection');
 
+// tipi di notifica supportati; qualsiasi altro tipo viene ricondotto a 'system'
 const VALID_NOTIFICATION_TYPES = new Set([
   'notes',
   'group',
@@ -80,7 +85,9 @@ async function createForUser({ userId, title, message, type = 'system', actionUr
   return findByIdForUser(result.lastID, userId);
 }
 
+// manda la stessa notifica a più utenti in una volta (usato ad esempio per i gruppi)
 async function createForUsers(userIds = [], payload = {}) {
+  // de-duplica gli id per sicurezza
   const uniqueIds = [...new Set(
     userIds
       .map((id) => Number(id))

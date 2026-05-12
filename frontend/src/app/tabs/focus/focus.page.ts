@@ -89,24 +89,31 @@ export class FocusPage implements OnInit, OnDestroy {
     this.loadPomodoros();
     this.preloadAudio();
 
+    // ripristina il timer se era in esecuzione quando l'utente ha lasciato la pagina
     this.loadTimerState();
 
+    // ascoltiamo visibilitychange per ricalcolare il tempo corretto quando l'utente
+    // torna sulla tab (il setInterval si ferma in background su molti browser)
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   ngOnDestroy(): void {
     this.clearTimer();
-    this.saveTimerState();
+    this.saveTimerState(); // salviamo lo stato così si può ripristinare
 
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
+  // quando l'utente torna sulla tab, ricalcoliamo il tempo rimasto in base al timestamp
+  // di fine invece di fidarci del contatore (che potrebbe essersi fermato in background)
   private handleVisibilityChange = (): void => {
     if (!document.hidden && this.timerState === 'running') {
       this.syncTimerWithTarget();
     }
   };
 
+  // confronta il timestamp attuale con quello di fine previsto per avere il tempo rimasto reale.
+  // questo evita derive causate da setInterval che rallenta in background
   private syncTimerWithTarget(): void {
     if (this.targetTimestamp === null) return;
 
@@ -120,6 +127,8 @@ export class FocusPage implements OnInit, OnDestroy {
     }
   }
 
+  // salva lo stato del timer in localStorage (solo se è in esecuzione)
+  // la chiave include la data per evitare di caricare un timer di ieri
   private saveTimerState(): void {
     if (this.timerState === 'running' && this.targetTimestamp !== null) {
       const state = {
@@ -134,6 +143,7 @@ export class FocusPage implements OnInit, OnDestroy {
     }
   }
 
+  // ripristina il timer salvato: se era in esecuzione, calcola il tempo rimasto e lo riavvia
   private loadTimerState(): void {
     const raw = localStorage.getItem(`focus_timer_${this.getTodayKey()}`);
     if (!raw) return;
@@ -239,11 +249,15 @@ export class FocusPage implements OnInit, OnDestroy {
     if (this.timerState === 'idle' || this.timerState === 'paused') {
       this.timerState = 'running';
 
+      // calcoliamo quando deve finire il timer come timestamp assoluto
+      // così possiamo ricavare il tempo rimasto in qualsiasi momento
       this.targetTimestamp = Date.now() + (this.timeLeft * 1000);
       this.lastUpdateTimestamp = Date.now();
 
       this.saveTimerState();
 
+      // aggiorniamo ogni 100ms per avere una visualizzazione fluida,
+      // e salviamo in localStorage ogni 5 secondi per non perdere lo stato
       this.timerInterval = setInterval(() => {
         this.syncTimerWithTarget();
 
@@ -273,6 +287,9 @@ export class FocusPage implements OnInit, OnDestroy {
     localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
   }
 
+  // gestisce la fine di un pomodoro o di una pausa.
+  // se era un pomodoro: conta la sessione, fa l'animazione e avvia la pausa.
+  // se era una pausa: torna in idle pronto per un nuovo pomodoro
   private onTimerComplete(): void {
     this.clearTimer();
     this.targetTimestamp = null;
@@ -285,8 +302,9 @@ export class FocusPage implements OnInit, OnDestroy {
 
       this.showCompletionAnimation = true;
       this.playFocusCompleteSound();
-      this.vibrateDevice([200, 100, 200, 100, 200]);
+      this.vibrateDevice([200, 100, 200, 100, 200]); // pattern di vibrazione tipo "tada"
 
+      // mostriamo l'animazione per 2 secondi, poi partiamo con la pausa
       setTimeout(() => {
         this.showCompletionAnimation = false;
         this.timerState = 'break';
@@ -472,6 +490,8 @@ export class FocusPage implements OnInit, OnDestroy {
     this.completedPomodoros = raw ? parseInt(raw, 10) || 0 : 0;
   }
 
+  // calcola il progresso giornaliero complessivo: 50% dal completamento degli obiettivi,
+  // 50% dalle ore di studio rispetto al target. Viene mostrato nella home
   private updateDailyProgress(): void {
     const goalsPart = this.goalsProgress * 0.5;
     const studyPart = this.studyProgress * 0.5;
