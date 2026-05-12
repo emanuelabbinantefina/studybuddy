@@ -40,6 +40,8 @@ function normalizeSubjectSource(value, fallback = 'browse') {
 }
 
 async function getUserAcademicContext(userId) {
+  // Prima uso il profilo; se e` incompleto, recupero l'ultimo contesto accademico dagli appunti.
+  // Serve a filtrare materie/facolta senza chiedere ogni volta questi dati al frontend.
   const user = await get(
     `select facolta, corso
      from Users
@@ -101,6 +103,7 @@ function mergeUniqueSubjects(target, rows = [], field = 'subject') {
 }
 
 async function loadCatalogSubjects(facultyName, courseName = '', includeCourse = true) {
+  // Materie disponibili per upload/browse: corso specifico + fallback di facolta.
   const faculty = normalizeAcademicValue(facultyName);
   const course = normalizeAcademicValue(courseName);
   const subjects = new Map();
@@ -135,6 +138,7 @@ async function loadCatalogSubjects(facultyName, courseName = '', includeCourse =
 }
 
 function findCanonicalSubjectMatch(rawSubject, allowedSubjects = []) {
+  // Confronto normalizzato: evita duplicati tipo "Analisi 1" vs "analisi 1".
   const normalized = normalizeAcademicValue(rawSubject);
   const subjectKey = canonicalAcademicKey(normalized);
   if (!subjectKey) return '';
@@ -206,6 +210,7 @@ function inferFileType({ tipoFile, fileName = '', mimeType = '' }) {
 }
 
 async function ensureGroupMember(groupId, userId) {
+  // Gli appunti di gruppo sono visibili solo ai membri: controllo permesso prima di listarli/scaricarli.
   const group = await get(`select id from Groups where id = ?`, [groupId]);
   if (!group) throw badRequest('gruppo non valido');
 
@@ -243,6 +248,7 @@ function formatRelativeTime(isoDate) {
 }
 
 async function list(userId, query = {}) {
+  // Lista appunti pubblici o di un gruppo. Costruisco WHERE e params insieme per evitare SQL injection.
   const q = String(query.cerca || '').trim().toLowerCase();
   const materia = String(query.materia || '').trim();
   const faculty = normalizeAcademicValue(query.faculty);
@@ -347,6 +353,7 @@ async function list(userId, query = {}) {
 }
 
 async function listSaved(userId, query = {}) {
+  // Bookmark dell'utente: parto da NoteBookmarks e faccio join con Notes per mostrare i dati completi.
   const q = String(query.cerca || '').trim().toLowerCase();
   const materia = String(query.materia || '').trim();
   const faculty = normalizeAcademicValue(query.faculty);
@@ -441,6 +448,7 @@ async function getStats(userId) {
 }
 
 async function listSubjects(userId, query = {}) {
+  // source=upload restituisce solo materie valide per il corso dell'utente; browse puo` mostrare facolta.
   const { faculty, course } = await getUserAcademicContext(userId);
   const scope = normalizeScope(query.scope, 'faculty');
   const source = normalizeSubjectSource(query.source, 'browse');
@@ -503,6 +511,7 @@ async function listSubjects(userId, query = {}) {
 }
 
 async function create(userId, body = {}) {
+  // Upload appunto: validazione metadati, controllo corso utente, controllo dimensione file, poi INSERT.
   const titolo = String(body.titolo || '').trim();
   const rawMateria = String(body.materia || '').trim();
   const fileName = String(body.fileName || '').trim();
@@ -548,6 +557,7 @@ async function create(userId, body = {}) {
   }
 
   const parsedFile = parseDataUrl(fileData, mimeType);
+  // Non mi fido del sizeBytes inviato dal client: ricalcolo la dimensione dal buffer base64.
   const actualSizeBytes = parsedFile.buffer.length || sizeBytes;
   const imageFormat = inferImageFormat({
     fileName,
@@ -586,6 +596,7 @@ async function create(userId, body = {}) {
 
   if (groupId) {
     try {
+      // Notifica best-effort: se fallisce non blocco l'upload, perche` l'appunto e` gia` salvato.
       const group = await get(`select name from Groups where id = ?`, [groupId]);
       const uploader = await get(
         `select coalesce(nickname, name) as name from Users where id = ?`,
@@ -615,6 +626,7 @@ async function create(userId, body = {}) {
 }
 
 function parseDataUrl(fileData, fallbackMimeType) {
+  // Accetta sia data URL ("data:...;base64,...") sia base64 puro, poi restituisce buffer pronto al download.
   const raw = String(fileData || '');
   const trimmed = raw.trim();
 
@@ -625,14 +637,14 @@ function parseDataUrl(fileData, fallbackMimeType) {
   if (trimmed.startsWith('data:')) {
     const commaIndex = trimmed.indexOf(',');
     if (commaIndex > 0) {
-      const meta = trimmed.slice(5, commaIndex); // after "data:"
+      const meta = trimmed.slice(5, commaIndex); // dopo "data:"
       base64 = trimmed.slice(commaIndex + 1);
       const mime = meta.split(';')[0];
       if (mime) mimeType = mime;
     }
   }
 
-  // Supports data url body that could be percent-encoded
+  // Alcuni client percent-encodano il payload: provo a decodificare, ma se fallisce uso il valore originale.
   try {
     base64 = decodeURIComponent(base64);
   } catch {
@@ -643,6 +655,7 @@ function parseDataUrl(fileData, fallbackMimeType) {
 }
 
 async function getDownload(noteId, userId) {
+  // Download: se l'appunto e` di gruppo controllo membership, poi mando buffer e mime type al controller.
   const row = await get(
     `select id, groupId, fileName, mimeType, fileData
      from Notes
@@ -664,6 +677,7 @@ async function getDownload(noteId, userId) {
 }
 
 async function remove(userData, noteId) {
+  // BuddyPro puo` moderare; gli utenti normali possono eliminare solo i propri appunti.
   const userId = Number(userData?.userId || 0);
   const isBuddyPro = !!userData?.isSpecialUser;
   const current = await get(
@@ -686,6 +700,7 @@ async function remove(userData, noteId) {
 }
 
 async function addBookmark(userId, noteId) {
+  // Bookmark consentito solo su appunti pubblici di altri utenti, non sui propri e non su quelli di gruppo.
   const note = await get(
     `select id, userId, groupId
      from Notes

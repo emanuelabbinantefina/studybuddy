@@ -1,5 +1,6 @@
-// logica di business per autenticazione: register, login, gestione profilo e account.
-// usa bcrypt per hashare le password e jwt per generare i token di sessione
+// Logica di business per autenticazione: register, login, gestione profilo e account.
+// Schema mentale: controller = request/response, service = controlli + query DB + token/password.
+// bcrypt protegge le password, JWT crea la sessione che poi il middleware auth verifica.
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -11,7 +12,7 @@ const { buildAccountAccess } = require('../utils/account-role');
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
 
-// helper per creare errori con codice, così il controller può distinguere il tipo di errore
+// Helper per creare errori con codice: il controller li traduce in 400/401/404 invece di 500 generico.
 function badRequest(msg) {
   const err = new Error(msg);
   err.code = 'BAD_REQUEST';
@@ -124,6 +125,7 @@ function toPublicUser(user) {
 }
 
 async function resolveAcademicSelection(body = {}, { required = false } = {}) {
+  // Valida facolta/corso contro il catalogo DB: non ci fidiamo mai del testo libero del frontend.
   const facoltaIn = body && typeof body.facolta === 'string' ? body.facolta.trim() : '';
   const corsoIn = body && typeof body.corso === 'string' ? body.corso.trim() : '';
   const courseKeyIn = body && typeof body.courseKey === 'string' ? body.courseKey.trim() : '';
@@ -172,6 +174,7 @@ async function resolveAcademicSelection(body = {}, { required = false } = {}) {
 }
 
 async function facultiesWithCourses() {
+  // Costruisco a mano Faculties -> Courses per dare al frontend un dropdown gia` organizzato.
   const faculties = await all(
     `select id, name, createdAt, updatedAt
      from Faculties
@@ -210,7 +213,7 @@ async function register(body) {
 
   const selection = await resolveAcademicSelection(body, { required: true });
 
-  // controlla che l'email non sia già registrata (case-insensitive)
+  // Email unica in modo case-insensitive: Mario@x.it e mario@x.it devono essere la stessa cosa.
   const existing = await get(`select id from Users where lower(trim(email)) = lower(trim(?))`, [cleanEmail]);
   if (existing) {
     const err = new Error('email gia esistente');
@@ -218,7 +221,7 @@ async function register(body) {
     throw err;
   }
 
-  // hash con bcrypt a 10 rounds: abbastanza sicuro senza essere troppo lento
+  // Hash con bcrypt a 10 rounds: non salvo mai la password in chiaro.
   const hashed = await bcrypt.hash(cleanPassword, 10);
   const now = nowIso();
 
@@ -262,7 +265,7 @@ async function register(body) {
     accountRole: 'standard',
   });
 
-  // generiamo il token subito dopo la registrazione, così l'utente è già loggato
+  // Genero il token subito dopo la registrazione: UX piu` fluida, l'utente entra senza rifare login.
   const token = jwt.sign(
     { id: out.lastID, userId: out.lastID, email: cleanEmail },
     SECRET_KEY,
@@ -295,6 +298,7 @@ async function login(body) {
     throw err;
   }
 
+  // bcrypt.compare confronta password scritta e hash salvato senza rivelare la password originale.
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
     const err = new Error('credenziali non valide');
@@ -399,6 +403,7 @@ async function updateProfile(userId, body) {
     const isSameSelection =
       selection.faculty === currentFaculty && selection.course === currentCourse;
 
+    // Regola prodotto: facolta/corso si scelgono una volta sola, per tenere coerenti gruppi e appunti.
     if (hasLockedAcademicSelection && !isSameSelection) {
       throw badRequest('facolta e corso di laurea non possono essere modificati dopo la prima selezione');
     }
@@ -495,18 +500,18 @@ async function deleteAccount(userId, body = {}) {
     throw err;
   }
 
-  // doppia conferma: l'utente deve scrivere "ELIMINA" in maiuscolo
+  // Doppia conferma: l'utente deve scrivere "ELIMINA", cosi non cancella l'account per errore.
   const confirmation = String(body?.confirmation || '').trim().toUpperCase();
   if (confirmation !== 'ELIMINA') {
     throw badRequest('scrivi ELIMINA per confermare');
   }
 
-  // tutto in una transazione: se qualcosa va storto, non lasciamo il db in uno stato inconsistente
+  // Tutto in una transazione: se qualcosa fallisce, rollback e niente dati "a meta`".
   await withTransaction(async ({ get: txGet, all: txAll, run: txRun }) => {
     const now = nowIso();
 
-    // per ogni gruppo di cui l'utente è owner, proviamo a passare la ownership
-    // al membro più anziano; se non ci sono altri membri, eliminiamo il gruppo
+    // Se l'utente possiede gruppi, provo a passare la ownership al membro piu` anziano.
+    // Se non esistono altri membri, il gruppo viene eliminato insieme all'account.
     const ownedGroups = await txAll(
       `select id
        from Groups
@@ -547,8 +552,7 @@ async function deleteAccount(userId, body = {}) {
       }
     }
 
-    // scolleghiamo le risposte ai messaggi dell'utente prima di eliminarlo,
-    // altrimenti rompiamo il riferimento parentMessageId (foreign key)
+    // Prima scollego le risposte ai suoi messaggi: parentMessageId e` una foreign key e va tenuta valida.
     await txRun(
       `update GroupMessages
        set parentMessageId = null

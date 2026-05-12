@@ -68,15 +68,16 @@
         <button
           class="timer-btn timer-btn--main"
           [class.timer-btn--main-break]="isBreak"
-          (click)="timerState === 'running' ? pauseTimer() : startTimer()"
+          (click)="isTimerRunning ? pauseTimer() : startTimer()"
         >
           <ion-icon
-            [name]="timerState === 'running' ? 'pause-circle' : 'play-circle'"
+            [name]="isTimerRunning ? 'pause-circle' : 'play-circle'"
           ></ion-icon>
           <span *ngIf="timerState === 'idle'">Inizia</span>
-          <span *ngIf="timerState === 'running'">Pausa</span>
+          <span *ngIf="isTimerRunning">Pausa</span>
           <span *ngIf="timerState === 'paused'">Riprendi</span>
           <span *ngIf="timerState === 'break'">Avvia pausa</span>
+          <span *ngIf="timerState === 'breakPaused'">Riprendi pausa</span>
         </button>
       </div>
 

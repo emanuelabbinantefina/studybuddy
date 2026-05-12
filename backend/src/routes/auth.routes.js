@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// qui espongo le api auth che usa il frontend
+// Rotte auth: pubbliche per registrazione/login, protette con auth quando serve l'utente loggato.
 router.get('/faculties', authController.faculties);
 router.post('/register', authController.register);
 router.post('/login', authController.login);

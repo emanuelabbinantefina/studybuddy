@@ -31,7 +31,7 @@ interface StudySession {
   completedAt: Date;
 }
 
-type TimerState = 'idle' | 'running' | 'paused' | 'break' | 'completed';
+type TimerState = 'idle' | 'running' | 'paused' | 'break' | 'breakRunning' | 'breakPaused' | 'completed';
 
 @Component({
   selector: 'app-focus',
@@ -107,7 +107,7 @@ export class FocusPage implements OnInit, OnDestroy {
   // quando l'utente torna sulla tab, ricalcoliamo il tempo rimasto in base al timestamp
   // di fine invece di fidarci del contatore (che potrebbe essersi fermato in background)
   private handleVisibilityChange = (): void => {
-    if (!document.hidden && this.timerState === 'running') {
+    if (!document.hidden && this.isTimerRunning) {
       this.syncTimerWithTarget();
     }
   };
@@ -130,12 +130,11 @@ export class FocusPage implements OnInit, OnDestroy {
   // salva lo stato del timer in localStorage (solo se è in esecuzione)
   // la chiave include la data per evitare di caricare un timer di ieri
   private saveTimerState(): void {
-    if (this.timerState === 'running' && this.targetTimestamp !== null) {
+    if (this.isTimerRunning && this.targetTimestamp !== null) {
       const state = {
         targetTimestamp: this.targetTimestamp,
         timerState: this.timerState,
         totalTime: this.totalTime,
-        isBreak: this.isBreak,
       };
       localStorage.setItem(`focus_timer_${this.getTodayKey()}`, JSON.stringify(state));
     } else {
@@ -150,18 +149,28 @@ export class FocusPage implements OnInit, OnDestroy {
 
     try {
       const state = JSON.parse(raw);
-      this.targetTimestamp = state.targetTimestamp;
+      const savedTargetTimestamp = Number(state.targetTimestamp);
+      if (!Number.isFinite(savedTargetTimestamp)) {
+        localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
+        return;
+      }
+
+      this.targetTimestamp = savedTargetTimestamp;
       this.totalTime = state.totalTime;
+      const shouldResumeBreak = state.timerState === 'breakRunning' || state.isBreak;
+      const runningState: TimerState = shouldResumeBreak ? 'breakRunning' : 'running';
 
-      if (state.isBreak) {
-        this.timerState = 'break';
+      const remaining = Math.max(0, Math.floor((savedTargetTimestamp - Date.now()) / 1000));
+      this.timeLeft = remaining;
+
+      if (remaining === 0) {
+        this.timerState = runningState;
+        this.onTimerComplete();
+        return;
       }
 
-      this.syncTimerWithTarget();
-
-      if (this.timeLeft > 0) {
-        this.startTimer();
-      }
+      this.timerState = shouldResumeBreak ? 'break' : 'idle';
+      this.startTimer();
     } catch {
       localStorage.removeItem(`focus_timer_${this.getTodayKey()}`);
     }
@@ -238,7 +247,15 @@ export class FocusPage implements OnInit, OnDestroy {
   }
 
   get isBreak(): boolean {
-    return this.timerState === 'break';
+    return (
+      this.timerState === 'break' ||
+      this.timerState === 'breakRunning' ||
+      this.timerState === 'breakPaused'
+    );
+  }
+
+  get isTimerRunning(): boolean {
+    return this.timerState === 'running' || this.timerState === 'breakRunning';
   }
 
   get isCompleted(): boolean {
@@ -246,8 +263,15 @@ export class FocusPage implements OnInit, OnDestroy {
   }
 
   startTimer(): void {
-    if (this.timerState === 'idle' || this.timerState === 'paused') {
-      this.timerState = 'running';
+    if (this.timerInterval) return;
+
+    if (
+      this.timerState === 'idle' ||
+      this.timerState === 'paused' ||
+      this.timerState === 'break' ||
+      this.timerState === 'breakPaused'
+    ) {
+      this.timerState = this.isBreak ? 'breakRunning' : 'running';
 
       // calcoliamo quando deve finire il timer come timestamp assoluto
       // così possiamo ricavare il tempo rimasto in qualsiasi momento
@@ -271,7 +295,7 @@ export class FocusPage implements OnInit, OnDestroy {
   }
 
   pauseTimer(): void {
-    this.timerState = 'paused';
+    this.timerState = this.isBreak ? 'breakPaused' : 'paused';
     this.targetTimestamp = null;
     this.clearTimer();
     this.saveTimerState();
@@ -311,7 +335,7 @@ export class FocusPage implements OnInit, OnDestroy {
         this.timeLeft = this.breakMinutes * 60;
         this.totalTime = this.breakMinutes * 60;
       }, 2000);
-    } else if (this.timerState === 'break') {
+    } else if (this.timerState === 'breakRunning') {
       this.playBreakCompleteSound();
       this.vibrateDevice(300);
 

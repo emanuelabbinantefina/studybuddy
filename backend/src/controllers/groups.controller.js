@@ -1,6 +1,7 @@
 const groupsService = require('../services/groups.service');
 
 function parseGroupId(req, res) {
+  // Centralizzato per evitare di riscrivere lo stesso controllo id in ogni endpoint gruppo.
   const groupId = Number(req.params.id);
   if (!Number.isFinite(groupId) || groupId <= 0) {
     res.status(400).json({ message: 'id gruppo non valido' });
@@ -10,6 +11,7 @@ function parseGroupId(req, res) {
 }
 
 function handleError(res, err) {
+  // I service lanciano errori con code; il controller li traduce in risposte HTTP.
   if (err.code === 'BAD_REQUEST') return res.status(400).json({ message: err.message });
   if (err.code === 'FORBIDDEN') return res.status(403).json({ message: err.message });
   if (err.code === 'NOT_FOUND') return res.status(404).json({ message: err.message });

@@ -45,6 +45,7 @@ function normalizeColorClass(value) {
 }
 
 function sanitizeText(value, maxLen = 255) {
+  // Pulizia minima input: trim + limite caratteri, cosi il DB non riceve stringhe infinite.
   const txt = String(value || '').trim();
   if (!txt) return '';
   return txt.slice(0, maxLen);
@@ -138,6 +139,7 @@ function resolveQuestionMeta(row = {}) {
 }
 
 function parseQuestionsSeed(rawQuestions) {
+  // Domande iniziali del gruppo: normalizzo e rimuovo duplicati prima di salvarle.
   if (!Array.isArray(rawQuestions)) return [];
 
   const dedupe = new Set();
@@ -159,6 +161,7 @@ function parseQuestionsSeed(rawQuestions) {
 }
 
 async function resolveOwnerId(authenticatedUserId, bodyUserId) {
+  // Normalmente owner = utente loggato; fallback legacy per vecchie chiamate senza auth.
   if (authenticatedUserId) return Number(authenticatedUserId);
   if (bodyUserId) return Number(bodyUserId);
 
@@ -188,6 +191,7 @@ async function getGroupOwnerId(groupId) {
 }
 
 async function resolveCourseSelection(body = {}) {
+  // Gruppi e profilo usano la stessa idea: corso valido solo se presente nel catalogo Faculties/Courses.
   const facoltaIn = sanitizeText(body.facolta ?? body.faculty, 80);
   const corsoIn = sanitizeText(body.corso ?? body.course ?? body.subject ?? body.materia, 80);
   const parsedKey = parseCourseKey(body.courseKey);
@@ -233,6 +237,7 @@ async function resolveCourseSelection(body = {}) {
 }
 
 async function getMemberRole(groupId, userId) {
+  // L'owner vale come membro anche se per dati vecchi manca la riga in GroupMembers.
   const ownerId = await getGroupOwnerId(groupId);
   if (Number(ownerId) === Number(userId)) {
     return 'owner';
@@ -248,6 +253,7 @@ async function getMemberRole(groupId, userId) {
 }
 
 async function syncGroupOwnerMembership(groupId) {
+  // Riparazione automatica: garantisce che l'owner sia sempre anche membro con role='owner'.
   const ownerId = await getGroupOwnerId(groupId);
   if (!ownerId) return false;
   const now = nowIso();
@@ -279,6 +285,7 @@ async function ensureMember(groupId, userId) {
 }
 
 function mapGroupRow(row) {
+  // Traduce la riga SQL nel formato che il frontend si aspetta, includendo alias legacy italiani.
   return {
     id: row.id,
     name: row.name,
@@ -329,6 +336,7 @@ function mapQuestionRow(row) {
 }
 
 async function listGroups(userId, opts = {}) {
+  // Query unica per "miei", "suggeriti" e "pubblici": cambiano solo scope e filtri.
   const q = sanitizeText(opts.q, 80);
   const scope = String(opts.scope || 'all').toLowerCase();
   const onlyNotMember = !!opts.onlyNotMember;
@@ -398,6 +406,7 @@ async function listGroups(userId, opts = {}) {
 }
 
 async function createGroup(userId, body = {}) {
+  // Creazione gruppo: salva metadati, owner come membro, eventuale primo post e domande iniziali.
   const name = sanitizeText(body.name ?? body.nome, 60);
   const description = sanitizeText(body.description ?? body.descrizione, 400);
   const examDate = sanitizeText(body.examDate ?? body.dataEsame, 40);
@@ -484,6 +493,7 @@ async function publicGroups(userId, query = {}) {
 }
 
 async function joinGroup(userId, groupId) {
+  // Join idempotente: se sei gia` membro non duplica righe, restituisce comunque ok.
   await ensureGroupExists(groupId);
   const ownerSynced = await syncOwnerMembership(groupId, userId);
   if (!ownerSynced) {
@@ -509,6 +519,7 @@ async function joinGroup(userId, groupId) {
   }
 
   try {
+    // Notifica best-effort al proprietario: utile, ma non deve far fallire il join.
     const group = await get(`select ownerId, name from Groups where id = ?`, [groupId]);
     const newMember = await get(
       `select coalesce(nickname, name) as name from Users where id = ?`,
@@ -566,6 +577,7 @@ async function leaveGroup(userId, groupId) {
 }
 
 async function groupDetail(userId, groupId) {
+  // Detail fa anche una piccola auto-riparazione membership owner, per compatibilita` con dati vecchi.
   await syncGroupOwnerMembership(groupId);
   const viewerId = Number(userId || 0);
   const row = await get(
@@ -629,6 +641,7 @@ async function deleteGroup(_userId, groupId) {
   await ensureGroupExists(groupId);
 
   return withTransaction(async (tx) => {
+    // Gruppo + notifiche collegate si cancellano insieme: niente link morti nel centro notifiche.
     const group = await tx.get(
       `select id, name
        from Groups
@@ -677,6 +690,7 @@ async function listQuestions(_userId, groupId) {
 }
 
 async function createQuestion(userId, groupId, body = {}) {
+  // Le domande salvano anche sessione/anno dentro answer per compatibilita` con il formato precedente.
   await ensureMember(groupId, userId);
 
   const question = sanitizeText(body.question, 500);
@@ -722,6 +736,7 @@ async function createQuestion(userId, groupId, body = {}) {
 }
 
 async function listMessages(userId, groupId, query = {}) {
+  // Legge chat + reply + pin in una query, cosi il frontend ha tutto per renderizzare la bacheca.
   await ensureMember(groupId, userId);
 
   const limit = Number(query.limit) > 0 ? Math.min(Number(query.limit), 200) : 50;
@@ -758,6 +773,7 @@ async function listMessages(userId, groupId, query = {}) {
 }
 
 async function sendMessage(userId, groupId, body = {}) {
+  // Messaggio normale o risposta: parentMessageId deve appartenere allo stesso gruppo.
   const text = sanitizeText(body.text, 1000);
   const parentMessageId = Number(body.parentMessageId || 0) || null;
   if (!text) throw badRequest('text e obbligatorio');
@@ -812,6 +828,7 @@ async function sendMessage(userId, groupId, body = {}) {
   );
 
   try {
+    // Notifica best-effort agli altri membri del gruppo; errore loggato ma non blocca il messaggio.
     const group = await get(`select name from Groups where id = ?`, [groupId]);
     const memberIds = await all(
       `select userId from GroupMembers where groupId = ? and userId != ?`,
@@ -905,6 +922,7 @@ async function pinMessage(userId, groupId, messageId, shouldPin = true) {
 }
 
 async function deleteMessage(userId, groupId, messageId) {
+  // Prima scollego eventuali risposte, poi cancello: evita foreign key rotte su parentMessageId.
   await ensureMember(groupId, userId);
 
   const message = await get(

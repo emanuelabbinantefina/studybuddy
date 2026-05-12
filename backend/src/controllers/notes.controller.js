@@ -2,6 +2,7 @@ const notesService = require('../services/notes.service');
 const buddyproService = require('../services/buddypro.service');
 
 function handleError(res, err) {
+  // Mappa gli errori "di business" dei service in status HTTP leggibili dal frontend.
   if (err.code === 'BAD_REQUEST') {
     return res.status(400).json({ message: err.message });
   }
@@ -61,6 +62,7 @@ async function create(req, res) {
 
 async function download(req, res) {
   try {
+    // I parametri URL arrivano come stringhe: li trasformo e valido prima di toccare il DB.
     const noteId = Number(req.params.id);
     if (!Number.isFinite(noteId) || noteId <= 0) {
       return res.status(400).json({ message: 'id appunto non valido' });
@@ -72,6 +74,7 @@ async function download(req, res) {
     }
 
     res.setHeader('Content-Type', out.mimeType || 'application/octet-stream');
+    // filename*=UTF-8 gestisce bene spazi/accenti nel nome file scaricato dal browser.
     res.setHeader(
       'Content-Disposition',
       `attachment; filename*=UTF-8''${encodeURIComponent(out.fileName)}`
