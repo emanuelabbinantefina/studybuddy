@@ -5,10 +5,15 @@ const { buildSubjectsForCourse, canonicalAcademicKey } = require('../utils/acade
 const { getBachelorCatalogEntries } = require('../utils/unipa-bachelor-courses');
 const { normalizeAccountRole } = require('../utils/account-role');
 
+// restituisce il timestamp corrente in formato ISO 8601 (es. "2025-05-14T10:30:00.000Z"),
+// usato ovunque come valore per i campi createdAt/updatedAt
 function nowIso() {
   return new Date().toISOString();
 }
 
+// garantisce che l'account BuddyPro esista sempre con credenziali note.
+// viene chiamato sia all'avvio (per creare l'account se non c'è) sia alla fine di initDb
+// (per ripristinare eventuali modifiche accidentali fatte durante il repair degli utenti).
 async function ensureBuddyProAccount() {
   const email = 'buddypro@gmail.com';
   const passwordHash = await bcrypt.hash('buddypro', 10);
@@ -80,6 +85,8 @@ async function ensureBuddyProAccount() {
   );
 }
 
+// produce una chiave univoca per la coppia facoltà+corso nel formato "FACOLTA::CORSO".
+// il separatore "::" non può mai apparire nei nomi normalizzati, quindi non crea ambiguità.
 function makeAcademicPairKey(facultyName, courseName) {
   const facultyKey = canonicalAcademicKey(facultyName);
   const courseKey = canonicalAcademicKey(courseName);
@@ -87,6 +94,9 @@ function makeAcademicPairKey(facultyName, courseName) {
   return `${facultyKey}::${courseKey}`;
 }
 
+// raccoglie tutte le coppie facoltà+corso note nel sistema tramite UNION su 4 sorgenti
+// (catalogo ufficiale, profili utente, note, gruppi), le normalizza e le deduplica
+// usando una Map con chiave canonica per evitare varianti di capitalizzazione/spazi.
 async function loadKnownAcademicPairs() {
   const rows = await all(
     `select trim(Faculties.name) as facultyName, trim(Courses.name) as courseName
@@ -123,6 +133,9 @@ async function loadKnownAcademicPairs() {
   return Array.from(seen.values());
 }
 
+// ripopola la tabella ExamSubjects a partire dal catalogo accademico.
+// usa due passate separate: la prima inserisce materie a livello di facoltà (senza corso specifico),
+// la seconda inserisce materie per ogni coppia facoltà+corso; "insert or ignore" evita duplicati.
 async function seedExamSubjects() {
   const now = nowIso();
   await run(`delete from ExamSubjects`);
@@ -201,6 +214,9 @@ async function loadLatestUserAcademicSnapshot(userId) {
   };
 }
 
+// carica le materie valide per una nota dato facoltà e corso.
+// `pushRows` è una closure che accumula in `subjects` e `seen` condivisi tra le due query,
+// così la deduplicazione funziona anche tra i risultati del corso specifico e del fallback.
 async function loadRepairSubjectsForNote(facultyName, courseName) {
   const subjects = [];
   const seen = new Set();
@@ -245,6 +261,10 @@ async function loadRepairSubjectsForNote(facultyName, courseName) {
   return subjects;
 }
 
+// ripara i campi accademici delle note in due fasi:
+// 1) se facultyName o courseName sono vuoti, li copia dal profilo utente proprietario;
+// 2) normalizza il campo subject confrontandolo con il catalogo — se esiste una versione
+//    canonica con capitalizzazione diversa, aggiorna la nota per garantire coerenza.
 async function repairNotesAcademicFields() {
   const now = nowIso();
 
@@ -308,6 +328,11 @@ async function repairGroupsAcademicFields() {
   );
 }
 
+// ripara i campi facolta/corso degli utenti con una gerarchia di fallback a 3 livelli:
+// 1) match univoco nel catalogo Faculties/Courses → usa il nome canonico ufficiale;
+// 2) il catalogo locale buildSubjectsForCourse restituisce materie → i dati sono già validi;
+// 3) snapshot storico dalle note/gruppi dell'utente → usa l'ultima coppia registrata.
+// se nessun livello va a buon fine, i campi vengono azzerati a null.
 async function repairUsersAcademicFields() {
   const now = nowIso();
   const rows = await all(
@@ -397,6 +422,8 @@ async function repairUsersAcademicFields() {
   }
 }
 
+// ricostruisce le tabelle Faculties e Courses dal catalogo statico ad ogni avvio.
+// il delete+reinsert garantisce che aggiunte/rimozioni nel catalogo si riflettano subito nel DB.
 async function syncBachelorCourseCatalog() {
   const now = nowIso();
   const catalog = getBachelorCatalogEntries();
@@ -453,6 +480,10 @@ async function initDb() {
     )
   `);
 
+  // SQLite non supporta "ALTER TABLE ... ADD COLUMN IF NOT EXISTS", quindi usiamo try/catch:
+  // se la colonna esiste già, SQLite lancia "duplicate column name" e lo ignoriamo;
+  // qualsiasi altro errore viene rilanciato normalmente. Questo pattern si ripete per ogni
+  // colonna aggiunta in migrazioni successive alla creazione iniziale della tabella.
   try {
     await run(`alter table Users add column firstName text`);
   } catch (err) {

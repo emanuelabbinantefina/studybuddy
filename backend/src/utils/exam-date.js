@@ -35,12 +35,15 @@ function addDays(date, amount) {
   return toStartOfDay(next);
 }
 
+// produce una chiave nel formato "MM-DD" usata come lookup nella mappa dei festivi fissi
 function buildMonthDayKey(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${month}-${day}`;
 }
 
+// algoritmo di Meeus/Jones/Butcher per calcolare la domenica di Pasqua gregoriana
+// fonte: https://en.wikipedia.org/wiki/Date_of_Easter#Anonymous_Gregorian_algorithm
 function calculateEasterSunday(year) {
   const a = year % 19;
   const b = Math.floor(year / 100);

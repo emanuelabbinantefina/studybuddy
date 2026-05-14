@@ -78,7 +78,10 @@ async function upcoming(userId, limit = 10) {
   );
 }
 
-// lista eventi con filtri opzionali: intervallo date, tipo, ricerca testo e paginazione
+// lista eventi con filtri opzionali: intervallo date, tipo, ricerca testo e paginazione.
+// la clausola WHERE viene costruita dinamicamente: i filtri attivi aggiungono condizioni
+// all'array `where` e il valore corrispondente all'array `params`, in modo che l'ordine
+// corrisponda sempre ai segnaposto ? nella query finale.
 async function list(userId, query) {
   const { from, to, type, q, limit, offset } = query;
 
@@ -123,7 +126,10 @@ async function list(userId, query) {
 }
 
 // carica le materie disponibili per l'utente in base a facoltà e corso di laurea.
-// viene usato nel planner per popolare il dropdown "materia" quando aggiungi un esame
+// viene usato nel planner per popolare il dropdown "materia" quando aggiungi un esame.
+// strategia a due livelli: prima cerca le materie specifiche per la coppia facoltà+corso;
+// poi aggiunge le materie generiche di facoltà (courseName = '') come fallback,
+// evitando duplicati tramite il Set `seen`.
 async function listMyExamSubjects(userId) {
   const user = await get(
     `select facolta, corso
