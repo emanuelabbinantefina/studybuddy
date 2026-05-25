@@ -625,6 +625,12 @@ async function groupDetail(userId, groupId) {
   return out;
 }
 
+// Endpoint PATCH /api/groups/:id: al momento gli unici campi modificabili
+// sarebbero quelli che pero` abbiamo deciso di NON cambiare (es. examDate,
+// che cambierebbe la data nel planner dei membri). Quindi questa funzione
+// rifiuta esplicitamente examDate e per ogni altro campo si limita a
+// rispondere con il detail aggiornato, in modo che il frontend non si trovi
+// con un 405 e possa comunque ricaricare lo stato.
 async function updateGroup(userId, groupId, body = {}) {
   await ensureMember(groupId, userId);
 

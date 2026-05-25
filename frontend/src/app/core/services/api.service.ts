@@ -232,16 +232,6 @@ export class ApiService {
       .pipe(map((row) => this.toGruppoDto(row)));
   }
 
-  updateGroupExamDate(groupId: number, examDate?: string | null): Observable<Gruppo> {
-    return this.http
-      .patch<any>(
-        `${this.baseUrl}/groups/${groupId}`,
-        { examDate: examDate || null },
-        { headers: this.authHeaders() }
-      )
-      .pipe(map((row) => this.toGruppoDto(row)));
-  }
-
   getGroupQuestions(groupId: number): Observable<GroupQuestion[]> {
     return this.http.get<GroupQuestion[]>(
       `${this.baseUrl}/groups/${groupId}/questions`,

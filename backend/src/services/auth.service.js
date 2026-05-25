@@ -9,7 +9,13 @@ const { all, get, run, withTransaction } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const { buildAccountAccess } = require('../utils/account-role');
 
+// In dev e` comodo avere un fallback, ma in produzione JWT_SECRET dovrebbe
+// arrivare sempre da .env. Se la chiave cambia, tutti i token gia` emessi
+// vengono invalidati di colpo - utile saperlo se si vede un wave di 401.
 const SECRET_KEY = process.env.JWT_SECRET || 'la_tua_chiave_super_segreta';
+// Email regex un po' permissiva: accetta tutti i caratteri permessi da RFC 5322
+// nella parte locale. Validazione "vera" che l'email esista la facciamo solo
+// nel forgot-password (e li` rispondiamo sempre 200 per non rivelare nulla).
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+$/;
 
 // Helper per creare errori con codice: il controller li traduce in 400/401/404 invece di 500 generico.

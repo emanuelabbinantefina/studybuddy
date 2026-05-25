@@ -142,21 +142,36 @@ export class NotificationsPage implements OnInit, OnDestroy {
     this.presentToast('Tutte le notifiche sono state lette');
   }
 
+  // prefissi che possiamo davvero raggiungere dentro la shell delle tab.
+  // qualunque actionUrl che non rientri qui finisce sulla pagina notifiche,
+  // cosi` evitiamo di mandare l'utente su una rotta inesistente solo perche`
+  // il backend ha cambiato uno slug.
+  private readonly knownActionPrefixes = ['/groups/', '/notes', '/planner', '/focus', '/home', '/profile'];
+
   openNotification(notification: AppNotification): void {
     if (!notification.read) {
       this.notificationService.markAsRead(notification.id);
     }
 
-    if (notification.actionUrl) {
-      let url = notification.actionUrl;
-      
-      if (!url.startsWith('/tabs/')) {
-        url = url.startsWith('/') ? url.substring(1) : url;
-        url = `/tabs/${url}`;
-      }
+    if (!notification.actionUrl) return;
 
-      this.router.navigate([url]);
-    }
+    const target = this.resolveActionUrl(notification.actionUrl);
+    this.router.navigate([target]);
+  }
+
+  private resolveActionUrl(rawUrl: string): string {
+    const url = String(rawUrl || '').trim();
+    if (!url) return '/tabs/notifications';
+
+    // gia` un percorso valido dentro le tab: lo lasciamo intatto.
+    if (url.startsWith('/tabs/')) return url;
+
+    // accettiamo solo prefissi noti, normalizzati a /tabs/...
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    const isKnown = this.knownActionPrefixes.some((prefix) => normalized.startsWith(prefix));
+    if (!isKnown) return '/tabs/notifications';
+
+    return `/tabs${normalized}`;
   }
 
   async confirmClearAll(): Promise<void> {

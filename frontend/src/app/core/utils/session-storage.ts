@@ -9,7 +9,10 @@ function storageHasSession(storage: Storage): boolean {
 }
 
 // capisce quale storage usare: prima guarda sessionStorage, poi localStorage,
-// e se non c'è niente usa la preferenza "ricordami" per decidere
+// e se non c'è niente usa la preferenza "ricordami" per decidere.
+// l'ordine non è casuale: sessionStorage ha priorità perché se l'utente ha
+// scelto di NON essere ricordato, ma poi durante la stessa sessione qualcosa
+// scrive, deve restare nello stesso "barattolo" temporaneo
 function getActiveSessionStorage(): Storage {
   if (storageHasSession(sessionStorage)) return sessionStorage;
   if (storageHasSession(localStorage)) return localStorage;

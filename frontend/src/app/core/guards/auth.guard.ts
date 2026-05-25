@@ -4,6 +4,11 @@ import { AuthService } from '../services/auth.service';
 
 // guard di autenticazione: blocca l'accesso alle pagine protette se l'utente non è loggato.
 // angular lo esegue automaticamente prima di navigare verso una rotta protetta.
+// nota: il controllo qui è "sei loggato lato client?" (cioè hai un token salvato).
+// la verifica reale del token avviene sul backend al primo XHR autenticato:
+// se il token è scaduto/non valido il backend risponde 401 e UserService.logout()
+// pulisce tutto. quindi anche se qualcuno bypassasse questo guard non potrebbe
+// comunque leggere/scrivere dati.
 
 // se non sei loggato ti manda al login
 function redirectToLogin(): UrlTree {

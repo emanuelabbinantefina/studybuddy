@@ -50,6 +50,11 @@ export class FocusPage implements OnInit, OnDestroy {
   currentSessionSubject = '';
   showCompletionAnimation = false;
 
+  // Salviamo il momento ESATTO in cui il timer deve scattare (timestamp assoluto),
+  // non un "secondi rimasti". Cosi` se la tab finisce in background e il
+  // setInterval rallenta o si ferma (lo fanno tutti i browser per risparmio
+  // batteria), al risveglio ricalcoliamo i secondi mancanti dal Date.now()
+  // attuale e l'utente non perde mai un pomodoro a meta`.
   private targetTimestamp: number | null = null;
   private lastUpdateTimestamp: number = Date.now();
 

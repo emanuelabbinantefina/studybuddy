@@ -2,6 +2,11 @@ const { all, get, run } = require('../db/connection');
 const { nowIso } = require('../db/init');
 const notificationsService = require('./notifications.services');
 
+// I tre tempi di reminder sono pensati come "finestre" successive:
+// 24h prima -> "ehi, e` domani, ti conviene chiudere il ripasso"
+// 1h prima  -> "ricordati di partire"
+// 5 min     -> "sta succedendo adesso"
+// I valori sono in millisecondi perche` li confronto direttamente con Date.now().
 const REMINDER_24H_MS = 24 * 60 * 60 * 1000;
 const REMINDER_1H_MS = 60 * 60 * 1000;
 const REMINDER_NOW_MS = 5 * 60 * 1000;

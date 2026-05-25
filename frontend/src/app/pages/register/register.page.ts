@@ -162,7 +162,7 @@ export class RegisterPage implements OnInit {
       );
 
       this.loading = false;
-      this.showAlertSuccess();
+      await this.showAlertSuccess();
     } catch (err: any) {
       this.loading = false;
       this.error = err.error?.message || 'Errore di registrazione';

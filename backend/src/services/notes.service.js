@@ -13,7 +13,11 @@ const IMAGE_SIZE_LIMITS = {
   png: 4 * 1024 * 1024,
   other: 4 * 1024 * 1024,
 };
-const MAX_FILE_DATA_LEN = 20_000_000; // base64/data-url in json body
+// limite sul payload base64 nel JSON body: 20MB. e` piu` permissivo dei
+// limiti per tipo di file (vedi *_SIZE_LIMITS sotto) e serve come "rete di
+// sicurezza" generale per evitare che un client invii payload assurdi prima
+// ancora di entrare nelle validazioni specifiche.
+const MAX_FILE_DATA_LEN = 20_000_000;
 const NOTE_FACULTY_SQL = `coalesce(nullif(trim(Notes.facultyName), ''), nullif(trim(Users.facolta), ''))`;
 const NOTE_COURSE_SQL = `coalesce(nullif(trim(Notes.courseName), ''), nullif(trim(Users.corso), ''))`;
 
@@ -557,7 +561,9 @@ async function create(userId, body = {}) {
   }
 
   const parsedFile = parseDataUrl(fileData, mimeType);
-  // Non mi fido del sizeBytes inviato dal client: ricalcolo la dimensione dal buffer base64.
+  // Non mi fido del sizeBytes inviato dal client: ricalcolo la dimensione dal
+  // buffer base64. Senza questo controllo, un client potrebbe
+  // dichiarare "1 KB" e in realta` caricare 50 MB.
   const actualSizeBytes = parsedFile.buffer.length || sizeBytes;
   const imageFormat = inferImageFormat({
     fileName,

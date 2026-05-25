@@ -27,41 +27,6 @@ async function listNotifications(req, res) {
   }
 }
 
-async function createNotification(req, res) {
-  try {
-    const userId = getAuthUserId(req);
-    if (!userId) {
-      return res.status(401).json({ message: 'utente non autenticato' });
-    }
-
-    const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
-    const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
-    const type = req.body?.type;
-    const actionUrl = req.body?.actionUrl ?? null;
-
-    if (!title) {
-      return res.status(400).json({ message: 'title obbligatorio' });
-    }
-
-    if (!message) {
-      return res.status(400).json({ message: 'message obbligatorio' });
-    }
-
-    const created = await notificationsService.createForUser({
-      userId,
-      title,
-      message,
-      type,
-      actionUrl,
-    });
-
-    return res.status(201).json(created);
-  } catch (error) {
-    console.error('createNotification error:', error);
-    return res.status(500).json({ message: 'errore nella creazione notifica' });
-  }
-}
-
 async function markNotificationAsRead(req, res) {
   try {
     const userId = getAuthUserId(req);
@@ -129,7 +94,6 @@ async function deleteNotification(req, res) {
 
 module.exports = {
   listNotifications,
-  createNotification,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,

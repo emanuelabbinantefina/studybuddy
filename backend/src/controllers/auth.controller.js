@@ -73,6 +73,22 @@ async function changePassword(req, res) {
   }
 }
 
+// "Password dimenticata": al momento non spediamo davvero la mail di reset.
+// Rispondiamo sempre 200 con un messaggio neutro per non rivelare se l'email
+// esista o meno nel DB (anti-enumeration). Quando avremo un servizio di mailing
+// reale, qui dentro andra` la generazione del token + invio link.
+async function forgotPassword(req, res) {
+  try {
+    res.json({
+      ok: true,
+      message:
+        "Se l'email è associata a un account, riceverai a breve un link per reimpostare la password.",
+    });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+}
+
 // elimina l'account: richiede di scrivere "ELIMINA" come conferma (doppia sicurezza)
 async function deleteMe(req, res) {
   try {
@@ -85,4 +101,4 @@ async function deleteMe(req, res) {
   }
 }
 
-module.exports = { faculties, register, login, me, updateMe, changePassword, deleteMe };
+module.exports = { faculties, register, login, me, updateMe, changePassword, deleteMe, forgotPassword };

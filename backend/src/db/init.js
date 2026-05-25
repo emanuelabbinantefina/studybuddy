@@ -659,24 +659,6 @@ async function initDb() {
     }
   }
 
-  try {
-    await run(`alter table Events add column reminder24hSent integer not null default 0`);
-  } catch (err) {
-    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-  }
-
-  try {
-    await run(`alter table Events add column reminder1hSent integer not null default 0`);
-  } catch (err) {
-    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-  }
-
-  try {
-    await run(`alter table Events add column reminderNowSent integer not null default 0`);
-  } catch (err) {
-    if (!/duplicate column name/i.test(String(err.message || ''))) throw err;
-  }
-
   // notes uploaded by users
   await run(`
     create table if not exists Notes (

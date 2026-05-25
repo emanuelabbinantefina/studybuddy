@@ -17,7 +17,10 @@ export class NotificationService implements OnDestroy {
   private readonly unreadCountSubject = new BehaviorSubject<number>(0);
 
   private pollingSubscription?: Subscription;
-  private pollingInterval = 30000; // ogni 30 secondi
+  // 30 secondi è un compromesso: abbastanza frequente da far sembrare le
+  // notifiche "in tempo reale", ma non così tanto da appesantire backend
+  // e batteria del telefono quando l'app è aperta tutto il giorno
+  private pollingInterval = 30000;
 
   // versioni pubbliche (read-only) degli subject, i componenti si iscrivono a questi
   readonly notifications$ = this.notificationsSubject.asObservable();

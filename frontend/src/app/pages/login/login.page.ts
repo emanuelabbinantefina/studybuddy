@@ -31,6 +31,13 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {
     this.rememberMe = getRememberMePreference();
+
+    // se l'utente arriva al login con una sessione gia` attiva (es. refresh sulla
+    // root mentre era dentro l'app) lo mandiamo direttamente alla home: evita di
+    // mostrare il form di accesso a chi e` gia` autenticato.
+    if (this.authService.isLoggedIn()) {
+      this.navCtrl.navigateRoot('/tabs/home');
+    }
   }
 
   goToRegister() {
