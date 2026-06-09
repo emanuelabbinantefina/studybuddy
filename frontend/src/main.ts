@@ -39,6 +39,7 @@ import {
   alertCircleOutline, closeCircleOutline, chevronDownOutline, chevronUpOutline,
   atOutline, informationCircleOutline, checkmark, chatbubblesOutline,
   helpCircleOutline, syncOutline, chevronForwardOutline, imageOutline,
+  timerOutline,
 } from 'ionicons/icons';
 
 addIcons({
@@ -138,6 +139,7 @@ addIcons({
   'sync-outline': syncOutline,
   'chevron-forward-outline': chevronForwardOutline,
   'image-outline': imageOutline,
+  'timer-outline': timerOutline,
 });
 
 bootstrapApplication(AppComponent, {

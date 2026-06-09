@@ -217,6 +217,14 @@ async function register(body) {
   validateEmail(cleanEmail);
   validatePassword(cleanPassword);
 
+  // Il form manda firstName e lastName separati: li uso cosi come sono.
+  // Se arrivasse solo "name" (vecchie chiamate) lo spezzo io sul primo spazio,
+  // altrimenti finirebbe tutto in firstName e poi il cognome verrebbe duplicato.
+  const legacy = splitLegacyName(cleanName);
+  const firstName = String(body.firstName || '').trim() || legacy.firstName;
+  const lastName = String(body.lastName || '').trim() || legacy.lastName;
+  const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || cleanName;
+
   const selection = await resolveAcademicSelection(body, { required: true });
 
   // Email unica in modo case-insensitive: Mario@x.it e mario@x.it devono essere la stessa cosa.
@@ -237,9 +245,9 @@ async function register(body) {
      values
       (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      cleanName,
-      cleanName,
-      '',
+      displayName,
+      firstName,
+      lastName,
       cleanEmail,
       hashed,
       null,
@@ -257,9 +265,9 @@ async function register(body) {
 
   const normalizedUser = normalizeUserRow({
     id: out.lastID,
-    name: cleanName,
-    firstName: cleanName,
-    lastName: '',
+    name: displayName,
+    firstName,
+    lastName,
     email: cleanEmail,
     username: null,
     facolta: selection.faculty || null,

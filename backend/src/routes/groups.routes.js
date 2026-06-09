@@ -16,7 +16,7 @@ groupsRouter.get('/public', groupsController.publicList);
 groupsRouter.post('/', groupsController.create);
 
 groupsRouter.get('/:id', groupsController.detail);
-groupsRouter.get('/:id/members', groupsController.members); // ✅ aggiunta qui
+groupsRouter.get('/:id/members', groupsController.members);
 groupsRouter.patch('/:id', groupsController.update);
 groupsRouter.delete('/:id', requireSpecialUser, groupsController.deleteGroup);
 groupsRouter.post('/:id/join', groupsController.join);

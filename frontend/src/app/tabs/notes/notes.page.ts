@@ -534,7 +534,6 @@ export class NotesPage implements OnInit, OnDestroy {
       anchor.click();
 
       URL.revokeObjectURL(url);
-      // stat download rimossa
     } catch (err: any) {
       const message =
         err?.error?.message || 'Impossibile scaricare il file';
