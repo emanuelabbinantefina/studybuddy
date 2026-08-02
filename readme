@@ -1,0 +1,18 @@
+StudyBuddy è un'applicazione full-stack sviluppata come progetto per un esame universitario presso l'Università degli Studi di Palermo (UniPa), realizzata in collaborazione con una collega. 
+Il progetto nasce per rispondere a esigenze concrete di organizzazione dello studio ma anche a socializzare e trovare qualcuno con cui studiare.
+
+Tecnologie e Stack:
+Frontend -> Angular, TypeScript, HTML, SCSS
+Backend -> Node.js
+Database -> SQLite
+Controllo Versione: Git / GitHub
+
+Funzionalità Principali:
+Interfaccia Utente Moderna -> Sviluppata in Angular con componenti riutilizzabili e stili customizzati in SCSS.
+Logica e Tipizzazione -> Gestione robusta dei flussi dati grazie all'utilizzo di TypeScript.
+Gestione Dati & Backend -> Comunicazione con un server Node.js e persistenza dei dati gestita tramite SQLite.
+
+Autori:
+Progetto di gruppo realizzato da:
+Emanuela G. Abbinantefina
+Giulia Colucci
